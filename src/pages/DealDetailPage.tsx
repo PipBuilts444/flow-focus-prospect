@@ -2,6 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useCrm } from '@/context/CrmContext';
 import { ArrowLeft, Building2, User, Calendar, AlertTriangle, TrendingUp } from 'lucide-react';
 import { format, addMonths } from 'date-fns';
+import { formatGBP } from '@/lib/currency';
 
 const healthLabel: Record<string, { text: string; cls: string }> = {
   green: { text: 'Healthy', cls: 'bg-health-green/15 text-health-green' },
