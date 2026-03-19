@@ -229,7 +229,7 @@ const NewDealPage = () => {
               </div>
               <div>
                 <label className={labelClass}>Role / Title</label>
-                <input value={newContactRole} onChange={e => setNewContactRole(e.target.value)} placeholder="CTO" className={inputClass} />
+                <input value={newContactRole} onChange={e => setNewContactRole(e.target.value)} placeholder="e.g. CTO, Head of Product" className={inputClass} />
               </div>
             </div>
           ) : (
