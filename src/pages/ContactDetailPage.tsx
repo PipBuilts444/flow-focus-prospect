@@ -2,6 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useCrm } from '@/context/CrmContext';
 import { ArrowLeft, User } from 'lucide-react';
 import { formatGBP } from '@/lib/currency';
+import ActivityTimeline from '@/components/ActivityTimeline';
 
 const ContactDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -15,6 +16,8 @@ const ContactDetailPage = () => {
 
   const company = getCompany(contact.company_id || '');
   const contactDeals = deals.filter(d => d.primary_contact_id === contact.id);
+
+  const logActivityUrl = `/activities/new?contact_id=${contact.id}${contact.company_id ? `&company_id=${contact.company_id}` : ''}`;
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6">
@@ -56,6 +59,11 @@ const ContactDetailPage = () => {
           </div>
         </div>
       </div>
+
+      <ActivityTimeline
+        contactId={contact.id}
+        onLogActivity={() => navigate(logActivityUrl)}
+      />
     </div>
   );
 };

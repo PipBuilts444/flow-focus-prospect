@@ -3,6 +3,7 @@ import { useCrm } from '@/context/CrmContext';
 import { ArrowLeft, Building2, User, Calendar, AlertTriangle, TrendingUp } from 'lucide-react';
 import { format, addMonths } from 'date-fns';
 import { formatGBP } from '@/lib/currency';
+import ActivityTimeline from '@/components/ActivityTimeline';
 
 const healthLabel: Record<string, { text: string; cls: string }> = {
   green: { text: 'Healthy', cls: 'bg-health-green/15 text-health-green' },
@@ -39,6 +40,8 @@ const DealDetailPage = () => {
       <p className="text-sm text-card-foreground">{value || '—'}</p>
     </div>
   );
+
+  const logActivityUrl = `/activities/new?deal_id=${deal.id}${deal.company_id ? `&company_id=${deal.company_id}` : ''}${deal.primary_contact_id ? `&contact_id=${deal.primary_contact_id}` : ''}`;
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6">
@@ -129,6 +132,11 @@ const DealDetailPage = () => {
           </div>
         </div>
       )}
+
+      <ActivityTimeline
+        dealId={deal.id}
+        onLogActivity={() => navigate(logActivityUrl)}
+      />
     </div>
   );
 };
