@@ -1,5 +1,5 @@
 import { useCrm } from '@/context/CrmContext';
-import { DEAL_STAGES, STAGE_COLORS, DealStage } from '@/types/crm';
+import { DEAL_STAGES, DealStage } from '@/types/crm';
 import { useNavigate } from 'react-router-dom';
 
 const formatCurrency = (v: number) => `£${(v / 1000).toFixed(0)}k`;
@@ -11,15 +11,17 @@ const healthDot: Record<string, string> = {
 };
 
 const PipelinePage = () => {
-  const { deals, getCompany, getDealHealth } = useCrm();
+  const { deals, getCompany, getDealHealth, loading } = useCrm();
   const navigate = useNavigate();
   const openStages = DEAL_STAGES.filter(s => s !== 'Closed Won' && s !== 'Closed Lost');
+
+  if (loading) return <div className="p-6"><p className="text-muted-foreground">Loading…</p></div>;
 
   return (
     <div className="p-6 h-full flex flex-col">
       <div className="mb-4">
         <h1 className="text-2xl font-bold text-foreground">Pipeline</h1>
-        <p className="text-sm text-muted-foreground">Drag-free Kanban view of active deals</p>
+        <p className="text-sm text-muted-foreground">Kanban view of active deals</p>
       </div>
       <div className="flex-1 overflow-x-auto">
         <div className="flex gap-3 min-w-max h-full pb-4">
@@ -37,7 +39,7 @@ const PipelinePage = () => {
                 </div>
                 <div className="flex-1 overflow-y-auto p-2 space-y-2 scrollbar-thin">
                   {stageDeals.map(deal => {
-                    const company = getCompany(deal.company_id);
+                    const company = getCompany(deal.company_id || '');
                     const health = getDealHealth(deal);
                     return (
                       <button

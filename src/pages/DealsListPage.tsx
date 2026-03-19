@@ -1,8 +1,8 @@
 import { useCrm } from '@/context/CrmContext';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { DEAL_STAGES, FORECAST_CATEGORIES, DEAL_TYPES, DealStage, ForecastCategory, DealType } from '@/types/crm';
-import { Search, Filter } from 'lucide-react';
+import { DEAL_STAGES, FORECAST_CATEGORIES } from '@/types/crm';
+import { Search } from 'lucide-react';
 
 const healthDot: Record<string, string> = {
   green: 'bg-health-green',
@@ -11,15 +11,17 @@ const healthDot: Record<string, string> = {
 };
 
 const DealsListPage = () => {
-  const { deals, getCompany, getContact, getDealHealth } = useCrm();
+  const { deals, getCompany, getDealHealth, loading } = useCrm();
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [stageFilter, setStageFilter] = useState<string>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
+  if (loading) return <div className="p-6"><p className="text-muted-foreground">Loading…</p></div>;
+
   const filtered = deals.filter(d => {
-    const company = getCompany(d.company_id);
+    const company = getCompany(d.company_id || '');
     const matchSearch = !search || d.deal_name.toLowerCase().includes(search.toLowerCase()) || company?.company_name.toLowerCase().includes(search.toLowerCase());
     const matchStage = stageFilter === 'all' || d.stage === stageFilter;
     const matchCat = categoryFilter === 'all' || d.forecast_category === categoryFilter;
@@ -37,12 +39,7 @@ const DealsListPage = () => {
       <div className="flex flex-wrap gap-3 items-center">
         <div className="relative">
           <Search size={16} className="absolute left-2.5 top-2.5 text-muted-foreground" />
-          <input
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Search deals…"
-            className="pl-8 pr-3 py-2 text-sm rounded-md border border-input bg-card text-card-foreground focus:outline-none focus:ring-2 focus:ring-ring w-64"
-          />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search deals…" className="pl-8 pr-3 py-2 text-sm rounded-md border border-input bg-card text-card-foreground focus:outline-none focus:ring-2 focus:ring-ring w-64" />
         </div>
         <select value={stageFilter} onChange={e => setStageFilter(e.target.value)} className="text-sm rounded-md border border-input bg-card text-card-foreground px-3 py-2">
           <option value="all">All Stages</option>
@@ -78,19 +75,15 @@ const DealsListPage = () => {
             </thead>
             <tbody>
               {filtered.map(deal => {
-                const company = getCompany(deal.company_id);
+                const company = getCompany(deal.company_id || '');
                 const health = getDealHealth(deal);
                 return (
-                  <tr
-                    key={deal.id}
-                    onClick={() => navigate(`/deals/${deal.id}`)}
-                    className="border-b border-border last:border-0 hover:bg-accent/50 cursor-pointer transition-colors"
-                  >
+                  <tr key={deal.id} onClick={() => navigate(`/deals/${deal.id}`)} className="border-b border-border last:border-0 hover:bg-accent/50 cursor-pointer transition-colors">
                     <td className="px-4 py-3 font-medium text-card-foreground">{deal.deal_name}</td>
                     <td className="px-4 py-3 text-muted-foreground">{company?.company_name}</td>
                     <td className="px-4 py-3"><span className="text-xs px-2 py-0.5 rounded-full bg-accent text-accent-foreground">{deal.stage}</span></td>
                     <td className="px-4 py-3 text-right font-medium text-card-foreground">£{deal.value.toLocaleString()}</td>
-                    <td className="px-4 py-3 text-right text-muted-foreground">£{deal.weighted_value.toLocaleString()}</td>
+                    <td className="px-4 py-3 text-right text-muted-foreground">£{(deal.weighted_value || 0).toLocaleString()}</td>
                     <td className="px-4 py-3 text-muted-foreground">{deal.forecast_category}</td>
                     <td className="px-4 py-3 text-muted-foreground">{deal.expected_close_date}</td>
                     <td className="px-4 py-3 text-muted-foreground">{deal.owner}</td>

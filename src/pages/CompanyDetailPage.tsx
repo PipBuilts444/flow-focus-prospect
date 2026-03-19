@@ -5,7 +5,9 @@ import { ArrowLeft, Building2 } from 'lucide-react';
 const CompanyDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { getCompany, getDealsForCompany, getContactsForCompany } = useCrm();
+  const { getCompany, getDealsForCompany, getContactsForCompany, loading } = useCrm();
+
+  if (loading) return <div className="p-6"><p className="text-muted-foreground">Loading…</p></div>;
 
   const company = getCompany(id || '');
   if (!company) return <div className="p-6"><p className="text-muted-foreground">Company not found</p></div>;

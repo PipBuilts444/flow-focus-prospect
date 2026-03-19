@@ -5,12 +5,14 @@ import { ArrowLeft, User } from 'lucide-react';
 const ContactDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { getContact, getCompany, deals } = useCrm();
+  const { getContact, getCompany, deals, loading } = useCrm();
+
+  if (loading) return <div className="p-6"><p className="text-muted-foreground">Loading…</p></div>;
 
   const contact = getContact(id || '');
   if (!contact) return <div className="p-6"><p className="text-muted-foreground">Contact not found</p></div>;
 
-  const company = getCompany(contact.company_id);
+  const company = getCompany(contact.company_id || '');
   const contactDeals = deals.filter(d => d.primary_contact_id === contact.id);
 
   return (

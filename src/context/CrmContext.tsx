@@ -1,17 +1,19 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
-import { Company, Contact, Deal, DealStage, STAGE_CONFIDENCE, HealthStatus } from '@/types/crm';
-import { seedCompanies, seedContacts, seedDeals } from '@/data/seed';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { Company, Contact, Deal, HealthStatus } from '@/types/crm';
+import { supabase } from '@/integrations/supabase/client';
 
 interface CrmContextType {
   companies: Company[];
   contacts: Contact[];
   deals: Deal[];
-  addCompany: (company: Company) => void;
-  addContact: (contact: Contact) => void;
-  addDeal: (deal: Deal) => void;
-  updateDeal: (deal: Deal) => void;
-  updateCompany: (company: Company) => void;
-  updateContact: (contact: Contact) => void;
+  loading: boolean;
+  refresh: () => Promise<void>;
+  addCompany: (company: Partial<Company> & { company_name: string }) => Promise<Company | null>;
+  addContact: (contact: Partial<Contact> & { first_name: string; last_name: string }) => Promise<Contact | null>;
+  addDeal: (deal: Partial<Deal> & { deal_name: string }) => Promise<Deal | null>;
+  updateDeal: (id: string, updates: Partial<Deal>) => Promise<void>;
+  updateCompany: (id: string, updates: Partial<Company>) => Promise<void>;
+  updateContact: (id: string, updates: Partial<Contact>) => Promise<void>;
   getCompany: (id: string) => Company | undefined;
   getContact: (id: string) => Contact | undefined;
   getDeal: (id: string) => Deal | undefined;
@@ -29,24 +31,57 @@ export const useCrm = () => {
 };
 
 export const CrmProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [companies, setCompanies] = useState<Company[]>(seedCompanies);
-  const [contacts, setContacts] = useState<Contact[]>(seedContacts);
-  const [deals, setDeals] = useState<Deal[]>(seedDeals);
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [deals, setDeals] = useState<Deal[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const addCompany = useCallback((c: Company) => setCompanies(prev => [...prev, c]), []);
-  const addContact = useCallback((c: Contact) => setContacts(prev => [...prev, c]), []);
-  const addDeal = useCallback((d: Deal) => {
-    const withWeighted = { ...d, weighted_value: d.value * (d.confidence_percent / 100) };
-    setDeals(prev => [...prev, withWeighted]);
+  const refresh = useCallback(async () => {
+    const [cRes, ctRes, dRes] = await Promise.all([
+      supabase.from('companies').select('*').order('company_name'),
+      supabase.from('contacts').select('*').order('full_name'),
+      supabase.from('deals').select('*').order('created_at', { ascending: false }),
+    ]);
+    if (cRes.data) setCompanies(cRes.data);
+    if (ctRes.data) setContacts(ctRes.data);
+    if (dRes.data) setDeals(dRes.data);
+    setLoading(false);
   }, []);
 
-  const updateDeal = useCallback((d: Deal) => {
-    const withWeighted = { ...d, weighted_value: d.value * (d.confidence_percent / 100) };
-    setDeals(prev => prev.map(x => x.id === d.id ? withWeighted : x));
+  useEffect(() => { refresh(); }, [refresh]);
+
+  const addCompany = useCallback(async (c: Partial<Company> & { company_name: string }) => {
+    const { data } = await supabase.from('companies').insert(c).select().single();
+    if (data) { setCompanies(prev => [...prev, data]); return data; }
+    return null;
   }, []);
 
-  const updateCompany = useCallback((c: Company) => setCompanies(prev => prev.map(x => x.id === c.id ? c : x)), []);
-  const updateContact = useCallback((c: Contact) => setContacts(prev => prev.map(x => x.id === c.id ? c : x)), []);
+  const addContact = useCallback(async (c: Partial<Contact> & { first_name: string; last_name: string }) => {
+    const { data } = await supabase.from('contacts').insert(c).select().single();
+    if (data) { setContacts(prev => [...prev, data]); return data; }
+    return null;
+  }, []);
+
+  const addDeal = useCallback(async (d: Partial<Deal> & { deal_name: string }) => {
+    const { data } = await supabase.from('deals').insert(d).select().single();
+    if (data) { setDeals(prev => [data, ...prev]); return data; }
+    return null;
+  }, []);
+
+  const updateDeal = useCallback(async (id: string, updates: Partial<Deal>) => {
+    const { data } = await supabase.from('deals').update(updates).eq('id', id).select().single();
+    if (data) setDeals(prev => prev.map(x => x.id === id ? data : x));
+  }, []);
+
+  const updateCompany = useCallback(async (id: string, updates: Partial<Company>) => {
+    const { data } = await supabase.from('companies').update(updates).eq('id', id).select().single();
+    if (data) setCompanies(prev => prev.map(x => x.id === id ? data : x));
+  }, []);
+
+  const updateContact = useCallback(async (id: string, updates: Partial<Contact>) => {
+    const { data } = await supabase.from('contacts').update(updates).eq('id', id).select().single();
+    if (data) setContacts(prev => prev.map(x => x.id === id ? data : x));
+  }, []);
 
   const getCompany = useCallback((id: string) => companies.find(c => c.id === id), [companies]);
   const getContact = useCallback((id: string) => contacts.find(c => c.id === id), [contacts]);
@@ -70,7 +105,7 @@ export const CrmProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   return (
     <CrmContext.Provider value={{
-      companies, contacts, deals,
+      companies, contacts, deals, loading, refresh,
       addCompany, addContact, addDeal, updateDeal, updateCompany, updateContact,
       getCompany, getContact, getDeal, getDealsForCompany, getContactsForCompany, getDealHealth,
     }}>

@@ -1,6 +1,6 @@
 import { useCrm } from '@/context/CrmContext';
 import { format, isAfter, isBefore, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter } from 'date-fns';
-import { TrendingUp, TrendingDown, AlertTriangle, DollarSign, Target, CheckCircle2, XCircle, Clock } from 'lucide-react';
+import { TrendingUp, AlertTriangle, DollarSign, Target, CheckCircle2, XCircle, Clock } from 'lucide-react';
 
 const formatCurrency = (v: number) => `£${v.toLocaleString('en-GB')}`;
 
@@ -15,33 +15,31 @@ const KpiCard = ({ label, value, icon: Icon, variant = 'default' }: { label: str
 );
 
 const DashboardPage = () => {
-  const { deals, getCompany, getDealHealth } = useCrm();
+  const { deals, getCompany, getDealHealth, loading } = useCrm();
   const now = new Date();
   const thisMonthStart = startOfMonth(now);
   const thisMonthEnd = endOfMonth(now);
   const thisQStart = startOfQuarter(now);
   const thisQEnd = endOfQuarter(now);
 
+  if (loading) return <div className="p-6"><p className="text-muted-foreground">Loading…</p></div>;
+
   const openDeals = deals.filter(d => d.status === 'open');
   const totalPipeline = openDeals.reduce((s, d) => s + d.value, 0);
-  const weightedPipeline = openDeals.reduce((s, d) => s + d.weighted_value, 0);
+  const weightedPipeline = openDeals.reduce((s, d) => s + (d.weighted_value || 0), 0);
 
   const commitThisMonth = openDeals
     .filter(d => d.forecast_category === 'Commit' && d.expected_close_date && isBefore(new Date(d.expected_close_date), thisMonthEnd) && isAfter(new Date(d.expected_close_date), thisMonthStart))
-    .reduce((s, d) => s + d.weighted_value, 0);
+    .reduce((s, d) => s + (d.weighted_value || 0), 0);
 
   const bestCaseThisMonth = openDeals
     .filter(d => (d.forecast_category === 'Commit' || d.forecast_category === 'Best Case') && d.expected_close_date && isBefore(new Date(d.expected_close_date), thisMonthEnd) && isAfter(new Date(d.expected_close_date), thisMonthStart))
-    .reduce((s, d) => s + d.weighted_value, 0);
+    .reduce((s, d) => s + (d.weighted_value || 0), 0);
 
   const closedWonQ = deals.filter(d => d.status === 'closed_won' && d.won_date && isAfter(new Date(d.won_date), thisQStart) && isBefore(new Date(d.won_date), thisQEnd));
   const closedLostQ = deals.filter(d => d.status === 'closed_lost' && d.lost_date && isAfter(new Date(d.lost_date), thisQStart) && isBefore(new Date(d.lost_date), thisQEnd));
 
   const overdueActions = openDeals.filter(d => d.next_action_date && isBefore(new Date(d.next_action_date), now));
-  const staleDeals = openDeals.filter(d => {
-    const days = (now.getTime() - new Date(d.updated_at).getTime()) / (1000 * 60 * 60 * 24);
-    return days > 14;
-  });
   const slippedDeals = openDeals.filter(d => d.slip_count > 0);
 
   return (
@@ -65,7 +63,6 @@ const DashboardPage = () => {
         <KpiCard label="Slipped Deals" value={String(slippedDeals.length)} icon={Clock} variant={slippedDeals.length > 0 ? 'amber' : 'default'} />
       </div>
 
-      {/* Alert deals */}
       <div className="grid md:grid-cols-2 gap-6">
         <div className="bg-card rounded-lg border border-border p-5">
           <h2 className="text-sm font-semibold text-card-foreground mb-3">Overdue Next Actions</h2>
@@ -77,7 +74,7 @@ const DashboardPage = () => {
                 <a key={d.id} href={`/deals/${d.id}`} className="flex items-center justify-between p-2 rounded-md hover:bg-accent transition-colors text-sm">
                   <div>
                     <span className="font-medium text-card-foreground">{d.deal_name}</span>
-                    <span className="text-muted-foreground ml-2">{getCompany(d.company_id)?.company_name}</span>
+                    <span className="text-muted-foreground ml-2">{getCompany(d.company_id || '')?.company_name}</span>
                   </div>
                   <span className="text-health-red text-xs">{d.next_action_date}</span>
                 </a>

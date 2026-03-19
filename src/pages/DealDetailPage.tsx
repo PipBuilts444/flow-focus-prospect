@@ -17,12 +17,11 @@ const DealDetailPage = () => {
   const deal = getDeal(id || '');
   if (!deal) return <div className="p-6"><p className="text-muted-foreground">Deal not found</p></div>;
 
-  const company = getCompany(deal.company_id);
-  const contact = getContact(deal.primary_contact_id);
+  const company = getCompany(deal.company_id || '');
+  const contact = getContact(deal.primary_contact_id || '');
   const health = getDealHealth(deal);
   const hl = healthLabel[health];
 
-  // Monthly revenue allocation
   const monthlyRevenue: { month: string; amount: number }[] = [];
   if (deal.expected_start_date && deal.delivery_duration_months > 0) {
     const start = new Date(deal.expected_start_date);
@@ -57,12 +56,11 @@ const DealDetailPage = () => {
         </div>
         <div className="text-right">
           <p className="text-2xl font-bold text-foreground">£{deal.value.toLocaleString()}</p>
-          <p className="text-sm text-muted-foreground">Weighted: £{deal.weighted_value.toLocaleString()}</p>
+          <p className="text-sm text-muted-foreground">Weighted: £{(deal.weighted_value || 0).toLocaleString()}</p>
         </div>
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
-        {/* Details */}
         <div className="bg-card rounded-lg border border-border p-5 space-y-4">
           <h2 className="text-sm font-semibold text-card-foreground">Deal Details</h2>
           <div className="grid grid-cols-2 gap-4">
@@ -79,7 +77,6 @@ const DealDetailPage = () => {
           </div>
         </div>
 
-        {/* Contact & Company */}
         <div className="space-y-4">
           <div className="bg-card rounded-lg border border-border p-5 space-y-3">
             <h2 className="text-sm font-semibold text-card-foreground flex items-center gap-1.5"><Building2 size={14} /> Company</h2>
@@ -97,7 +94,6 @@ const DealDetailPage = () => {
         </div>
       </div>
 
-      {/* Slippage & Actions */}
       <div className="grid md:grid-cols-2 gap-6">
         <div className="bg-card rounded-lg border border-border p-5 space-y-3">
           <h2 className="text-sm font-semibold text-card-foreground flex items-center gap-1.5"><Calendar size={14} /> Slippage Tracking</h2>
@@ -119,7 +115,6 @@ const DealDetailPage = () => {
         </div>
       </div>
 
-      {/* Monthly Revenue */}
       {monthlyRevenue.length > 0 && (
         <div className="bg-card rounded-lg border border-border p-5">
           <h2 className="text-sm font-semibold text-card-foreground flex items-center gap-1.5 mb-3"><TrendingUp size={14} /> Monthly Revenue Profile</h2>

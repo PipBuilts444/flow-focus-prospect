@@ -4,9 +4,9 @@ import { format, addMonths, startOfMonth, isSameMonth } from 'date-fns';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const ForecastPage = () => {
-  const { deals } = useCrm();
+  const { deals, loading } = useCrm();
   const [ownerFilter, setOwnerFilter] = useState('all');
-  const owners = [...new Set(deals.map(d => d.owner))];
+  const owners = [...new Set(deals.map(d => d.owner).filter(Boolean))];
 
   const months = useMemo(() => {
     const result: Date[] = [];
@@ -41,6 +41,8 @@ const ForecastPage = () => {
     });
   }, [deals, months, ownerFilter]);
 
+  if (loading) return <div className="p-6"><p className="text-muted-foreground">Loading…</p></div>;
+
   const filteredDeals = ownerFilter === 'all' ? deals : deals.filter(d => d.owner === ownerFilter);
   const openDeals = filteredDeals.filter(d => d.status === 'open');
   const totals = {
@@ -59,7 +61,7 @@ const ForecastPage = () => {
         </div>
         <select value={ownerFilter} onChange={e => setOwnerFilter(e.target.value)} className="text-sm rounded-md border border-input bg-card text-card-foreground px-3 py-2">
           <option value="all">All Owners</option>
-          {owners.map(o => <option key={o} value={o}>{o}</option>)}
+          {owners.map(o => <option key={o} value={o!}>{o}</option>)}
         </select>
       </div>
 
@@ -98,7 +100,6 @@ const ForecastPage = () => {
         </ResponsiveContainer>
       </div>
 
-      {/* Monthly table */}
       <div className="bg-card rounded-lg border border-border overflow-hidden">
         <table className="w-full text-sm">
           <thead>
