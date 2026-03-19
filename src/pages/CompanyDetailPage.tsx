@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCrm } from '@/context/CrmContext';
 import { ArrowLeft, Building2 } from 'lucide-react';
+import { formatGBP } from '@/lib/currency';
 
 const CompanyDetailPage = () => {
   const { id } = useParams<{ id: string }>();
