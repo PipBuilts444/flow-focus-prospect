@@ -286,8 +286,18 @@ const NewDealPage = () => {
             </div>
 
             <div>
-              <label className={labelClass}>Value (£)</label>
-              <input type="number" min="0" step="100" value={value} onChange={e => setValue(e.target.value)} placeholder="50000" className={inputClass} />
+              <label className={labelClass}>Value</label>
+              <div className="relative">
+                <span className="absolute left-3 top-2 text-sm text-muted-foreground">£</span>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={formatInputDisplay(value)}
+                  onChange={e => setValue(stripFormatting(e.target.value))}
+                  placeholder="0"
+                  className={inputClass + ' pl-7'}
+                />
+              </div>
             </div>
             <div>
               <label className={labelClass}>Confidence (%) — default: {STAGE_CONFIDENCE[stage]}%</label>
@@ -295,7 +305,7 @@ const NewDealPage = () => {
             </div>
 
             <div className="md:col-span-2 bg-secondary/50 rounded-md px-4 py-3 text-sm text-muted-foreground">
-              Weighted value: <span className="font-semibold text-foreground">£{weightedValue.toLocaleString()}</span> ({confidence}% of £{numericValue.toLocaleString()})
+              Weighted value: <span className="font-semibold text-foreground">{formatGBP(weightedValue)}</span> ({confidence}% of {formatGBP(numericValue)})
             </div>
 
             <div>
