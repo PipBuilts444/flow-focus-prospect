@@ -221,7 +221,7 @@ const NewDealPage = () => {
               </div>
               <div>
                 <label className={labelClass}>Last Name</label>
-                <input value={newContactLast} onChange={e => setNewContactLast(e.target.value)} placeholder="Smith" className={inputClass} />
+                <input value={newContactLast} onChange={e => setNewContactLast(e.target.value)} placeholder="Last name" className={inputClass} />
               </div>
               <div>
                 <label className={labelClass}>Email</label>
