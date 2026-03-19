@@ -225,7 +225,7 @@ const NewDealPage = () => {
               </div>
               <div>
                 <label className={labelClass}>Email</label>
-                <input type="email" value={newContactEmail} onChange={e => setNewContactEmail(e.target.value)} placeholder="jane@acme.com" className={inputClass} />
+                <input type="email" value={newContactEmail} onChange={e => setNewContactEmail(e.target.value)} placeholder="name@company.com" className={inputClass} />
               </div>
               <div>
                 <label className={labelClass}>Role / Title</label>
