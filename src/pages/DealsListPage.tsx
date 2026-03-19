@@ -31,9 +31,14 @@ const DealsListPage = () => {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-4">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Deals</h1>
-        <p className="text-sm text-muted-foreground">{filtered.length} deals</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Deals</h1>
+          <p className="text-sm text-muted-foreground">{filtered.length} deals</p>
+        </div>
+        <button onClick={() => navigate('/deals/new')} className="flex items-center gap-1.5 px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors">
+          <Plus size={16} /> New Deal
+        </button>
       </div>
 
       <div className="flex flex-wrap gap-3 items-center">
