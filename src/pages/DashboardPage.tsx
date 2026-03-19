@@ -16,7 +16,8 @@ const KpiCard = ({ label, value, icon: Icon, variant = 'default' }: { label: str
 );
 
 const DashboardPage = () => {
-  const { deals, getCompany, getDealHealth, loading } = useCrm();
+  const { deals, getCompany, getDealHealth, loading } = useFilteredCrm();
+  const { selectedView } = useUserView();
   const now = new Date();
   const thisMonthStart = startOfMonth(now);
   const thisMonthEnd = endOfMonth(now);
