@@ -2,7 +2,7 @@ import { useCrm } from '@/context/CrmContext';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DEAL_STAGES, FORECAST_CATEGORIES } from '@/types/crm';
-import { Search } from 'lucide-react';
+import { Search, Plus } from 'lucide-react';
 
 const healthDot: Record<string, string> = {
   green: 'bg-health-green',
