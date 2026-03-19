@@ -1,15 +1,17 @@
 import { useCrm } from '@/context/CrmContext';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { Search, Users } from 'lucide-react';
+import { Search } from 'lucide-react';
 
 const ContactsPage = () => {
-  const { contacts, getCompany, deals } = useCrm();
+  const { contacts, getCompany, deals, loading } = useCrm();
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
 
+  if (loading) return <div className="p-6"><p className="text-muted-foreground">Loading…</p></div>;
+
   const filtered = contacts.filter(c =>
-    !search || c.full_name.toLowerCase().includes(search.toLowerCase()) || c.email.toLowerCase().includes(search.toLowerCase())
+    !search || (c.full_name || '').toLowerCase().includes(search.toLowerCase()) || (c.email || '').toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -38,7 +40,7 @@ const ContactsPage = () => {
           </thead>
           <tbody>
             {filtered.map(contact => {
-              const company = getCompany(contact.company_id);
+              const company = getCompany(contact.company_id || '');
               const contactDeals = deals.filter(d => d.primary_contact_id === contact.id);
               return (
                 <tr key={contact.id} className="border-b border-border last:border-0 hover:bg-accent/50 cursor-pointer transition-colors" onClick={() => navigate(`/contacts/${contact.id}`)}>

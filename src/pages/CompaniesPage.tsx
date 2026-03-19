@@ -4,12 +4,14 @@ import { useState } from 'react';
 import { Search, Building2 } from 'lucide-react';
 
 const CompaniesPage = () => {
-  const { companies, getDealsForCompany, getContactsForCompany } = useCrm();
+  const { companies, getDealsForCompany, getContactsForCompany, loading } = useCrm();
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
 
+  if (loading) return <div className="p-6"><p className="text-muted-foreground">Loading…</p></div>;
+
   const filtered = companies.filter(c =>
-    !search || c.company_name.toLowerCase().includes(search.toLowerCase()) || c.industry.toLowerCase().includes(search.toLowerCase())
+    !search || c.company_name.toLowerCase().includes(search.toLowerCase()) || (c.industry || '').toLowerCase().includes(search.toLowerCase())
   );
 
   return (
