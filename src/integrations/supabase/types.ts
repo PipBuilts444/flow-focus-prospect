@@ -14,6 +14,85 @@ export type Database = {
   }
   public: {
     Tables: {
+      activities: {
+        Row: {
+          activity_date: string
+          activity_type: Database["public"]["Enums"]["activity_type"]
+          company_id: string | null
+          contact_id: string | null
+          created_at: string
+          deal_id: string | null
+          description: string | null
+          id: string
+          meeting_type: Database["public"]["Enums"]["meeting_type"] | null
+          next_step: string | null
+          next_step_date: string | null
+          outcome: string | null
+          owner: string | null
+          status: Database["public"]["Enums"]["activity_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          activity_date?: string
+          activity_type?: Database["public"]["Enums"]["activity_type"]
+          company_id?: string | null
+          contact_id?: string | null
+          created_at?: string
+          deal_id?: string | null
+          description?: string | null
+          id?: string
+          meeting_type?: Database["public"]["Enums"]["meeting_type"] | null
+          next_step?: string | null
+          next_step_date?: string | null
+          outcome?: string | null
+          owner?: string | null
+          status?: Database["public"]["Enums"]["activity_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          activity_date?: string
+          activity_type?: Database["public"]["Enums"]["activity_type"]
+          company_id?: string | null
+          contact_id?: string | null
+          created_at?: string
+          deal_id?: string | null
+          description?: string | null
+          id?: string
+          meeting_type?: Database["public"]["Enums"]["meeting_type"] | null
+          next_step?: string | null
+          next_step_date?: string | null
+          outcome?: string | null
+          owner?: string | null
+          status?: Database["public"]["Enums"]["activity_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activities_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activities_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activities_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       companies: {
         Row: {
           account_owner: string | null
@@ -251,6 +330,8 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      activity_status: "Scheduled" | "Completed" | "Cancelled"
+      activity_type: "Meeting" | "Call" | "Email" | "Note"
       company_status: "active" | "inactive" | "prospect"
       deal_stage:
         | "Lead"
@@ -275,6 +356,13 @@ export type Database = {
         | "Commit"
         | "Closed Won"
         | "Closed Lost"
+      meeting_type:
+        | "Intro"
+        | "Qualification"
+        | "Discovery"
+        | "Proposal Review"
+        | "Commercial"
+        | "Internal"
       revenue_profile: "equal_spread" | "custom"
     }
     CompositeTypes: {
@@ -403,6 +491,8 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      activity_status: ["Scheduled", "Completed", "Cancelled"],
+      activity_type: ["Meeting", "Call", "Email", "Note"],
       company_status: ["active", "inactive", "prospect"],
       deal_stage: [
         "Lead",
@@ -429,6 +519,14 @@ export const Constants = {
         "Commit",
         "Closed Won",
         "Closed Lost",
+      ],
+      meeting_type: [
+        "Intro",
+        "Qualification",
+        "Discovery",
+        "Proposal Review",
+        "Commercial",
+        "Internal",
       ],
       revenue_profile: ["equal_spread", "custom"],
     },
