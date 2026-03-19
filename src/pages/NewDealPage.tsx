@@ -183,7 +183,7 @@ const NewDealPage = () => {
               </div>
               <div>
                 <label className={labelClass}>Industry</label>
-                <input value={newCompanyIndustry} onChange={e => setNewCompanyIndustry(e.target.value)} placeholder="Technology" className={inputClass} />
+                <input value={newCompanyIndustry} onChange={e => setNewCompanyIndustry(e.target.value)} placeholder="e.g. Technology, Finance" className={inputClass} />
               </div>
             </div>
           ) : (
