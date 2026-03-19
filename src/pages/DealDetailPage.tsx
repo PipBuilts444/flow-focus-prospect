@@ -56,8 +56,8 @@ const DealDetailPage = () => {
           </div>
         </div>
         <div className="text-right">
-          <p className="text-2xl font-bold text-foreground">£{deal.value.toLocaleString()}</p>
-          <p className="text-sm text-muted-foreground">Weighted: £{(deal.weighted_value || 0).toLocaleString()}</p>
+          <p className="text-2xl font-bold text-foreground">{formatGBP(deal.value)}</p>
+          <p className="text-sm text-muted-foreground">Weighted: {formatGBP(deal.weighted_value || 0)}</p>
         </div>
       </div>
 
