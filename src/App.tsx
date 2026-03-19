@@ -14,6 +14,7 @@ import CompanyDetailPage from "@/pages/CompanyDetailPage";
 import ContactsPage from "@/pages/ContactsPage";
 import ContactDetailPage from "@/pages/ContactDetailPage";
 import ForecastPage from "@/pages/ForecastPage";
+import NewDealPage from "@/pages/NewDealPage";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
