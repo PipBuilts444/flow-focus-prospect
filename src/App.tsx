@@ -17,6 +17,7 @@ import ContactDetailPage from "@/pages/ContactDetailPage";
 import ForecastPage from "@/pages/ForecastPage";
 import NewDealPage from "@/pages/NewDealPage";
 import NewActivityPage from "@/pages/NewActivityPage";
+import DeletedItemsPage from "@/pages/DeletedItemsPage";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -43,6 +44,7 @@ const App = () => (
                 <Route path="/contacts/:id" element={<ContactDetailPage />} />
                 <Route path="/forecast" element={<ForecastPage />} />
                 <Route path="/activities/new" element={<NewActivityPage />} />
+                <Route path="/deleted" element={<DeletedItemsPage />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </AppLayout>
