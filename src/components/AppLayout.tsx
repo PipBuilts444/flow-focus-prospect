@@ -108,6 +108,13 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
+          <NavLink
+            to="/activities/new"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+          >
+            <CalendarPlus size={14} />
+            Log Activity
+          </NavLink>
         </header>
         <main className="flex-1 overflow-auto">
           {children}
