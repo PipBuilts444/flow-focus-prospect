@@ -106,7 +106,6 @@ const NewDealPage = () => {
         deal_type: dealType,
         value: numericValue,
         confidence_percent: confidence,
-        weighted_value: weightedValue,
         expected_close_date: expectedCloseDate || null,
         expected_start_date: expectedStartDate || null,
         delivery_duration_months: parseInt(deliveryMonths) || 1,
