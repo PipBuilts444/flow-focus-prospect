@@ -1,7 +1,15 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Kanban, List, Building2, Users, TrendingUp, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, Kanban, List, Building2, Users, TrendingUp, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
+import { useUserView, OWNERS, UserView } from '@/context/UserViewContext';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const navItems = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
@@ -12,16 +20,28 @@ const navItems = [
   { to: '/forecast', icon: TrendingUp, label: 'Forecast' },
 ];
 
+const VIEW_OPTIONS: { value: UserView; label: string; subtitle?: string }[] = [
+  { value: 'COEX', label: 'COEX', subtitle: 'All users' },
+  ...OWNERS.map(o => ({ value: o as UserView, label: o })),
+];
+
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
+  const { selectedView, setSelectedView } = useUserView();
 
   return (
     <div className="flex h-screen overflow-hidden">
       <aside className={`${collapsed ? 'w-16' : 'w-56'} bg-sidebar flex flex-col transition-all duration-200 shrink-0`}>
         <div className="flex items-center gap-2 px-4 h-14 border-b border-sidebar-border">
           {!collapsed && (
-            <span className="text-sidebar-active font-bold text-lg tracking-tight">Pipeline</span>
+            <div className="flex items-center gap-2">
+              <span className="text-primary-foreground font-extrabold text-lg tracking-tight bg-primary rounded px-1.5 py-0.5 leading-none">CO</span>
+              <span className="text-sidebar-active font-bold text-lg tracking-tight">Pipeline</span>
+            </div>
+          )}
+          {collapsed && (
+            <span className="text-primary-foreground font-extrabold text-xs bg-primary rounded px-1 py-0.5 leading-none mx-auto">CO</span>
           )}
           <button
             onClick={() => setCollapsed(!collapsed)}
@@ -51,13 +71,48 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         </nav>
         {!collapsed && (
           <div className="px-4 py-3 border-t border-sidebar-border">
-            <p className="text-xs text-sidebar-foreground/60">Consultancy CRM</p>
+            <p className="text-xs text-sidebar-foreground/60">COEX Commercial Platform</p>
           </div>
         )}
       </aside>
-      <main className="flex-1 overflow-auto">
-        {children}
-      </main>
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <header className="h-14 border-b border-border bg-card flex items-center justify-between px-6 shrink-0">
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium text-muted-foreground">Viewing as</span>
+            <DropdownMenu>
+              <DropdownMenuTrigger className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-input bg-background text-sm font-semibold text-foreground hover:bg-accent transition-colors focus:outline-none focus:ring-2 focus:ring-ring">
+                {selectedView === 'COEX' && (
+                  <span className="text-primary-foreground font-extrabold text-[10px] bg-primary rounded px-1 py-0.5 leading-none">CO</span>
+                )}
+                <span>{selectedView === 'COEX' ? 'COEX – All' : selectedView}</span>
+                <ChevronDown size={14} className="text-muted-foreground" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-56">
+                {VIEW_OPTIONS.map((opt, i) => (
+                  <React.Fragment key={opt.value}>
+                    {i === 1 && <DropdownMenuSeparator />}
+                    <DropdownMenuItem
+                      onClick={() => setSelectedView(opt.value)}
+                      className={`flex items-center gap-2 ${selectedView === opt.value ? 'bg-accent' : ''}`}
+                    >
+                      {opt.value === 'COEX' && (
+                        <span className="text-primary-foreground font-extrabold text-[10px] bg-primary rounded px-1 py-0.5 leading-none">CO</span>
+                      )}
+                      <div>
+                        <p className="font-medium">{opt.label}</p>
+                        {opt.subtitle && <p className="text-xs text-muted-foreground">{opt.subtitle}</p>}
+                      </div>
+                    </DropdownMenuItem>
+                  </React.Fragment>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </header>
+        <main className="flex-1 overflow-auto">
+          {children}
+        </main>
+      </div>
     </div>
   );
 };

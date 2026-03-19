@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { CrmProvider } from "@/context/CrmContext";
+import { UserViewProvider } from "@/context/UserViewContext";
 import AppLayout from "@/components/AppLayout";
 import DashboardPage from "@/pages/DashboardPage";
 import PipelinePage from "@/pages/PipelinePage";
@@ -25,23 +26,25 @@ const App = () => (
       <Toaster />
       <Sonner />
       <CrmProvider>
-        <BrowserRouter>
-          <AppLayout>
-            <Routes>
-              <Route path="/" element={<DashboardPage />} />
-              <Route path="/pipeline" element={<PipelinePage />} />
-              <Route path="/deals" element={<DealsListPage />} />
-              <Route path="/deals/new" element={<NewDealPage />} />
-              <Route path="/deals/:id" element={<DealDetailPage />} />
-              <Route path="/companies" element={<CompaniesPage />} />
-              <Route path="/companies/:id" element={<CompanyDetailPage />} />
-              <Route path="/contacts" element={<ContactsPage />} />
-              <Route path="/contacts/:id" element={<ContactDetailPage />} />
-              <Route path="/forecast" element={<ForecastPage />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </AppLayout>
-        </BrowserRouter>
+        <UserViewProvider>
+          <BrowserRouter>
+            <AppLayout>
+              <Routes>
+                <Route path="/" element={<DashboardPage />} />
+                <Route path="/pipeline" element={<PipelinePage />} />
+                <Route path="/deals" element={<DealsListPage />} />
+                <Route path="/deals/new" element={<NewDealPage />} />
+                <Route path="/deals/:id" element={<DealDetailPage />} />
+                <Route path="/companies" element={<CompaniesPage />} />
+                <Route path="/companies/:id" element={<CompanyDetailPage />} />
+                <Route path="/contacts" element={<ContactsPage />} />
+                <Route path="/contacts/:id" element={<ContactDetailPage />} />
+                <Route path="/forecast" element={<ForecastPage />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </AppLayout>
+          </BrowserRouter>
+        </UserViewProvider>
       </CrmProvider>
     </TooltipProvider>
   </QueryClientProvider>
