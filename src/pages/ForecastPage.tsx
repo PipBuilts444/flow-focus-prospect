@@ -16,12 +16,11 @@ const ForecastPage = () => {
   }, []);
 
   const chartData = useMemo(() => {
-    const filteredDeals = ownerFilter === 'all' ? deals : deals.filter(d => d.owner === ownerFilter);
     return months.map(month => {
       const label = format(month, 'MMM yy');
       let pipeline = 0, bestCase = 0, commit = 0, closedWon = 0;
 
-      filteredDeals.forEach(deal => {
+      deals.forEach(deal => {
         if (!deal.expected_start_date || deal.delivery_duration_months <= 0) return;
         const startDate = new Date(deal.expected_start_date);
         const monthlyAmt = deal.value / deal.delivery_duration_months;
@@ -39,7 +38,7 @@ const ForecastPage = () => {
 
       return { month: label, Pipeline: Math.round(pipeline), 'Best Case': Math.round(bestCase), Commit: Math.round(commit), 'Closed Won': Math.round(closedWon) };
     });
-  }, [deals, months, ownerFilter]);
+  }, [deals, months]);
 
   if (loading) return <div className="p-6"><p className="text-muted-foreground">Loading…</p></div>;
 
