@@ -1,8 +1,10 @@
 import { useFilteredCrm } from '@/hooks/useFilteredCrm';
 import { useUserView } from '@/context/UserViewContext';
-import { format, isAfter, isBefore, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter } from 'date-fns';
-import { TrendingUp, AlertTriangle, PoundSterling, Target, CheckCircle2, XCircle, Clock } from 'lucide-react';
+import { useAllActivities } from '@/hooks/useActivities';
+import { format, isAfter, isBefore, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, startOfWeek, endOfWeek, subDays } from 'date-fns';
+import { TrendingUp, AlertTriangle, PoundSterling, Target, CheckCircle2, XCircle, Clock, CalendarDays, Users, TriangleAlert } from 'lucide-react';
 import { formatGBP } from '@/lib/currency';
+import { useNavigate } from 'react-router-dom';
 
 const KpiCard = ({ label, value, icon: Icon, variant = 'default' }: { label: string; value: string; icon: any; variant?: string }) => (
   <div className="bg-card rounded-lg border border-border p-5">
@@ -17,11 +19,15 @@ const KpiCard = ({ label, value, icon: Icon, variant = 'default' }: { label: str
 const DashboardPage = () => {
   const { deals, getCompany, getDealHealth, loading } = useFilteredCrm();
   const { selectedView } = useUserView();
+  const { activities } = useAllActivities();
+  const navigate = useNavigate();
   const now = new Date();
   const thisMonthStart = startOfMonth(now);
   const thisMonthEnd = endOfMonth(now);
   const thisQStart = startOfQuarter(now);
   const thisQEnd = endOfQuarter(now);
+  const thisWeekStart = startOfWeek(now, { weekStartsOn: 1 });
+  const thisWeekEnd = endOfWeek(now, { weekStartsOn: 1 });
 
   if (loading) return <div className="p-6"><p className="text-muted-foreground">Loading…</p></div>;
 
@@ -43,6 +49,35 @@ const DashboardPage = () => {
   const overdueActions = openDeals.filter(d => d.next_action_date && isBefore(new Date(d.next_action_date), now));
   const slippedDeals = openDeals.filter(d => d.slip_count > 0);
 
+  // Activity widgets - filter by owner if not COEX
+  const filteredActivities = selectedView === 'COEX'
+    ? activities
+    : activities.filter(a => a.owner === selectedView);
+
+  const meetingsThisWeek = filteredActivities.filter(a => {
+    const d = new Date(a.activity_date);
+    return a.activity_type === 'Meeting' && isAfter(d, thisWeekStart) && isBefore(d, thisWeekEnd);
+  });
+
+  const overdueFollowUps = filteredActivities.filter(a =>
+    a.next_step_date && a.status !== 'Cancelled' && isBefore(new Date(a.next_step_date), now) && a.next_step
+  );
+
+  // Deals with no activity in last 14 days
+  const fourteenDaysAgo = subDays(now, 14);
+  const dealActivityMap = new Map<string, Date>();
+  activities.forEach(a => {
+    if (a.deal_id) {
+      const existing = dealActivityMap.get(a.deal_id);
+      const actDate = new Date(a.activity_date);
+      if (!existing || actDate > existing) dealActivityMap.set(a.deal_id, actDate);
+    }
+  });
+  const dealsNoRecentActivity = openDeals.filter(d => {
+    const lastAct = dealActivityMap.get(d.id);
+    return !lastAct || isBefore(lastAct, fourteenDaysAgo);
+  });
+
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       <div>
@@ -62,6 +97,13 @@ const DashboardPage = () => {
         <KpiCard label="Closed Lost (Q)" value={formatGBP(closedLostQ.reduce((s, d) => s + d.value, 0))} icon={XCircle} variant="red" />
         <KpiCard label="Overdue Actions" value={String(overdueActions.length)} icon={AlertTriangle} variant={overdueActions.length > 0 ? 'amber' : 'default'} />
         <KpiCard label="Slipped Deals" value={String(slippedDeals.length)} icon={Clock} variant={slippedDeals.length > 0 ? 'amber' : 'default'} />
+      </div>
+
+      {/* Activity KPIs */}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <KpiCard label="Meetings This Week" value={String(meetingsThisWeek.length)} icon={CalendarDays} />
+        <KpiCard label="Overdue Follow-ups" value={String(overdueFollowUps.length)} icon={TriangleAlert} variant={overdueFollowUps.length > 0 ? 'red' : 'default'} />
+        <KpiCard label="Deals — No Recent Activity" value={String(dealsNoRecentActivity.length)} icon={Users} variant={dealsNoRecentActivity.length > 0 ? 'amber' : 'default'} />
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
@@ -103,6 +145,47 @@ const DashboardPage = () => {
           )}
         </div>
       </div>
+
+      {/* Deals with no recent activity */}
+      {dealsNoRecentActivity.length > 0 && (
+        <div className="bg-card rounded-lg border border-border p-5">
+          <h2 className="text-sm font-semibold text-card-foreground mb-3">Deals With No Recent Activity (14+ days)</h2>
+          <div className="space-y-2">
+            {dealsNoRecentActivity.slice(0, 10).map(d => {
+              const lastAct = dealActivityMap.get(d.id);
+              return (
+                <a key={d.id} href={`/deals/${d.id}`} className="flex items-center justify-between p-2 rounded-md hover:bg-accent transition-colors text-sm">
+                  <div>
+                    <span className="font-medium text-card-foreground">{d.deal_name}</span>
+                    <span className="text-muted-foreground ml-2">{getCompany(d.company_id || '')?.company_name}</span>
+                  </div>
+                  <span className="text-muted-foreground text-xs">
+                    {lastAct ? `Last: ${format(lastAct, 'dd MMM')}` : 'No activity'}
+                  </span>
+                </a>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Overdue Follow-ups detail */}
+      {overdueFollowUps.length > 0 && (
+        <div className="bg-card rounded-lg border border-border p-5">
+          <h2 className="text-sm font-semibold text-card-foreground mb-3">Overdue Follow-ups</h2>
+          <div className="space-y-2">
+            {overdueFollowUps.slice(0, 10).map(a => (
+              <div key={a.id} className="flex items-center justify-between p-2 rounded-md hover:bg-accent transition-colors text-sm">
+                <div>
+                  <span className="font-medium text-card-foreground">{a.title}</span>
+                  <span className="text-muted-foreground ml-2">{a.next_step}</span>
+                </div>
+                <span className="text-health-red text-xs">{a.next_step_date}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

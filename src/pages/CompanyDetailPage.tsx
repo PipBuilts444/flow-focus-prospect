@@ -2,6 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useCrm } from '@/context/CrmContext';
 import { ArrowLeft, Building2 } from 'lucide-react';
 import { formatGBP } from '@/lib/currency';
+import ActivityTimeline from '@/components/ActivityTimeline';
 
 const CompanyDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -81,6 +82,11 @@ const CompanyDetailPage = () => {
           </tbody>
         </table>
       </div>
+
+      <ActivityTimeline
+        companyId={company.id}
+        onLogActivity={() => navigate(`/activities/new?company_id=${company.id}`)}
+      />
     </div>
   );
 };
