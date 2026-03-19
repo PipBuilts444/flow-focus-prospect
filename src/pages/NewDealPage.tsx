@@ -276,7 +276,12 @@ const NewDealPage = () => {
             </div>
             <div>
               <label className={labelClass}>Owner</label>
-              <input value={owner} onChange={e => setOwner(e.target.value)} placeholder="Deal owner" className={inputClass} />
+              <select value={owner} onChange={e => setOwner(e.target.value)} className={inputClass}>
+                <option value="">Select owner…</option>
+                <option value="Pippa Bradley-Dixon">Pippa Bradley-Dixon</option>
+                <option value="Craig Davies">Craig Davies</option>
+                <option value="Adam Solomons">Adam Solomons</option>
+              </select>
             </div>
 
             <div>
