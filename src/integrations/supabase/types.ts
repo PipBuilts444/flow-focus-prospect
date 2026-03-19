@@ -98,8 +98,11 @@ export type Database = {
           account_owner: string | null
           company_name: string
           created_at: string
+          deleted_at: string | null
+          deleted_by: string | null
           id: string
           industry: string | null
+          is_deleted: boolean
           notes: string | null
           status: Database["public"]["Enums"]["company_status"]
           updated_at: string
@@ -109,8 +112,11 @@ export type Database = {
           account_owner?: string | null
           company_name: string
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           id?: string
           industry?: string | null
+          is_deleted?: boolean
           notes?: string | null
           status?: Database["public"]["Enums"]["company_status"]
           updated_at?: string
@@ -120,8 +126,11 @@ export type Database = {
           account_owner?: string | null
           company_name?: string
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           id?: string
           industry?: string | null
+          is_deleted?: boolean
           notes?: string | null
           status?: Database["public"]["Enums"]["company_status"]
           updated_at?: string
@@ -133,10 +142,13 @@ export type Database = {
         Row: {
           company_id: string | null
           created_at: string
+          deleted_at: string | null
+          deleted_by: string | null
           email: string | null
           first_name: string
           full_name: string | null
           id: string
+          is_deleted: boolean
           last_name: string
           notes: string | null
           phone: string | null
@@ -146,10 +158,13 @@ export type Database = {
         Insert: {
           company_id?: string | null
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           email?: string | null
           first_name?: string
           full_name?: string | null
           id?: string
+          is_deleted?: boolean
           last_name?: string
           notes?: string | null
           phone?: string | null
@@ -159,10 +174,13 @@ export type Database = {
         Update: {
           company_id?: string | null
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           email?: string | null
           first_name?: string
           full_name?: string | null
           id?: string
+          is_deleted?: boolean
           last_name?: string
           notes?: string | null
           phone?: string | null
@@ -219,11 +237,14 @@ export type Database = {
           created_at: string
           deal_name: string
           deal_type: Database["public"]["Enums"]["deal_type"]
+          deleted_at: string | null
+          deleted_by: string | null
           delivery_duration_months: number
           expected_close_date: string | null
           expected_start_date: string | null
           forecast_category: Database["public"]["Enums"]["forecast_category"]
           id: string
+          is_deleted: boolean
           latest_close_date: string | null
           lost_date: string | null
           lost_reason: string | null
@@ -250,11 +271,14 @@ export type Database = {
           created_at?: string
           deal_name: string
           deal_type?: Database["public"]["Enums"]["deal_type"]
+          deleted_at?: string | null
+          deleted_by?: string | null
           delivery_duration_months?: number
           expected_close_date?: string | null
           expected_start_date?: string | null
           forecast_category?: Database["public"]["Enums"]["forecast_category"]
           id?: string
+          is_deleted?: boolean
           latest_close_date?: string | null
           lost_date?: string | null
           lost_reason?: string | null
@@ -281,11 +305,14 @@ export type Database = {
           created_at?: string
           deal_name?: string
           deal_type?: Database["public"]["Enums"]["deal_type"]
+          deleted_at?: string | null
+          deleted_by?: string | null
           delivery_duration_months?: number
           expected_close_date?: string | null
           expected_start_date?: string | null
           forecast_category?: Database["public"]["Enums"]["forecast_category"]
           id?: string
+          is_deleted?: boolean
           latest_close_date?: string | null
           lost_date?: string | null
           lost_reason?: string | null

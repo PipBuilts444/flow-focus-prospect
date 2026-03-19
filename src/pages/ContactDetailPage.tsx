@@ -1,21 +1,40 @@
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCrm } from '@/context/CrmContext';
-import { ArrowLeft, User } from 'lucide-react';
+import { ArrowLeft, User, Trash2 } from 'lucide-react';
 import { formatGBP } from '@/lib/currency';
 import ActivityTimeline from '@/components/ActivityTimeline';
+import ConfirmDeleteModal from '@/components/ConfirmDeleteModal';
+import { toast } from 'sonner';
+import { useUserView } from '@/context/UserViewContext';
 
 const ContactDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { getContact, getCompany, deals, loading } = useCrm();
-
-  if (loading) return <div className="p-6"><p className="text-muted-foreground">Loading…</p></div>;
+  const { getContact, getCompany, deals, softDeleteContact } = useCrm();
+  const { selectedView } = useUserView();
+  const [showDelete, setShowDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const contact = getContact(id || '');
   if (!contact) return <div className="p-6"><p className="text-muted-foreground">Contact not found</p></div>;
 
   const company = getCompany(contact.company_id || '');
   const contactDeals = deals.filter(d => d.primary_contact_id === contact.id);
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      await softDeleteContact(contact.id, selectedView === 'COEX' ? undefined : selectedView);
+      toast.success('Contact deleted');
+      navigate('/contacts');
+    } catch {
+      toast.error('Failed to delete contact');
+    } finally {
+      setDeleting(false);
+      setShowDelete(false);
+    }
+  };
 
   const logActivityUrl = `/activities/new?contact_id=${contact.id}${contact.company_id ? `&company_id=${contact.company_id}` : ''}`;
 
@@ -25,14 +44,23 @@ const ContactDetailPage = () => {
         <ArrowLeft size={16} /> Back
       </button>
 
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-          <User size={20} className="text-primary" />
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+            <User size={20} className="text-primary" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">{contact.full_name}</h1>
+            <p className="text-sm text-muted-foreground">{contact.role_or_title} at {company?.company_name}</p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{contact.full_name}</h1>
-          <p className="text-sm text-muted-foreground">{contact.role_or_title} at {company?.company_name}</p>
-        </div>
+        <button
+          onClick={() => setShowDelete(true)}
+          className="p-2 rounded-md border border-input text-muted-foreground hover:text-destructive hover:border-destructive/50 transition-colors"
+          title="Delete contact"
+        >
+          <Trash2 size={16} />
+        </button>
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
@@ -63,6 +91,16 @@ const ContactDetailPage = () => {
       <ActivityTimeline
         contactId={contact.id}
         onLogActivity={() => navigate(logActivityUrl)}
+      />
+
+      <ConfirmDeleteModal
+        open={showDelete}
+        title="Delete Contact"
+        description={`"${contact.full_name}" will be soft-deleted and hidden from active views.`}
+        warning="Historical links to deals and activities will be preserved. You can restore from the Deleted Items page."
+        onConfirm={handleDelete}
+        onCancel={() => setShowDelete(false)}
+        loading={deleting}
       />
     </div>
   );

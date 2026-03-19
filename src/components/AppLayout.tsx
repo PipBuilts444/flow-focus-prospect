@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Kanban, List, Building2, Users, TrendingUp, ChevronLeft, ChevronRight, ChevronDown, CalendarPlus } from 'lucide-react';
+import { LayoutDashboard, Kanban, List, Building2, Users, TrendingUp, ChevronLeft, ChevronRight, ChevronDown, CalendarPlus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useUserView, OWNERS, UserView } from '@/context/UserViewContext';
 import {
@@ -18,6 +18,7 @@ const navItems = [
   { to: '/companies', icon: Building2, label: 'Companies' },
   { to: '/contacts', icon: Users, label: 'Contacts' },
   { to: '/forecast', icon: TrendingUp, label: 'Forecast' },
+  { to: '/deleted', icon: Trash2, label: 'Deleted Items' },
 ];
 
 const VIEW_OPTIONS: { value: UserView; label: string; subtitle?: string }[] = [

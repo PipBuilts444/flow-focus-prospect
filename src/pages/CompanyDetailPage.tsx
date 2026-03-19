@@ -1,13 +1,20 @@
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCrm } from '@/context/CrmContext';
-import { ArrowLeft, Building2 } from 'lucide-react';
+import { ArrowLeft, Building2, Trash2 } from 'lucide-react';
 import { formatGBP } from '@/lib/currency';
 import ActivityTimeline from '@/components/ActivityTimeline';
+import ConfirmDeleteModal from '@/components/ConfirmDeleteModal';
+import { toast } from 'sonner';
+import { useUserView } from '@/context/UserViewContext';
 
 const CompanyDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { getCompany, getDealsForCompany, getContactsForCompany, loading } = useCrm();
+  const { getCompany, getDealsForCompany, getContactsForCompany, softDeleteCompany, canDeleteCompany, loading } = useCrm();
+  const { selectedView } = useUserView();
+  const [showDelete, setShowDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   if (loading) return <div className="p-6"><p className="text-muted-foreground">Loading…</p></div>;
 
@@ -16,6 +23,21 @@ const CompanyDetailPage = () => {
 
   const companyDeals = getDealsForCompany(company.id);
   const companyContacts = getContactsForCompany(company.id);
+  const deleteCheck = canDeleteCompany(company.id);
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      await softDeleteCompany(company.id, selectedView === 'COEX' ? undefined : selectedView);
+      toast.success('Company deleted');
+      navigate('/companies');
+    } catch {
+      toast.error('Failed to delete company');
+    } finally {
+      setDeleting(false);
+      setShowDelete(false);
+    }
+  };
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6">
@@ -23,13 +45,31 @@ const CompanyDetailPage = () => {
         <ArrowLeft size={16} /> Back
       </button>
 
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-          <Building2 size={20} className="text-primary" />
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+            <Building2 size={20} className="text-primary" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">{company.company_name}</h1>
+            <p className="text-sm text-muted-foreground">{company.industry} · {company.website}</p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{company.company_name}</h1>
-          <p className="text-sm text-muted-foreground">{company.industry} · {company.website}</p>
+        <div className="flex items-center gap-2">
+          {!deleteCheck.canDelete && (
+            <span className="text-xs text-muted-foreground max-w-[200px]">{deleteCheck.reason}</span>
+          )}
+          <button
+            onClick={() => deleteCheck.canDelete ? setShowDelete(true) : toast.error(deleteCheck.reason || 'Cannot delete this company')}
+            className={`p-2 rounded-md border border-input transition-colors ${
+              deleteCheck.canDelete
+                ? 'text-muted-foreground hover:text-destructive hover:border-destructive/50'
+                : 'text-muted-foreground/40 cursor-not-allowed'
+            }`}
+            title={deleteCheck.canDelete ? 'Delete company' : deleteCheck.reason}
+          >
+            <Trash2 size={16} />
+          </button>
         </div>
       </div>
 
@@ -86,6 +126,16 @@ const CompanyDetailPage = () => {
       <ActivityTimeline
         companyId={company.id}
         onLogActivity={() => navigate(`/activities/new?company_id=${company.id}`)}
+      />
+
+      <ConfirmDeleteModal
+        open={showDelete}
+        title="Delete Company"
+        description={`"${company.company_name}" will be soft-deleted and hidden from active views.`}
+        warning="You can restore it from the Deleted Items page."
+        onConfirm={handleDelete}
+        onCancel={() => setShowDelete(false)}
+        loading={deleting}
       />
     </div>
   );

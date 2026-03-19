@@ -1,9 +1,13 @@
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCrm } from '@/context/CrmContext';
-import { ArrowLeft, Building2, User, Calendar, AlertTriangle, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Building2, User, Calendar, AlertTriangle, TrendingUp, Trash2 } from 'lucide-react';
 import { format, addMonths } from 'date-fns';
 import { formatGBP } from '@/lib/currency';
 import ActivityTimeline from '@/components/ActivityTimeline';
+import ConfirmDeleteModal from '@/components/ConfirmDeleteModal';
+import { toast } from 'sonner';
+import { useUserView } from '@/context/UserViewContext';
 
 const healthLabel: Record<string, { text: string; cls: string }> = {
   green: { text: 'Healthy', cls: 'bg-health-green/15 text-health-green' },
@@ -14,7 +18,10 @@ const healthLabel: Record<string, { text: string; cls: string }> = {
 const DealDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { getDeal, getCompany, getContact, getDealHealth } = useCrm();
+  const { getDeal, getCompany, getContact, getDealHealth, softDeleteDeal } = useCrm();
+  const { selectedView } = useUserView();
+  const [showDelete, setShowDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const deal = getDeal(id || '');
   if (!deal) return <div className="p-6"><p className="text-muted-foreground">Deal not found</p></div>;
@@ -23,6 +30,20 @@ const DealDetailPage = () => {
   const contact = getContact(deal.primary_contact_id || '');
   const health = getDealHealth(deal);
   const hl = healthLabel[health];
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      await softDeleteDeal(deal.id, selectedView === 'COEX' ? undefined : selectedView);
+      toast.success('Deal deleted');
+      navigate('/deals');
+    } catch {
+      toast.error('Failed to delete deal');
+    } finally {
+      setDeleting(false);
+      setShowDelete(false);
+    }
+  };
 
   const monthlyRevenue: { month: string; amount: number }[] = [];
   if (deal.expected_start_date && deal.delivery_duration_months > 0) {
@@ -58,9 +79,18 @@ const DealDetailPage = () => {
             <span className="text-xs px-2 py-0.5 rounded-full bg-accent text-accent-foreground">{deal.stage}</span>
           </div>
         </div>
-        <div className="text-right">
-          <p className="text-2xl font-bold text-foreground">{formatGBP(deal.value)}</p>
-          <p className="text-sm text-muted-foreground">Weighted: {formatGBP(deal.weighted_value || 0)}</p>
+        <div className="flex items-start gap-3">
+          <div className="text-right">
+            <p className="text-2xl font-bold text-foreground">{formatGBP(deal.value)}</p>
+            <p className="text-sm text-muted-foreground">Weighted: {formatGBP(deal.weighted_value || 0)}</p>
+          </div>
+          <button
+            onClick={() => setShowDelete(true)}
+            className="p-2 rounded-md border border-input text-muted-foreground hover:text-destructive hover:border-destructive/50 transition-colors"
+            title="Delete deal"
+          >
+            <Trash2 size={16} />
+          </button>
         </div>
       </div>
 
@@ -136,6 +166,16 @@ const DealDetailPage = () => {
       <ActivityTimeline
         dealId={deal.id}
         onLogActivity={() => navigate(logActivityUrl)}
+      />
+
+      <ConfirmDeleteModal
+        open={showDelete}
+        title="Delete Deal"
+        description={`"${deal.deal_name}" will be soft-deleted and removed from all views.`}
+        warning="This deal will be excluded from pipeline, forecast, and dashboard calculations. You can restore it from the Deleted Items page."
+        onConfirm={handleDelete}
+        onCancel={() => setShowDelete(false)}
+        loading={deleting}
       />
     </div>
   );
