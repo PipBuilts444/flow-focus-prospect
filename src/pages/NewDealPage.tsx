@@ -6,6 +6,7 @@ import type { DealStage, ForecastCategory, DealType } from '@/types/crm';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { ArrowLeft, Building2, User, Briefcase, ChevronDown } from 'lucide-react';
+import { formatGBP, formatInputDisplay, stripFormatting } from '@/lib/currency';
 
 const OPEN_STAGES = DEAL_STAGES.filter(s => s !== 'Closed Won' && s !== 'Closed Lost');
 
