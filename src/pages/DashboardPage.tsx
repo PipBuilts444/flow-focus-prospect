@@ -1,4 +1,5 @@
-import { useCrm } from '@/context/CrmContext';
+import { useFilteredCrm } from '@/hooks/useFilteredCrm';
+import { useUserView } from '@/context/UserViewContext';
 import { format, isAfter, isBefore, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter } from 'date-fns';
 import { TrendingUp, AlertTriangle, DollarSign, Target, CheckCircle2, XCircle, Clock } from 'lucide-react';
 
