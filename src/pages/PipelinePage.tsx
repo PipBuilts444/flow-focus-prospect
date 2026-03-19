@@ -1,8 +1,7 @@
 import { useFilteredCrm } from '@/hooks/useFilteredCrm';
-import { DEAL_STAGES, DealStage } from '@/types/crm';
+import { DEAL_STAGES } from '@/types/crm';
 import { useNavigate } from 'react-router-dom';
-
-const formatCurrency = (v: number) => `£${(v / 1000).toFixed(0)}k`;
+import { formatGBP, formatGBPCompact } from '@/lib/currency';
 
 const healthDot: Record<string, string> = {
   green: 'bg-health-green',
@@ -35,7 +34,7 @@ const PipelinePage = () => {
                     <span className="text-xs font-semibold text-foreground uppercase tracking-wide">{stage}</span>
                     <span className="text-xs text-muted-foreground">{stageDeals.length}</span>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-0.5">{formatCurrency(total)}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{formatGBPCompact(total)}</p>
                 </div>
                 <div className="flex-1 overflow-y-auto p-2 space-y-2 scrollbar-thin">
                   {stageDeals.map(deal => {
@@ -53,7 +52,7 @@ const PipelinePage = () => {
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">{company?.company_name}</p>
                         <div className="flex items-center justify-between mt-2">
-                          <span className="text-sm font-semibold text-card-foreground">£{deal.value.toLocaleString()}</span>
+                          <span className="text-sm font-semibold text-card-foreground">{formatGBP(deal.value)}</span>
                           <span className="text-xs text-muted-foreground">{deal.expected_close_date}</span>
                         </div>
                         <div className="flex items-center justify-between mt-1.5">

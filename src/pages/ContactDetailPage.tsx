@@ -48,7 +48,7 @@ const ContactDetailPage = () => {
             {contactDeals.map(d => (
               <div key={d.id} className="flex items-center justify-between text-sm p-2 rounded hover:bg-accent/50 cursor-pointer transition-colors" onClick={() => navigate(`/deals/${d.id}`)}>
                 <span className="font-medium text-card-foreground">{d.deal_name}</span>
-                <span className="text-muted-foreground">£{d.value.toLocaleString()}</span>
+                <span className="text-muted-foreground">{formatGBP(d.value)}</span>
               </div>
             ))}
             {contactDeals.length === 0 && <p className="text-sm text-muted-foreground">No deals linked</p>}

@@ -3,6 +3,7 @@ import { useUserView } from '@/context/UserViewContext';
 import { useMemo } from 'react';
 import { format, addMonths, startOfMonth, isSameMonth } from 'date-fns';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { formatGBP, formatGBPCompact } from '@/lib/currency';
 
 const ForecastPage = () => {
   const { deals, loading } = useFilteredCrm();
@@ -60,19 +61,19 @@ const ForecastPage = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-card rounded-lg border border-border p-4">
           <p className="text-xs text-muted-foreground">Pipeline</p>
-          <p className="text-xl font-bold text-card-foreground">£{totals.pipeline.toLocaleString()}</p>
+          <p className="text-xl font-bold text-card-foreground">{formatGBP(totals.pipeline)}</p>
         </div>
         <div className="bg-card rounded-lg border border-border p-4">
           <p className="text-xs text-muted-foreground">Best Case</p>
-          <p className="text-xl font-bold text-card-foreground">£{totals.bestCase.toLocaleString()}</p>
+          <p className="text-xl font-bold text-card-foreground">{formatGBP(totals.bestCase)}</p>
         </div>
         <div className="bg-card rounded-lg border border-border p-4">
           <p className="text-xs text-muted-foreground">Commit</p>
-          <p className="text-xl font-bold text-card-foreground">£{totals.commit.toLocaleString()}</p>
+          <p className="text-xl font-bold text-card-foreground">{formatGBP(totals.commit)}</p>
         </div>
         <div className="bg-card rounded-lg border border-border p-4">
           <p className="text-xs text-muted-foreground">Closed Won</p>
-          <p className="text-xl font-bold text-card-foreground">£{totals.closedWon.toLocaleString()}</p>
+          <p className="text-xl font-bold text-card-foreground">{formatGBP(totals.closedWon)}</p>
         </div>
       </div>
 
@@ -81,8 +82,8 @@ const ForecastPage = () => {
           <BarChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" />
             <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-            <YAxis tick={{ fontSize: 12 }} tickFormatter={v => `£${(v / 1000).toFixed(0)}k`} />
-            <Tooltip formatter={(v: number) => `£${v.toLocaleString()}`} />
+            <YAxis tick={{ fontSize: 12 }} tickFormatter={v => formatGBPCompact(v)} />
+            <Tooltip formatter={(v: number) => formatGBP(v)} />
             <Legend />
             <Bar dataKey="Pipeline" fill="hsl(220,14%,80%)" stackId="a" />
             <Bar dataKey="Best Case" fill="hsl(220,70%,60%)" stackId="a" />
@@ -108,11 +109,11 @@ const ForecastPage = () => {
             {chartData.map(row => (
               <tr key={row.month} className="border-b border-border last:border-0">
                 <td className="px-4 py-2.5 text-card-foreground font-medium">{row.month}</td>
-                <td className="px-4 py-2.5 text-right text-muted-foreground">£{row.Pipeline.toLocaleString()}</td>
-                <td className="px-4 py-2.5 text-right text-muted-foreground">£{row['Best Case'].toLocaleString()}</td>
-                <td className="px-4 py-2.5 text-right text-muted-foreground">£{row.Commit.toLocaleString()}</td>
-                <td className="px-4 py-2.5 text-right text-muted-foreground">£{row['Closed Won'].toLocaleString()}</td>
-                <td className="px-4 py-2.5 text-right font-medium text-card-foreground">£{(row.Pipeline + row['Best Case'] + row.Commit + row['Closed Won']).toLocaleString()}</td>
+                <td className="px-4 py-2.5 text-right text-muted-foreground">{formatGBP(row.Pipeline)}</td>
+                <td className="px-4 py-2.5 text-right text-muted-foreground">{formatGBP(row['Best Case'])}</td>
+                <td className="px-4 py-2.5 text-right text-muted-foreground">{formatGBP(row.Commit)}</td>
+                <td className="px-4 py-2.5 text-right text-muted-foreground">{formatGBP(row['Closed Won'])}</td>
+                <td className="px-4 py-2.5 text-right font-medium text-card-foreground">{formatGBP(row.Pipeline + row['Best Case'] + row.Commit + row['Closed Won'])}</td>
               </tr>
             ))}
           </tbody>

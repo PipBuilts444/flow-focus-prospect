@@ -123,7 +123,7 @@ const DealDetailPage = () => {
             {monthlyRevenue.map(m => (
               <div key={m.month} className="bg-secondary rounded-md p-3 text-center">
                 <p className="text-xs text-muted-foreground">{m.month}</p>
-                <p className="text-sm font-semibold text-card-foreground mt-1">£{m.amount.toLocaleString()}</p>
+                <p className="text-sm font-semibold text-card-foreground mt-1">{formatGBP(m.amount)}</p>
               </div>
             ))}
           </div>
