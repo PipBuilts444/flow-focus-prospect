@@ -48,7 +48,7 @@ const DashboardPage = () => {
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
-        <p className="text-sm text-muted-foreground">Pipeline overview · {format(now, 'MMMM yyyy')}</p>
+        <p className="text-sm text-muted-foreground">{selectedView === 'COEX' ? 'COEX overview' : selectedView} · {format(now, 'MMMM yyyy')}</p>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

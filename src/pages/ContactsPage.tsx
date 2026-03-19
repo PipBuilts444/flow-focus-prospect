@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Search } from 'lucide-react';
 
 const ContactsPage = () => {
-  const { contacts, getCompany, deals, loading } = useCrm();
+  const { contacts, getCompany, deals, loading } = useFilteredCrm();
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
 

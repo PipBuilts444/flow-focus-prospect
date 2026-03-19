@@ -11,7 +11,7 @@ const healthDot: Record<string, string> = {
 };
 
 const DealsListPage = () => {
-  const { deals, getCompany, getDealHealth, loading } = useCrm();
+  const { deals, getCompany, getDealHealth, loading } = useFilteredCrm();
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [stageFilter, setStageFilter] = useState<string>('all');

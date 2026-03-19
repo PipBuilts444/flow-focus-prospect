@@ -1,12 +1,12 @@
-import { useCrm } from '@/context/CrmContext';
-import { useState, useMemo } from 'react';
+import { useFilteredCrm } from '@/hooks/useFilteredCrm';
+import { useUserView } from '@/context/UserViewContext';
+import { useMemo } from 'react';
 import { format, addMonths, startOfMonth, isSameMonth } from 'date-fns';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const ForecastPage = () => {
-  const { deals, loading } = useCrm();
-  const [ownerFilter, setOwnerFilter] = useState('all');
-  const owners = [...new Set(deals.map(d => d.owner).filter(Boolean))];
+  const { deals, loading } = useFilteredCrm();
+  const { selectedView } = useUserView();
 
   const months = useMemo(() => {
     const result: Date[] = [];
