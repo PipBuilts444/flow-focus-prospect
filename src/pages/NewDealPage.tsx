@@ -179,7 +179,7 @@ const NewDealPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className={labelClass}>Company Name</label>
-                <input value={newCompanyName} onChange={e => setNewCompanyName(e.target.value)} placeholder="Acme Corp" className={inputClass} />
+                <input value={newCompanyName} onChange={e => setNewCompanyName(e.target.value)} placeholder="Enter company name" className={inputClass} />
               </div>
               <div>
                 <label className={labelClass}>Industry</label>
