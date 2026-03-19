@@ -217,7 +217,7 @@ const NewDealPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className={labelClass}>First Name</label>
-                <input value={newContactFirst} onChange={e => setNewContactFirst(e.target.value)} placeholder="Jane" className={inputClass} />
+                <input value={newContactFirst} onChange={e => setNewContactFirst(e.target.value)} placeholder="First name" className={inputClass} />
               </div>
               <div>
                 <label className={labelClass}>Last Name</label>
