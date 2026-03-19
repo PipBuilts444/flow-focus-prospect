@@ -1,4 +1,4 @@
-import { useCrm } from '@/context/CrmContext';
+import { useFilteredCrm } from '@/hooks/useFilteredCrm';
 import { DEAL_STAGES, DealStage } from '@/types/crm';
 import { useNavigate } from 'react-router-dom';
 
