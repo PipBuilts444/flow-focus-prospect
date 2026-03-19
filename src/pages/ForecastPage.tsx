@@ -1,12 +1,12 @@
-import { useCrm } from '@/context/CrmContext';
-import { useState, useMemo } from 'react';
+import { useFilteredCrm } from '@/hooks/useFilteredCrm';
+import { useUserView } from '@/context/UserViewContext';
+import { useMemo } from 'react';
 import { format, addMonths, startOfMonth, isSameMonth } from 'date-fns';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const ForecastPage = () => {
-  const { deals, loading } = useCrm();
-  const [ownerFilter, setOwnerFilter] = useState('all');
-  const owners = [...new Set(deals.map(d => d.owner).filter(Boolean))];
+  const { deals, loading } = useFilteredCrm();
+  const { selectedView } = useUserView();
 
   const months = useMemo(() => {
     const result: Date[] = [];
@@ -16,12 +16,11 @@ const ForecastPage = () => {
   }, []);
 
   const chartData = useMemo(() => {
-    const filteredDeals = ownerFilter === 'all' ? deals : deals.filter(d => d.owner === ownerFilter);
     return months.map(month => {
       const label = format(month, 'MMM yy');
       let pipeline = 0, bestCase = 0, commit = 0, closedWon = 0;
 
-      filteredDeals.forEach(deal => {
+      deals.forEach(deal => {
         if (!deal.expected_start_date || deal.delivery_duration_months <= 0) return;
         const startDate = new Date(deal.expected_start_date);
         const monthlyAmt = deal.value / deal.delivery_duration_months;
@@ -39,30 +38,23 @@ const ForecastPage = () => {
 
       return { month: label, Pipeline: Math.round(pipeline), 'Best Case': Math.round(bestCase), Commit: Math.round(commit), 'Closed Won': Math.round(closedWon) };
     });
-  }, [deals, months, ownerFilter]);
+  }, [deals, months]);
 
   if (loading) return <div className="p-6"><p className="text-muted-foreground">Loading…</p></div>;
 
-  const filteredDeals = ownerFilter === 'all' ? deals : deals.filter(d => d.owner === ownerFilter);
-  const openDeals = filteredDeals.filter(d => d.status === 'open');
+  const openDeals = deals.filter(d => d.status === 'open');
   const totals = {
     pipeline: openDeals.filter(d => d.forecast_category === 'Pipeline').reduce((s, d) => s + d.value, 0),
     bestCase: openDeals.filter(d => d.forecast_category === 'Best Case').reduce((s, d) => s + d.value, 0),
     commit: openDeals.filter(d => d.forecast_category === 'Commit').reduce((s, d) => s + d.value, 0),
-    closedWon: filteredDeals.filter(d => d.status === 'closed_won').reduce((s, d) => s + d.value, 0),
+    closedWon: deals.filter(d => d.status === 'closed_won').reduce((s, d) => s + d.value, 0),
   };
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Forecast</h1>
-          <p className="text-sm text-muted-foreground">Monthly revenue forecast by category</p>
-        </div>
-        <select value={ownerFilter} onChange={e => setOwnerFilter(e.target.value)} className="text-sm rounded-md border border-input bg-card text-card-foreground px-3 py-2">
-          <option value="all">All Owners</option>
-          {owners.map(o => <option key={o} value={o!}>{o}</option>)}
-        </select>
+      <div>
+        <h1 className="text-2xl font-bold text-foreground">Forecast</h1>
+        <p className="text-sm text-muted-foreground">{selectedView === 'COEX' ? 'All users' : selectedView} · Monthly revenue forecast</p>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

@@ -1,4 +1,5 @@
-import { useCrm } from '@/context/CrmContext';
+import { useFilteredCrm } from '@/hooks/useFilteredCrm';
+import { useUserView } from '@/context/UserViewContext';
 import { format, isAfter, isBefore, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter } from 'date-fns';
 import { TrendingUp, AlertTriangle, DollarSign, Target, CheckCircle2, XCircle, Clock } from 'lucide-react';
 
@@ -15,7 +16,8 @@ const KpiCard = ({ label, value, icon: Icon, variant = 'default' }: { label: str
 );
 
 const DashboardPage = () => {
-  const { deals, getCompany, getDealHealth, loading } = useCrm();
+  const { deals, getCompany, getDealHealth, loading } = useFilteredCrm();
+  const { selectedView } = useUserView();
   const now = new Date();
   const thisMonthStart = startOfMonth(now);
   const thisMonthEnd = endOfMonth(now);
@@ -46,7 +48,7 @@ const DashboardPage = () => {
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
-        <p className="text-sm text-muted-foreground">Pipeline overview · {format(now, 'MMMM yyyy')}</p>
+        <p className="text-sm text-muted-foreground">{selectedView === 'COEX' ? 'COEX overview' : selectedView} · {format(now, 'MMMM yyyy')}</p>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

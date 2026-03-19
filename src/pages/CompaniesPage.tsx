@@ -1,10 +1,10 @@
-import { useCrm } from '@/context/CrmContext';
+import { useFilteredCrm } from '@/hooks/useFilteredCrm';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { Search, Building2 } from 'lucide-react';
 
 const CompaniesPage = () => {
-  const { companies, getDealsForCompany, getContactsForCompany, loading } = useCrm();
+  const { companies, getDealsForCompany, getContactsForCompany, loading } = useFilteredCrm();
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
 

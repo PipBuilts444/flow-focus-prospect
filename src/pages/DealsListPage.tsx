@@ -1,4 +1,4 @@
-import { useCrm } from '@/context/CrmContext';
+import { useFilteredCrm } from '@/hooks/useFilteredCrm';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DEAL_STAGES, FORECAST_CATEGORIES } from '@/types/crm';
@@ -11,7 +11,7 @@ const healthDot: Record<string, string> = {
 };
 
 const DealsListPage = () => {
-  const { deals, getCompany, getDealHealth, loading } = useCrm();
+  const { deals, getCompany, getDealHealth, loading } = useFilteredCrm();
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [stageFilter, setStageFilter] = useState<string>('all');

@@ -1,4 +1,4 @@
-import { useCrm } from '@/context/CrmContext';
+import { useFilteredCrm } from '@/hooks/useFilteredCrm';
 import { DEAL_STAGES, DealStage } from '@/types/crm';
 import { useNavigate } from 'react-router-dom';
 
@@ -11,7 +11,7 @@ const healthDot: Record<string, string> = {
 };
 
 const PipelinePage = () => {
-  const { deals, getCompany, getDealHealth, loading } = useCrm();
+  const { deals, getCompany, getDealHealth, loading } = useFilteredCrm();
   const navigate = useNavigate();
   const openStages = DEAL_STAGES.filter(s => s !== 'Closed Won' && s !== 'Closed Lost');
 
