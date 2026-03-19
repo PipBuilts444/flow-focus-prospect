@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCrm } from '@/context/CrmContext';
 import { ArrowLeft, Building2 } from 'lucide-react';
+import { formatGBP } from '@/lib/currency';
 
 const CompanyDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -73,7 +74,7 @@ const CompanyDetailPage = () => {
               <tr key={d.id} className="border-b border-border last:border-0 hover:bg-accent/50 cursor-pointer transition-colors" onClick={() => navigate(`/deals/${d.id}`)}>
                 <td className="px-3 py-2.5 font-medium text-card-foreground">{d.deal_name}</td>
                 <td className="px-3 py-2.5 text-muted-foreground">{d.stage}</td>
-                <td className="px-3 py-2.5 text-right text-card-foreground">£{d.value.toLocaleString()}</td>
+                <td className="px-3 py-2.5 text-right text-card-foreground">{formatGBP(d.value)}</td>
                 <td className="px-3 py-2.5 text-muted-foreground capitalize">{d.status.replace('_', ' ')}</td>
               </tr>
             ))}

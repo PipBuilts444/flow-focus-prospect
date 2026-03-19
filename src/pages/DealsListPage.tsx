@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DEAL_STAGES, FORECAST_CATEGORIES } from '@/types/crm';
 import { Search, Plus } from 'lucide-react';
+import { formatGBP } from '@/lib/currency';
 
 const healthDot: Record<string, string> = {
   green: 'bg-health-green',
@@ -87,8 +88,8 @@ const DealsListPage = () => {
                     <td className="px-4 py-3 font-medium text-card-foreground">{deal.deal_name}</td>
                     <td className="px-4 py-3 text-muted-foreground">{company?.company_name}</td>
                     <td className="px-4 py-3"><span className="text-xs px-2 py-0.5 rounded-full bg-accent text-accent-foreground">{deal.stage}</span></td>
-                    <td className="px-4 py-3 text-right font-medium text-card-foreground">£{deal.value.toLocaleString()}</td>
-                    <td className="px-4 py-3 text-right text-muted-foreground">£{(deal.weighted_value || 0).toLocaleString()}</td>
+                    <td className="px-4 py-3 text-right font-medium text-card-foreground">{formatGBP(deal.value)}</td>
+                    <td className="px-4 py-3 text-right text-muted-foreground">{formatGBP(deal.weighted_value || 0)}</td>
                     <td className="px-4 py-3 text-muted-foreground">{deal.forecast_category}</td>
                     <td className="px-4 py-3 text-muted-foreground">{deal.expected_close_date}</td>
                     <td className="px-4 py-3 text-muted-foreground">{deal.owner}</td>

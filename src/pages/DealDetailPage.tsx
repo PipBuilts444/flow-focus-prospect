@@ -2,6 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useCrm } from '@/context/CrmContext';
 import { ArrowLeft, Building2, User, Calendar, AlertTriangle, TrendingUp } from 'lucide-react';
 import { format, addMonths } from 'date-fns';
+import { formatGBP } from '@/lib/currency';
 
 const healthLabel: Record<string, { text: string; cls: string }> = {
   green: { text: 'Healthy', cls: 'bg-health-green/15 text-health-green' },
@@ -55,8 +56,8 @@ const DealDetailPage = () => {
           </div>
         </div>
         <div className="text-right">
-          <p className="text-2xl font-bold text-foreground">£{deal.value.toLocaleString()}</p>
-          <p className="text-sm text-muted-foreground">Weighted: £{(deal.weighted_value || 0).toLocaleString()}</p>
+          <p className="text-2xl font-bold text-foreground">{formatGBP(deal.value)}</p>
+          <p className="text-sm text-muted-foreground">Weighted: {formatGBP(deal.weighted_value || 0)}</p>
         </div>
       </div>
 
@@ -122,7 +123,7 @@ const DealDetailPage = () => {
             {monthlyRevenue.map(m => (
               <div key={m.month} className="bg-secondary rounded-md p-3 text-center">
                 <p className="text-xs text-muted-foreground">{m.month}</p>
-                <p className="text-sm font-semibold text-card-foreground mt-1">£{m.amount.toLocaleString()}</p>
+                <p className="text-sm font-semibold text-card-foreground mt-1">{formatGBP(m.amount)}</p>
               </div>
             ))}
           </div>

@@ -1,9 +1,8 @@
 import { useFilteredCrm } from '@/hooks/useFilteredCrm';
 import { useUserView } from '@/context/UserViewContext';
 import { format, isAfter, isBefore, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter } from 'date-fns';
-import { TrendingUp, AlertTriangle, DollarSign, Target, CheckCircle2, XCircle, Clock } from 'lucide-react';
-
-const formatCurrency = (v: number) => `£${v.toLocaleString('en-GB')}`;
+import { TrendingUp, AlertTriangle, PoundSterling, Target, CheckCircle2, XCircle, Clock } from 'lucide-react';
+import { formatGBP } from '@/lib/currency';
 
 const KpiCard = ({ label, value, icon: Icon, variant = 'default' }: { label: string; value: string; icon: any; variant?: string }) => (
   <div className="bg-card rounded-lg border border-border p-5">
@@ -52,15 +51,15 @@ const DashboardPage = () => {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <KpiCard label="Total Pipeline" value={formatCurrency(totalPipeline)} icon={DollarSign} />
-        <KpiCard label="Weighted Pipeline" value={formatCurrency(weightedPipeline)} icon={Target} />
-        <KpiCard label="Commit This Month" value={formatCurrency(commitThisMonth)} icon={TrendingUp} variant="green" />
-        <KpiCard label="Best Case This Month" value={formatCurrency(bestCaseThisMonth)} icon={TrendingUp} />
+        <KpiCard label="Total Pipeline" value={formatGBP(totalPipeline)} icon={PoundSterling} />
+        <KpiCard label="Weighted Pipeline" value={formatGBP(weightedPipeline)} icon={Target} />
+        <KpiCard label="Commit This Month" value={formatGBP(commitThisMonth)} icon={TrendingUp} variant="green" />
+        <KpiCard label="Best Case This Month" value={formatGBP(bestCaseThisMonth)} icon={TrendingUp} />
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <KpiCard label="Closed Won (Q)" value={formatCurrency(closedWonQ.reduce((s, d) => s + d.value, 0))} icon={CheckCircle2} variant="green" />
-        <KpiCard label="Closed Lost (Q)" value={formatCurrency(closedLostQ.reduce((s, d) => s + d.value, 0))} icon={XCircle} variant="red" />
+        <KpiCard label="Closed Won (Q)" value={formatGBP(closedWonQ.reduce((s, d) => s + d.value, 0))} icon={CheckCircle2} variant="green" />
+        <KpiCard label="Closed Lost (Q)" value={formatGBP(closedLostQ.reduce((s, d) => s + d.value, 0))} icon={XCircle} variant="red" />
         <KpiCard label="Overdue Actions" value={String(overdueActions.length)} icon={AlertTriangle} variant={overdueActions.length > 0 ? 'amber' : 'default'} />
         <KpiCard label="Slipped Deals" value={String(slippedDeals.length)} icon={Clock} variant={slippedDeals.length > 0 ? 'amber' : 'default'} />
       </div>
