@@ -14,7 +14,235 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      companies: {
+        Row: {
+          account_owner: string | null
+          company_name: string
+          created_at: string
+          id: string
+          industry: string | null
+          notes: string | null
+          status: Database["public"]["Enums"]["company_status"]
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          account_owner?: string | null
+          company_name: string
+          created_at?: string
+          id?: string
+          industry?: string | null
+          notes?: string | null
+          status?: Database["public"]["Enums"]["company_status"]
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          account_owner?: string | null
+          company_name?: string
+          created_at?: string
+          id?: string
+          industry?: string | null
+          notes?: string | null
+          status?: Database["public"]["Enums"]["company_status"]
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
+      contacts: {
+        Row: {
+          company_id: string | null
+          created_at: string
+          email: string | null
+          first_name: string
+          full_name: string | null
+          id: string
+          last_name: string
+          notes: string | null
+          phone: string | null
+          role_or_title: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string
+          email?: string | null
+          first_name?: string
+          full_name?: string | null
+          id?: string
+          last_name?: string
+          notes?: string | null
+          phone?: string | null
+          role_or_title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string
+          email?: string | null
+          first_name?: string
+          full_name?: string | null
+          id?: string
+          last_name?: string
+          notes?: string | null
+          phone?: string | null
+          role_or_title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contacts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      deal_revenue_schedule: {
+        Row: {
+          created_at: string
+          deal_id: string
+          id: string
+          month: string
+          revenue_amount: number
+        }
+        Insert: {
+          created_at?: string
+          deal_id: string
+          id?: string
+          month: string
+          revenue_amount?: number
+        }
+        Update: {
+          created_at?: string
+          deal_id?: string
+          id?: string
+          month?: string
+          revenue_amount?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deal_revenue_schedule_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      deals: {
+        Row: {
+          blocker_or_risk: string | null
+          company_id: string | null
+          confidence_percent: number
+          created_at: string
+          deal_name: string
+          deal_type: Database["public"]["Enums"]["deal_type"]
+          delivery_duration_months: number
+          expected_close_date: string | null
+          expected_start_date: string | null
+          forecast_category: Database["public"]["Enums"]["forecast_category"]
+          id: string
+          latest_close_date: string | null
+          lost_date: string | null
+          lost_reason: string | null
+          next_action: string | null
+          next_action_date: string | null
+          notes: string | null
+          original_close_date: string | null
+          owner: string | null
+          primary_contact_id: string | null
+          revenue_profile_type: Database["public"]["Enums"]["revenue_profile"]
+          slip_count: number
+          source: string | null
+          stage: Database["public"]["Enums"]["deal_stage"]
+          status: Database["public"]["Enums"]["deal_status"]
+          updated_at: string
+          value: number
+          weighted_value: number | null
+          won_date: string | null
+        }
+        Insert: {
+          blocker_or_risk?: string | null
+          company_id?: string | null
+          confidence_percent?: number
+          created_at?: string
+          deal_name: string
+          deal_type?: Database["public"]["Enums"]["deal_type"]
+          delivery_duration_months?: number
+          expected_close_date?: string | null
+          expected_start_date?: string | null
+          forecast_category?: Database["public"]["Enums"]["forecast_category"]
+          id?: string
+          latest_close_date?: string | null
+          lost_date?: string | null
+          lost_reason?: string | null
+          next_action?: string | null
+          next_action_date?: string | null
+          notes?: string | null
+          original_close_date?: string | null
+          owner?: string | null
+          primary_contact_id?: string | null
+          revenue_profile_type?: Database["public"]["Enums"]["revenue_profile"]
+          slip_count?: number
+          source?: string | null
+          stage?: Database["public"]["Enums"]["deal_stage"]
+          status?: Database["public"]["Enums"]["deal_status"]
+          updated_at?: string
+          value?: number
+          weighted_value?: number | null
+          won_date?: string | null
+        }
+        Update: {
+          blocker_or_risk?: string | null
+          company_id?: string | null
+          confidence_percent?: number
+          created_at?: string
+          deal_name?: string
+          deal_type?: Database["public"]["Enums"]["deal_type"]
+          delivery_duration_months?: number
+          expected_close_date?: string | null
+          expected_start_date?: string | null
+          forecast_category?: Database["public"]["Enums"]["forecast_category"]
+          id?: string
+          latest_close_date?: string | null
+          lost_date?: string | null
+          lost_reason?: string | null
+          next_action?: string | null
+          next_action_date?: string | null
+          notes?: string | null
+          original_close_date?: string | null
+          owner?: string | null
+          primary_contact_id?: string | null
+          revenue_profile_type?: Database["public"]["Enums"]["revenue_profile"]
+          slip_count?: number
+          source?: string | null
+          stage?: Database["public"]["Enums"]["deal_stage"]
+          status?: Database["public"]["Enums"]["deal_status"]
+          updated_at?: string
+          value?: number
+          weighted_value?: number | null
+          won_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deals_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deals_primary_contact_id_fkey"
+            columns: ["primary_contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +251,31 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      company_status: "active" | "inactive" | "prospect"
+      deal_stage:
+        | "Lead"
+        | "Qualified"
+        | "Discovery"
+        | "Proposal"
+        | "Commercials / Procurement"
+        | "Verbal Commit"
+        | "Closed Won"
+        | "Closed Lost"
+      deal_status: "open" | "closed_won" | "closed_lost"
+      deal_type:
+        | "Discovery"
+        | "PoC"
+        | "MVP"
+        | "Implementation"
+        | "Retainer"
+        | "Managed Service"
+      forecast_category:
+        | "Pipeline"
+        | "Best Case"
+        | "Commit"
+        | "Closed Won"
+        | "Closed Lost"
+      revenue_profile: "equal_spread" | "custom"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +402,35 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      company_status: ["active", "inactive", "prospect"],
+      deal_stage: [
+        "Lead",
+        "Qualified",
+        "Discovery",
+        "Proposal",
+        "Commercials / Procurement",
+        "Verbal Commit",
+        "Closed Won",
+        "Closed Lost",
+      ],
+      deal_status: ["open", "closed_won", "closed_lost"],
+      deal_type: [
+        "Discovery",
+        "PoC",
+        "MVP",
+        "Implementation",
+        "Retainer",
+        "Managed Service",
+      ],
+      forecast_category: [
+        "Pipeline",
+        "Best Case",
+        "Commit",
+        "Closed Won",
+        "Closed Lost",
+      ],
+      revenue_profile: ["equal_spread", "custom"],
+    },
   },
 } as const
