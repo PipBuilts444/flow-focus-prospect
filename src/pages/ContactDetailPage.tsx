@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCrm } from '@/context/CrmContext';
-import { ArrowLeft, User, Trash2 } from 'lucide-react';
+import { ArrowLeft, User, Trash2, Pencil } from 'lucide-react';
 import { formatGBP } from '@/lib/currency';
 import ActivityTimeline from '@/components/ActivityTimeline';
 import ConfirmDeleteModal from '@/components/ConfirmDeleteModal';
+import EditContactModal from '@/components/EditContactModal';
 import { toast } from 'sonner';
 import { useUserView } from '@/context/UserViewContext';
 
@@ -14,6 +15,7 @@ const ContactDetailPage = () => {
   const { getContact, getCompany, deals, softDeleteContact } = useCrm();
   const { selectedView } = useUserView();
   const [showDelete, setShowDelete] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   const contact = getContact(id || '');
@@ -54,22 +56,31 @@ const ContactDetailPage = () => {
             <p className="text-sm text-muted-foreground">{contact.role_or_title} at {company?.company_name}</p>
           </div>
         </div>
-        <button
-          onClick={() => setShowDelete(true)}
-          className="p-2 rounded-md border border-input text-muted-foreground hover:text-destructive hover:border-destructive/50 transition-colors"
-          title="Delete contact"
-        >
-          <Trash2 size={16} />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowEdit(true)}
+            className="p-2 rounded-md border border-input text-muted-foreground hover:text-primary hover:border-primary/50 transition-colors"
+            title="Edit contact"
+          >
+            <Pencil size={16} />
+          </button>
+          <button
+            onClick={() => setShowDelete(true)}
+            className="p-2 rounded-md border border-input text-muted-foreground hover:text-destructive hover:border-destructive/50 transition-colors"
+            title="Delete contact"
+          >
+            <Trash2 size={16} />
+          </button>
+        </div>
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
         <div className="bg-card rounded-lg border border-border p-5 space-y-3">
           <h2 className="text-sm font-semibold text-card-foreground">Contact Info</h2>
           <div className="space-y-2 text-sm">
-            <div><span className="text-muted-foreground">Email:</span> <span className="text-card-foreground ml-1">{contact.email}</span></div>
-            <div><span className="text-muted-foreground">Phone:</span> <span className="text-card-foreground ml-1">{contact.phone}</span></div>
-            <div><span className="text-muted-foreground">Company:</span> <span className="text-primary ml-1 cursor-pointer hover:underline" onClick={() => navigate(`/companies/${contact.company_id}`)}>{company?.company_name}</span></div>
+            <div><span className="text-muted-foreground">Email:</span> <span className="text-card-foreground ml-1">{contact.email || '—'}</span></div>
+            <div><span className="text-muted-foreground">Phone:</span> <span className="text-card-foreground ml-1">{contact.phone || '—'}</span></div>
+            <div><span className="text-muted-foreground">Company:</span> {company ? <span className="text-primary ml-1 cursor-pointer hover:underline" onClick={() => navigate(`/companies/${contact.company_id}`)}>{company.company_name}</span> : <span className="text-card-foreground ml-1">—</span>}</div>
             <div><span className="text-muted-foreground">Notes:</span> <span className="text-card-foreground ml-1">{contact.notes || '—'}</span></div>
           </div>
         </div>
@@ -92,6 +103,8 @@ const ContactDetailPage = () => {
         contactId={contact.id}
         onLogActivity={() => navigate(logActivityUrl)}
       />
+
+      <EditContactModal open={showEdit} contact={contact} onClose={() => setShowEdit(false)} />
 
       <ConfirmDeleteModal
         open={showDelete}
