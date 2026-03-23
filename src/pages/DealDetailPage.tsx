@@ -3,12 +3,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useCrm } from '@/context/CrmContext';
 import { DEAL_STAGES } from '@/types/crm';
 import type { DealStage } from '@/types/crm';
-import { ArrowLeft, Building2, User, Calendar, AlertTriangle, TrendingUp, Trash2, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Building2, User, Calendar, AlertTriangle, TrendingUp, Trash2, ChevronRight, Pencil } from 'lucide-react';
 import { format, addMonths } from 'date-fns';
 import { formatGBP } from '@/lib/currency';
 import ActivityTimeline from '@/components/ActivityTimeline';
 import ConfirmDeleteModal from '@/components/ConfirmDeleteModal';
 import StageGateModal from '@/components/StageGateModal';
+import EditDealModal from '@/components/EditDealModal';
 import { STAGE_FIELDS } from '@/lib/stageRequirements';
 import { toast } from 'sonner';
 import { useUserView } from '@/context/UserViewContext';
@@ -27,6 +28,7 @@ const DealDetailPage = () => {
   const { getDeal, getCompany, getContact, getDealHealth, softDeleteDeal, updateDeal } = useCrm();
   const { selectedView } = useUserView();
   const [showDelete, setShowDelete] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [stageTarget, setStageTarget] = useState<DealStage | null>(null);
   const [stageLoading, setStageLoading] = useState(false);
@@ -112,13 +114,16 @@ const DealDetailPage = () => {
             <span className="text-xs px-2 py-0.5 rounded-full bg-accent text-accent-foreground">{deal.stage}</span>
           </div>
         </div>
-        <div className="flex items-start gap-3">
+        <div className="flex items-start gap-2">
           {deal.value > 0 && (
             <div className="text-right">
               <p className="text-2xl font-bold text-foreground">{formatGBP(deal.value)}</p>
               <p className="text-sm text-muted-foreground">Weighted: {formatGBP(deal.weighted_value || 0)}</p>
             </div>
           )}
+          <button onClick={() => setShowEdit(true)} className="p-2 rounded-md border border-input text-muted-foreground hover:text-primary hover:border-primary/50 transition-colors" title="Edit deal">
+            <Pencil size={16} />
+          </button>
           <button onClick={() => setShowDelete(true)} className="p-2 rounded-md border border-input text-muted-foreground hover:text-destructive hover:border-destructive/50 transition-colors" title="Delete deal">
             <Trash2 size={16} />
           </button>
@@ -276,6 +281,8 @@ const DealDetailPage = () => {
           loading={stageLoading}
         />
       )}
+
+      <EditDealModal open={showEdit} deal={deal} onClose={() => setShowEdit(false)} />
     </div>
   );
 };
