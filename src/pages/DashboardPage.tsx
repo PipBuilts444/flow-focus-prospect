@@ -60,6 +60,20 @@ const DashboardPage = () => {
   const overdueActions = openDeals.filter(d => d.next_action_date && isBefore(new Date(d.next_action_date), now));
   const slippedDeals = openDeals.filter(d => d.slip_count > 0);
 
+  // === MARGIN METRICS ===
+  const pipelineMargin = openDeals.reduce((s, d) => s + ((d as any).gross_margin_value || 0), 0);
+  const weightedMargin = openDeals.reduce((s, d) => {
+    const margin = (d as any).gross_margin_value || 0;
+    return s + (margin * (d.confidence_percent / 100));
+  }, 0);
+  const closedWonMargin = closedWonDeals.reduce((s, d) => s + ((d as any).gross_margin_value || 0), 0);
+  const dealsWithMargin = [...openDeals, ...closedWonDeals].filter(d => (d as any).estimated_delivery_cost > 0);
+  const avgMarginPercent = dealsWithMargin.length > 0
+    ? dealsWithMargin.reduce((s, d) => s + ((d as any).gross_margin_percent || 0), 0) / dealsWithMargin.length
+    : 0;
+  const lowMarginDeals = openDeals.filter(d => (d as any).estimated_delivery_cost > 0 && (d as any).gross_margin_percent < 20);
+  const negativeMarginDeals = openDeals.filter(d => (d as any).estimated_delivery_cost > 0 && (d as any).gross_margin_percent < 0);
+
   // Activity widgets
   const filteredActivities = selectedView === 'COEX'
     ? activities
