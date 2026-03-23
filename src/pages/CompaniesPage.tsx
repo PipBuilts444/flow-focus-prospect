@@ -65,6 +65,7 @@ const CompaniesPage = () => {
           );
         })}
       </div>
+      <AddCompanyModal open={showAdd} onClose={() => setShowAdd(false)} />
     </div>
   );
 };

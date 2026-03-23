@@ -64,6 +64,7 @@ const ContactsPage = () => {
           </tbody>
         </table>
       </div>
+      <AddContactModal open={showAdd} onClose={() => setShowAdd(false)} />
     </div>
   );
 };
