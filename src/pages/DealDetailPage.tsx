@@ -1,11 +1,15 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCrm } from '@/context/CrmContext';
-import { ArrowLeft, Building2, User, Calendar, AlertTriangle, TrendingUp, Trash2 } from 'lucide-react';
+import { DEAL_STAGES } from '@/types/crm';
+import type { DealStage } from '@/types/crm';
+import { ArrowLeft, Building2, User, Calendar, AlertTriangle, TrendingUp, Trash2, ChevronRight } from 'lucide-react';
 import { format, addMonths } from 'date-fns';
 import { formatGBP } from '@/lib/currency';
 import ActivityTimeline from '@/components/ActivityTimeline';
 import ConfirmDeleteModal from '@/components/ConfirmDeleteModal';
+import StageGateModal from '@/components/StageGateModal';
+import { STAGE_FIELDS } from '@/lib/stageRequirements';
 import { toast } from 'sonner';
 import { useUserView } from '@/context/UserViewContext';
 
@@ -15,13 +19,17 @@ const healthLabel: Record<string, { text: string; cls: string }> = {
   red: { text: 'Critical', cls: 'bg-health-red/15 text-health-red' },
 };
 
+const STAGE_ORDER = DEAL_STAGES.filter(s => s !== 'Closed Won' && s !== 'Closed Lost');
+
 const DealDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { getDeal, getCompany, getContact, getDealHealth, softDeleteDeal } = useCrm();
+  const { getDeal, getCompany, getContact, getDealHealth, softDeleteDeal, updateDeal } = useCrm();
   const { selectedView } = useUserView();
   const [showDelete, setShowDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [stageTarget, setStageTarget] = useState<DealStage | null>(null);
+  const [stageLoading, setStageLoading] = useState(false);
 
   const deal = getDeal(id || '');
   if (!deal) return <div className="p-6"><p className="text-muted-foreground">Deal not found</p></div>;
@@ -30,6 +38,7 @@ const DealDetailPage = () => {
   const contact = getContact(deal.primary_contact_id || '');
   const health = getDealHealth(deal);
   const hl = healthLabel[health];
+  const currentStageIdx = STAGE_ORDER.indexOf(deal.stage as any);
 
   const handleDelete = async () => {
     setDeleting(true);
@@ -42,6 +51,19 @@ const DealDetailPage = () => {
     } finally {
       setDeleting(false);
       setShowDelete(false);
+    }
+  };
+
+  const handleStageConfirm = async (updates: Record<string, any>) => {
+    setStageLoading(true);
+    try {
+      await updateDeal(deal.id, updates);
+      toast.success(`Deal moved to ${updates.stage}`);
+      setStageTarget(null);
+    } catch {
+      toast.error('Failed to update deal');
+    } finally {
+      setStageLoading(false);
     }
   };
 
@@ -64,12 +86,23 @@ const DealDetailPage = () => {
 
   const logActivityUrl = `/activities/new?deal_id=${deal.id}${deal.company_id ? `&company_id=${deal.company_id}` : ''}${deal.primary_contact_id ? `&contact_id=${deal.primary_contact_id}` : ''}`;
 
+  // Determine which stage sections to show based on current deal stage
+  const stagesReached = DEAL_STAGES.filter(s => {
+    if (s === 'Closed Won' || s === 'Closed Lost') return deal.stage === s;
+    const idx = STAGE_ORDER.indexOf(s);
+    return idx <= currentStageIdx;
+  });
+
+  // Field value getter with new fields
+  const getVal = (key: string) => (deal as any)[key] ?? '';
+
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6">
       <button onClick={() => navigate(-1)} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
         <ArrowLeft size={16} /> Back
       </button>
 
+      {/* Header */}
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">{deal.deal_name}</h1>
@@ -80,54 +113,112 @@ const DealDetailPage = () => {
           </div>
         </div>
         <div className="flex items-start gap-3">
-          <div className="text-right">
-            <p className="text-2xl font-bold text-foreground">{formatGBP(deal.value)}</p>
-            <p className="text-sm text-muted-foreground">Weighted: {formatGBP(deal.weighted_value || 0)}</p>
-          </div>
-          <button
-            onClick={() => setShowDelete(true)}
-            className="p-2 rounded-md border border-input text-muted-foreground hover:text-destructive hover:border-destructive/50 transition-colors"
-            title="Delete deal"
-          >
+          {deal.value > 0 && (
+            <div className="text-right">
+              <p className="text-2xl font-bold text-foreground">{formatGBP(deal.value)}</p>
+              <p className="text-sm text-muted-foreground">Weighted: {formatGBP(deal.weighted_value || 0)}</p>
+            </div>
+          )}
+          <button onClick={() => setShowDelete(true)} className="p-2 rounded-md border border-input text-muted-foreground hover:text-destructive hover:border-destructive/50 transition-colors" title="Delete deal">
             <Trash2 size={16} />
           </button>
         </div>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6">
-        <div className="bg-card rounded-lg border border-border p-5 space-y-4">
-          <h2 className="text-sm font-semibold text-card-foreground">Deal Details</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <Field label="Owner" value={deal.owner} />
-            <Field label="Deal Type" value={deal.deal_type} />
-            <Field label="Forecast Category" value={deal.forecast_category} />
-            <Field label="Confidence" value={`${deal.confidence_percent}%`} />
-            <Field label="Expected Close" value={deal.expected_close_date} />
-            <Field label="Expected Start" value={deal.expected_start_date} />
-            <Field label="Duration" value={`${deal.delivery_duration_months} months`} />
-            <Field label="Source" value={deal.source} />
-            <Field label="Status" value={deal.status.replace('_', ' ')} />
-            {deal.status === 'closed_lost' && <Field label="Lost Reason" value={deal.lost_reason} />}
+      {/* Stage Progression Bar */}
+      {deal.status === 'open' && (
+        <div className="bg-card rounded-lg border border-border p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-semibold text-card-foreground">Stage Progression</h2>
+            <div className="flex gap-2">
+              {currentStageIdx < STAGE_ORDER.length - 1 && (
+                <button
+                  onClick={() => setStageTarget(STAGE_ORDER[currentStageIdx + 1])}
+                  className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                >
+                  Advance to {STAGE_ORDER[currentStageIdx + 1]} <ChevronRight size={14} />
+                </button>
+              )}
+              <button
+                onClick={() => setStageTarget('Closed Won')}
+                className="px-3 py-1.5 text-xs font-medium rounded-md bg-health-green/15 text-health-green hover:bg-health-green/25 transition-colors"
+              >
+                Close Won
+              </button>
+              <button
+                onClick={() => setStageTarget('Closed Lost')}
+                className="px-3 py-1.5 text-xs font-medium rounded-md bg-health-red/15 text-health-red hover:bg-health-red/25 transition-colors"
+              >
+                Close Lost
+              </button>
+            </div>
+          </div>
+          <div className="flex gap-1">
+            {STAGE_ORDER.map((s, i) => (
+              <div
+                key={s}
+                className={`h-2 flex-1 rounded-full transition-colors ${
+                  i <= currentStageIdx ? 'bg-primary' : 'bg-muted'
+                }`}
+                title={s}
+              />
+            ))}
+          </div>
+          <div className="flex justify-between mt-1">
+            <span className="text-[10px] text-muted-foreground">{STAGE_ORDER[0]}</span>
+            <span className="text-[10px] text-muted-foreground">{STAGE_ORDER[STAGE_ORDER.length - 1]}</span>
           </div>
         </div>
+      )}
 
-        <div className="space-y-4">
-          <div className="bg-card rounded-lg border border-border p-5 space-y-3">
-            <h2 className="text-sm font-semibold text-card-foreground flex items-center gap-1.5"><Building2 size={14} /> Company</h2>
-            <Field label="Name" value={company?.company_name} />
-            <Field label="Industry" value={company?.industry} />
-            <Field label="Website" value={company?.website} />
-          </div>
-          <div className="bg-card rounded-lg border border-border p-5 space-y-3">
-            <h2 className="text-sm font-semibold text-card-foreground flex items-center gap-1.5"><User size={14} /> Primary Contact</h2>
-            <Field label="Name" value={contact?.full_name} />
-            <Field label="Title" value={contact?.role_or_title} />
-            <Field label="Email" value={contact?.email} />
-            <Field label="Phone" value={contact?.phone} />
-          </div>
+      {/* Stage Data Sections */}
+      <div className="space-y-4">
+        {stagesReached.map(stageName => {
+          const fields = STAGE_FIELDS[stageName];
+          if (!fields || fields.length === 0) return null;
+          const hasData = fields.some(f => {
+            const v = getVal(f.key);
+            return v !== '' && v !== null && v !== undefined && v !== 0;
+          });
+          if (!hasData && stageName !== deal.stage) return null;
+
+          return (
+            <div key={stageName} className="bg-card rounded-lg border border-border p-5">
+              <h2 className="text-sm font-semibold text-card-foreground mb-3 flex items-center gap-2">
+                <span className={`w-2 h-2 rounded-full ${stageName === deal.stage ? 'bg-primary' : 'bg-muted-foreground/40'}`} />
+                {stageName}
+              </h2>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {fields.map(f => {
+                  let val = getVal(f.key);
+                  if (f.type === 'currency' && typeof val === 'number') val = formatGBP(val);
+                  if (f.key === 'confidence_percent') val = val ? `${val}%` : '';
+                  return <Field key={f.key} label={f.label} value={val} />;
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Linked Records */}
+      <div className="grid md:grid-cols-2 gap-6">
+        <div className="bg-card rounded-lg border border-border p-5 space-y-3">
+          <h2 className="text-sm font-semibold text-card-foreground flex items-center gap-1.5"><Building2 size={14} /> Company</h2>
+          <Field label="Name" value={company?.company_name} />
+          <Field label="Industry" value={company?.industry} />
+          <Field label="Website" value={company?.website} />
+        </div>
+        <div className="bg-card rounded-lg border border-border p-5 space-y-3">
+          <h2 className="text-sm font-semibold text-card-foreground flex items-center gap-1.5"><User size={14} /> Primary Contact</h2>
+          <Field label="Name" value={contact?.full_name} />
+          <Field label="Title" value={contact?.role_or_title} />
+          <Field label="Email" value={contact?.email} />
+          <Field label="Phone" value={contact?.phone} />
         </div>
       </div>
 
+      {/* Slippage & Risks (always show if data exists) */}
       <div className="grid md:grid-cols-2 gap-6">
         <div className="bg-card rounded-lg border border-border p-5 space-y-3">
           <h2 className="text-sm font-semibold text-card-foreground flex items-center gap-1.5"><Calendar size={14} /> Slippage Tracking</h2>
@@ -145,10 +236,10 @@ const DealDetailPage = () => {
           <Field label="Next Action" value={deal.next_action} />
           <Field label="Next Action Date" value={deal.next_action_date} />
           <Field label="Blocker / Risk" value={deal.blocker_or_risk} />
-          <Field label="Notes" value={deal.notes} />
         </div>
       </div>
 
+      {/* Revenue Profile */}
       {monthlyRevenue.length > 0 && (
         <div className="bg-card rounded-lg border border-border p-5">
           <h2 className="text-sm font-semibold text-card-foreground flex items-center gap-1.5 mb-3"><TrendingUp size={14} /> Monthly Revenue Profile</h2>
@@ -163,10 +254,7 @@ const DealDetailPage = () => {
         </div>
       )}
 
-      <ActivityTimeline
-        dealId={deal.id}
-        onLogActivity={() => navigate(logActivityUrl)}
-      />
+      <ActivityTimeline dealId={deal.id} onLogActivity={() => navigate(logActivityUrl)} />
 
       <ConfirmDeleteModal
         open={showDelete}
@@ -177,6 +265,17 @@ const DealDetailPage = () => {
         onCancel={() => setShowDelete(false)}
         loading={deleting}
       />
+
+      {stageTarget && (
+        <StageGateModal
+          open={!!stageTarget}
+          deal={deal}
+          targetStage={stageTarget}
+          onConfirm={handleStageConfirm}
+          onCancel={() => setStageTarget(null)}
+          loading={stageLoading}
+        />
+      )}
     </div>
   );
 };
