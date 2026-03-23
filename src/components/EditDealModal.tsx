@@ -9,7 +9,7 @@ import { useCrm } from '@/context/CrmContext';
 import { OWNERS } from '@/context/UserViewContext';
 import { DEAL_STAGES, FORECAST_CATEGORIES, DEAL_TYPES } from '@/types/crm';
 import type { Deal } from '@/types/crm';
-import { formatGBP, parseGBP } from '@/lib/currency';
+import { formatGBP, formatInputDisplay, stripFormatting } from '@/lib/currency';
 import ContactSearchSelect from './ContactSearchSelect';
 import { toast } from 'sonner';
 
