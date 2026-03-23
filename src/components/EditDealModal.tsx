@@ -119,12 +119,12 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
 
   return (
     <Dialog open={open} onOpenChange={v => !v && onClose()}>
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col overflow-hidden">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>Edit Deal</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-5 py-2">
+        <div className="space-y-5 py-2 overflow-y-auto flex-1 min-h-0">
           {/* Core info */}
           <Section title="Core Details">
             <Field label="Deal Name">
