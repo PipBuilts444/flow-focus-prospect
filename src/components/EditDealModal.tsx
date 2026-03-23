@@ -312,7 +312,7 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
           </Section>
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="flex-shrink-0">
           <Button variant="outline" onClick={onClose} disabled={saving}>Cancel</Button>
           <Button onClick={handleSave} disabled={saving}>
             {saving ? 'Saving…' : 'Save Changes'}
