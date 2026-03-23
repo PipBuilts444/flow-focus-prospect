@@ -58,7 +58,6 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
   const [contactForm, setContactForm] = useState<Record<string, any>>({});
   const [companyForm, setCompanyForm] = useState<Record<string, any>>({});
   const [valueDisplay, setValueDisplay] = useState('');
-
   const [deliveryCostDisplay, setDeliveryCostDisplay] = useState('');
 
   useEffect(() => {
@@ -76,6 +75,7 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
       confidence_percent: deal.confidence_percent,
       expected_close_date: deal.expected_close_date || '',
       expected_start_date: deal.expected_start_date || '',
+      won_date: deal.won_date || '',
       delivery_duration_months: deal.delivery_duration_months,
       problem_challenge: deal.problem_challenge || '',
       notes: deal.notes || '',
@@ -181,6 +181,11 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
       return;
     }
 
+    if (form.stage === 'Closed Won' && !form.won_date) {
+      toast.error('Won date is required for Closed Won deals');
+      return;
+    }
+
     setSaving(true);
     try {
       // 1. Update deal with computed margin fields
@@ -194,6 +199,7 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
       if (!updates.primary_contact_id) updates.primary_contact_id = null;
       if (!updates.expected_close_date) updates.expected_close_date = null;
       if (!updates.expected_start_date) updates.expected_start_date = null;
+      if (!updates.won_date) updates.won_date = null;
       if (!updates.next_action_date) updates.next_action_date = null;
       await updateDeal(deal.id, updates);
 
@@ -373,6 +379,11 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
                 <Input type="date" value={form.expected_start_date || ''} onChange={(e) => setField('expected_start_date', e.target.value)} />
               </FormField>
             </FormRow>
+            {(form.stage === 'Closed Won' || form.won_date) && (
+              <FormField label="Won Date">
+                <Input type="date" value={form.won_date || ''} onChange={(e) => setField('won_date', e.target.value)} />
+              </FormField>
+            )}
             <FormRow>
               <FormField label="Procurement Status">
                 <Input value={form.procurement_status || ''} onChange={(e) => setField('procurement_status', e.target.value)} />
