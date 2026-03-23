@@ -186,7 +186,6 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
       // 1. Update deal with computed margin fields
       const updates: Record<string, any> = {
         ...form,
-        estimated_delivery_cost: estimatedDeliveryCost,
         gross_margin_value: grossMarginValue,
         gross_margin_percent: Math.round(grossMarginPercent * 100) / 100,
       };
