@@ -164,16 +164,15 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
     setField('value', num);
   };
 
-  const handleDayRateChange = (raw: string) => {
+  const handleDeliveryCostChange = (raw: string) => {
     const cleaned = stripFormatting(raw);
     const num = parseFloat(cleaned) || 0;
-    setDayRateDisplay(formatInputDisplay(cleaned));
-    setField('contractor_day_rate', num);
+    setDeliveryCostDisplay(formatInputDisplay(cleaned));
+    setField('estimated_delivery_cost', num);
   };
 
   // Auto-calculated margin fields
-  const estimatedDeliveryCost = (form.estimated_delivery_days || 0) * (form.contractor_day_rate || 0);
-  const grossMarginValue = (form.value || 0) - estimatedDeliveryCost;
+  const grossMarginValue = (form.value || 0) - (form.estimated_delivery_cost || 0);
   const grossMarginPercent = (form.value || 0) > 0 ? (grossMarginValue / form.value) * 100 : 0;
 
   const handleSave = async () => {
