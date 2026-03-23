@@ -24,40 +24,33 @@ const ForecastPage = () => {
       let actuals = 0, pipeline = 0, bestCase = 0, commit = 0;
 
       deals.forEach(deal => {
-        // Skip Closed Lost entirely
         if (deal.status === 'closed_lost' || deal.forecast_category === 'Closed Lost') return;
 
         if (deal.status === 'closed_won') {
-          // ACTUALS: Closed Won deals allocated by won_date
-          const startDate = deal.won_date
-            ? startOfMonth(new Date(deal.won_date))
-            : deal.expected_start_date
-              ? startOfMonth(new Date(deal.expected_start_date))
-              : deal.expected_close_date
-                ? startOfMonth(new Date(deal.expected_close_date))
-                : null;
-          if (!startDate || deal.delivery_duration_months <= 0) return;
-          const monthlyAmt = deal.value / deal.delivery_duration_months;
-          for (let i = 0; i < deal.delivery_duration_months; i++) {
-            if (isSameMonth(addMonths(startDate, i), month)) {
-              actuals += monthlyAmt;
-            }
-          }
-        } else {
-          // PIPELINE: Open deals only, using expected_start_date or expected_close_date
-          const startDate = deal.expected_start_date
-            ? startOfMonth(new Date(deal.expected_start_date))
-            : deal.expected_close_date
-              ? startOfMonth(new Date(deal.expected_close_date))
-              : null;
-          if (!startDate || deal.delivery_duration_months <= 0) return;
-          const monthlyAmt = deal.value / deal.delivery_duration_months;
-          for (let i = 0; i < deal.delivery_duration_months; i++) {
-            if (isSameMonth(addMonths(startDate, i), month)) {
-              if (deal.forecast_category === 'Commit') commit += monthlyAmt;
-              else if (deal.forecast_category === 'Best Case') bestCase += monthlyAmt;
-              else pipeline += monthlyAmt;
-            }
+          // ACTUALS: Closed Won deals belong only to the won month
+          if (!deal.won_date) return;
+          const wonMonth = startOfMonth(new Date(deal.won_date));
+          if (isSameMonth(wonMonth, month)) actuals += deal.value;
+          return;
+        }
+
+        if (deal.status !== 'open') return;
+
+        // PIPELINE: Open deals only, using expected_start_date or expected_close_date
+        const startDate = deal.expected_start_date
+          ? startOfMonth(new Date(deal.expected_start_date))
+          : deal.expected_close_date
+            ? startOfMonth(new Date(deal.expected_close_date))
+            : null;
+
+        if (!startDate || deal.delivery_duration_months <= 0) return;
+
+        const monthlyAmt = deal.value / deal.delivery_duration_months;
+        for (let i = 0; i < deal.delivery_duration_months; i++) {
+          if (isSameMonth(addMonths(startDate, i), month)) {
+            if (deal.forecast_category === 'Commit') commit += monthlyAmt;
+            else if (deal.forecast_category === 'Best Case') bestCase += monthlyAmt;
+            else pipeline += monthlyAmt;
           }
         }
       });
@@ -76,7 +69,7 @@ const ForecastPage = () => {
   if (loading) return <div className="p-6"><p className="text-muted-foreground">Loading…</p></div>;
 
   const openDeals = deals.filter(d => d.status === 'open');
-  const closedWonDeals = deals.filter(d => d.status === 'closed_won');
+  const closedWonDeals = deals.filter(d => d.status === 'closed_won' && d.won_date);
   const totals = {
     actuals: closedWonDeals.reduce((s, d) => s + d.value, 0),
     pipeline: openDeals.filter(d => d.forecast_category === 'Pipeline').reduce((s, d) => s + d.value, 0),
