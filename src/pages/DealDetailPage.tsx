@@ -281,6 +281,8 @@ const DealDetailPage = () => {
           loading={stageLoading}
         />
       )}
+
+      <EditDealModal open={showEdit} deal={deal} onClose={() => setShowEdit(false)} />
     </div>
   );
 };
