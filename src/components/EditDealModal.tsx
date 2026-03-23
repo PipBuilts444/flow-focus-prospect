@@ -60,7 +60,7 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
         lost_reason: deal.lost_reason || '',
         lost_notes: deal.lost_notes || '',
       });
-      setValueDisplay(deal.value > 0 ? formatGBP(deal.value) : '');
+      setValueDisplay(deal.value > 0 ? formatInputDisplay(String(deal.value)) : '');
     }
   }, [open, deal]);
 
