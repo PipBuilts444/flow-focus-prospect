@@ -9,7 +9,7 @@ import { useCrm } from '@/context/CrmContext';
 import { OWNERS } from '@/context/UserViewContext';
 import { DEAL_STAGES, FORECAST_CATEGORIES, DEAL_TYPES } from '@/types/crm';
 import type { Deal } from '@/types/crm';
-import { formatInputDisplay, stripFormatting } from '@/lib/currency';
+import { formatInputDisplay, stripFormatting, formatGBP } from '@/lib/currency';
 import ContactSearchSelect from './ContactSearchSelect';
 import { toast } from 'sonner';
 
@@ -59,6 +59,8 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
   const [companyForm, setCompanyForm] = useState<Record<string, any>>({});
   const [valueDisplay, setValueDisplay] = useState('');
 
+  const [dayRateDisplay, setDayRateDisplay] = useState('');
+
   useEffect(() => {
     if (!open) return;
 
@@ -94,8 +96,11 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
       final_commercial_assumptions: deal.final_commercial_assumptions || '',
       lost_reason: deal.lost_reason || '',
       lost_notes: deal.lost_notes || '',
+      estimated_delivery_days: (deal as any).estimated_delivery_days || 0,
+      contractor_day_rate: (deal as any).contractor_day_rate || 0,
     });
     setValueDisplay(deal.value > 0 ? formatInputDisplay(String(deal.value)) : '');
+    setDayRateDisplay((deal as any).contractor_day_rate > 0 ? formatInputDisplay(String((deal as any).contractor_day_rate)) : '');
 
     // Load linked contact
     const contact = deal.primary_contact_id ? getContact(deal.primary_contact_id) : null;
@@ -160,6 +165,18 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
     setField('value', num);
   };
 
+  const handleDayRateChange = (raw: string) => {
+    const cleaned = stripFormatting(raw);
+    const num = parseFloat(cleaned) || 0;
+    setDayRateDisplay(formatInputDisplay(cleaned));
+    setField('contractor_day_rate', num);
+  };
+
+  // Auto-calculated margin fields
+  const estimatedDeliveryCost = (form.estimated_delivery_days || 0) * (form.contractor_day_rate || 0);
+  const grossMarginValue = (form.value || 0) - estimatedDeliveryCost;
+  const grossMarginPercent = (form.value || 0) > 0 ? (grossMarginValue / form.value) * 100 : 0;
+
   const handleSave = async () => {
     if (!form.deal_name?.trim()) {
       toast.error('Deal name is required');
@@ -168,8 +185,13 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
 
     setSaving(true);
     try {
-      // 1. Update deal
-      const updates: Record<string, any> = { ...form };
+      // 1. Update deal with computed margin fields
+      const updates: Record<string, any> = {
+        ...form,
+        estimated_delivery_cost: estimatedDeliveryCost,
+        gross_margin_value: grossMarginValue,
+        gross_margin_percent: Math.round(grossMarginPercent * 100) / 100,
+      };
       delete updates.weighted_value;
       if (!updates.company_id) updates.company_id = null;
       if (!updates.primary_contact_id) updates.primary_contact_id = null;
@@ -373,6 +395,40 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
                 <Textarea value={form.final_commercial_assumptions || ''} onChange={(e) => setField('final_commercial_assumptions', e.target.value)} rows={2} />
               </FormField>
             </FormRow>
+          </FormSection>
+
+          {/* ── Delivery Cost & Margin ── */}
+          <FormSection title="Delivery Cost & Margin">
+            <FormRow>
+              <FormField label="Estimated Delivery Days">
+                <Input type="number" min={0} value={form.estimated_delivery_days || ''} onChange={(e) => setField('estimated_delivery_days', parseFloat(e.target.value) || 0)} placeholder="0" />
+              </FormField>
+              <FormField label="Contractor Day Rate">
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">£</span>
+                  <Input
+                    className="pl-7"
+                    value={dayRateDisplay.replace('£', '')}
+                    onChange={(e) => handleDayRateChange(e.target.value)}
+                    placeholder="0"
+                  />
+                </div>
+              </FormField>
+            </FormRow>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="bg-secondary/50 rounded-md p-3">
+                <p className="text-[10px] font-medium text-muted-foreground uppercase">Est. Delivery Cost</p>
+                <p className="text-sm font-semibold text-card-foreground mt-0.5">{formatGBP(estimatedDeliveryCost)}</p>
+              </div>
+              <div className="bg-secondary/50 rounded-md p-3">
+                <p className="text-[10px] font-medium text-muted-foreground uppercase">Gross Margin £</p>
+                <p className={`text-sm font-semibold mt-0.5 ${grossMarginValue >= 0 ? 'text-health-green' : 'text-health-red'}`}>{formatGBP(grossMarginValue)}</p>
+              </div>
+              <div className="bg-secondary/50 rounded-md p-3">
+                <p className="text-[10px] font-medium text-muted-foreground uppercase">Gross Margin %</p>
+                <p className={`text-sm font-semibold mt-0.5 ${grossMarginPercent >= 0 ? 'text-health-green' : 'text-health-red'}`}>{Math.round(grossMarginPercent)}%</p>
+              </div>
+            </div>
           </FormSection>
 
           {/* ── Problem & Discovery ── */}

@@ -236,6 +236,7 @@ export type Database = {
           commit_confidence: string | null
           company_id: string | null
           confidence_percent: number
+          contractor_day_rate: number | null
           created_at: string
           deal_name: string
           deal_type: Database["public"]["Enums"]["deal_type"]
@@ -243,10 +244,14 @@ export type Database = {
           deleted_by: string | null
           delivery_considerations: string | null
           delivery_duration_months: number
+          estimated_delivery_cost: number | null
+          estimated_delivery_days: number | null
           expected_close_date: string | null
           expected_start_date: string | null
           final_commercial_assumptions: string | null
           forecast_category: Database["public"]["Enums"]["forecast_category"]
+          gross_margin_percent: number | null
+          gross_margin_value: number | null
           id: string
           is_deleted: boolean
           key_stakeholder: string | null
@@ -283,6 +288,7 @@ export type Database = {
           commit_confidence?: string | null
           company_id?: string | null
           confidence_percent?: number
+          contractor_day_rate?: number | null
           created_at?: string
           deal_name: string
           deal_type?: Database["public"]["Enums"]["deal_type"]
@@ -290,10 +296,14 @@ export type Database = {
           deleted_by?: string | null
           delivery_considerations?: string | null
           delivery_duration_months?: number
+          estimated_delivery_cost?: number | null
+          estimated_delivery_days?: number | null
           expected_close_date?: string | null
           expected_start_date?: string | null
           final_commercial_assumptions?: string | null
           forecast_category?: Database["public"]["Enums"]["forecast_category"]
+          gross_margin_percent?: number | null
+          gross_margin_value?: number | null
           id?: string
           is_deleted?: boolean
           key_stakeholder?: string | null
@@ -330,6 +340,7 @@ export type Database = {
           commit_confidence?: string | null
           company_id?: string | null
           confidence_percent?: number
+          contractor_day_rate?: number | null
           created_at?: string
           deal_name?: string
           deal_type?: Database["public"]["Enums"]["deal_type"]
@@ -337,10 +348,14 @@ export type Database = {
           deleted_by?: string | null
           delivery_considerations?: string | null
           delivery_duration_months?: number
+          estimated_delivery_cost?: number | null
+          estimated_delivery_days?: number | null
           expected_close_date?: string | null
           expected_start_date?: string | null
           final_commercial_assumptions?: string | null
           forecast_category?: Database["public"]["Enums"]["forecast_category"]
+          gross_margin_percent?: number | null
+          gross_margin_value?: number | null
           id?: string
           is_deleted?: boolean
           key_stakeholder?: string | null
