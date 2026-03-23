@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCrm } from '@/context/CrmContext';
-import { ArrowLeft, Building2, Trash2 } from 'lucide-react';
+import { ArrowLeft, Building2, Trash2, Pencil } from 'lucide-react';
 import { formatGBP } from '@/lib/currency';
 import ActivityTimeline from '@/components/ActivityTimeline';
 import ConfirmDeleteModal from '@/components/ConfirmDeleteModal';
+import EditCompanyModal from '@/components/EditCompanyModal';
 import { toast } from 'sonner';
 import { useUserView } from '@/context/UserViewContext';
 
@@ -14,6 +15,7 @@ const CompanyDetailPage = () => {
   const { getCompany, getDealsForCompany, getContactsForCompany, softDeleteCompany, canDeleteCompany, loading } = useCrm();
   const { selectedView } = useUserView();
   const [showDelete, setShowDelete] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   if (loading) return <div className="p-6"><p className="text-muted-foreground">Loading…</p></div>;
@@ -56,6 +58,13 @@ const CompanyDetailPage = () => {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowEdit(true)}
+            className="p-2 rounded-md border border-input text-muted-foreground hover:text-primary hover:border-primary/50 transition-colors"
+            title="Edit company"
+          >
+            <Pencil size={16} />
+          </button>
           {!deleteCheck.canDelete && (
             <span className="text-xs text-muted-foreground max-w-[200px]">{deleteCheck.reason}</span>
           )}
@@ -77,7 +86,7 @@ const CompanyDetailPage = () => {
         <div className="bg-card rounded-lg border border-border p-5 space-y-3">
           <h2 className="text-sm font-semibold text-card-foreground">Details</h2>
           <div className="space-y-2 text-sm">
-            <div><span className="text-muted-foreground">Account Owner:</span> <span className="text-card-foreground ml-1">{company.account_owner}</span></div>
+            <div><span className="text-muted-foreground">Account Owner:</span> <span className="text-card-foreground ml-1">{company.account_owner || '—'}</span></div>
             <div><span className="text-muted-foreground">Status:</span> <span className="text-card-foreground ml-1 capitalize">{company.status}</span></div>
             <div><span className="text-muted-foreground">Notes:</span> <span className="text-card-foreground ml-1">{company.notes || '—'}</span></div>
           </div>
@@ -127,6 +136,8 @@ const CompanyDetailPage = () => {
         companyId={company.id}
         onLogActivity={() => navigate(`/activities/new?company_id=${company.id}`)}
       />
+
+      <EditCompanyModal open={showEdit} company={company} onClose={() => setShowEdit(false)} />
 
       <ConfirmDeleteModal
         open={showDelete}
