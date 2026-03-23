@@ -67,9 +67,9 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
   const set = (key: string, val: any) => setForm(prev => ({ ...prev, [key]: val }));
 
   const handleValueChange = (raw: string) => {
-    const cleaned = raw.replace(/[^0-9.]/g, '');
+    const cleaned = stripFormatting(raw);
     const num = parseFloat(cleaned) || 0;
-    setValueDisplay(cleaned ? `£${Number(cleaned).toLocaleString('en-GB')}` : '');
+    setValueDisplay(formatInputDisplay(cleaned));
     set('value', num);
   };
 
