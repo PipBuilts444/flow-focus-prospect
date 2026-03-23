@@ -15,6 +15,18 @@ interface Props {
   onClose: () => void;
 }
 
+interface FormFieldProps {
+  label: string;
+  children: React.ReactNode;
+}
+
+const FormField = ({ label, children }: FormFieldProps) => (
+  <div className="space-y-1">
+    <Label className="text-xs">{label}</Label>
+    {children}
+  </div>
+);
+
 const EditContactModal = ({ open, contact, onClose }: Props) => {
   const { updateContact, companies } = useCrm();
   const [saving, setSaving] = useState(false);
@@ -30,25 +42,32 @@ const EditContactModal = ({ open, contact, onClose }: Props) => {
   });
 
   useEffect(() => {
-    if (open) {
-      setForm({
-        first_name: contact.first_name || '',
-        last_name: contact.last_name || '',
-        email: contact.email || '',
-        phone: contact.phone || '',
-        role_or_title: contact.role_or_title || '',
-        company_id: contact.company_id || '',
-        notes: contact.notes || '',
-      });
-      setCompanySearch('');
-    }
-  }, [open, contact]);
+    if (!open) return;
 
-  const set = (key: string, val: string) => setForm(prev => ({ ...prev, [key]: val }));
+    setForm({
+      first_name: contact.first_name || '',
+      last_name: contact.last_name || '',
+      email: contact.email || '',
+      phone: contact.phone || '',
+      role_or_title: contact.role_or_title || '',
+      company_id: contact.company_id || '',
+      notes: contact.notes || '',
+    });
+    setCompanySearch('');
+  }, [open, contact.id]);
+
+  const setField = (key: string, value: string) => setForm((prev) => ({ ...prev, [key]: value }));
 
   const handleSave = async () => {
-    if (!form.first_name.trim()) { toast.error('First name is required'); return; }
-    if (!form.last_name.trim()) { toast.error('Last name is required'); return; }
+    if (!form.first_name.trim()) {
+      toast.error('First name is required');
+      return;
+    }
+    if (!form.last_name.trim()) {
+      toast.error('Last name is required');
+      return;
+    }
+
     setSaving(true);
     try {
       await updateContact(contact.id, {
@@ -69,69 +88,62 @@ const EditContactModal = ({ open, contact, onClose }: Props) => {
     }
   };
 
-  const activeCompanies = companies.filter(c => !c.is_deleted);
+  const activeCompanies = companies.filter((company) => !company.is_deleted);
   const filteredCompanies = companySearch
-    ? activeCompanies.filter(c => c.company_name.toLowerCase().includes(companySearch.toLowerCase()))
+    ? activeCompanies.filter((company) => company.company_name.toLowerCase().includes(companySearch.toLowerCase()))
     : activeCompanies;
 
-  const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
-    <div className="space-y-1">
-      <Label className="text-xs">{label}</Label>
-      {children}
-    </div>
-  );
-
   return (
-    <Dialog open={open} onOpenChange={v => { if (!v) onClose(); }}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
+    <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) onClose(); }}>
+      <DialogContent className="max-w-md max-h-[85vh] flex flex-col overflow-hidden">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>Edit Contact</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4 py-2">
+        <div className="space-y-4 py-2 overflow-y-auto flex-1 min-h-0">
           <div className="grid grid-cols-2 gap-3">
-            <Field label="First Name *">
-              <Input value={form.first_name} onChange={e => set('first_name', e.target.value)} autoFocus />
-            </Field>
-            <Field label="Last Name *">
-              <Input value={form.last_name} onChange={e => set('last_name', e.target.value)} />
-            </Field>
+            <FormField label="First Name *">
+              <Input value={form.first_name} onChange={(e) => setField('first_name', e.target.value)} autoFocus />
+            </FormField>
+            <FormField label="Last Name *">
+              <Input value={form.last_name} onChange={(e) => setField('last_name', e.target.value)} />
+            </FormField>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Email">
-              <Input type="email" value={form.email} onChange={e => set('email', e.target.value)} />
-            </Field>
-            <Field label="Phone">
-              <Input value={form.phone} onChange={e => set('phone', e.target.value)} />
-            </Field>
+            <FormField label="Email">
+              <Input type="email" value={form.email} onChange={(e) => setField('email', e.target.value)} />
+            </FormField>
+            <FormField label="Phone">
+              <Input value={form.phone} onChange={(e) => setField('phone', e.target.value)} />
+            </FormField>
           </div>
-          <Field label="Role / Title">
-            <Input value={form.role_or_title} onChange={e => set('role_or_title', e.target.value)} />
-          </Field>
-          <Field label="Company">
-            <Select value={form.company_id || '_none'} onValueChange={v => set('company_id', v === '_none' ? '' : v)}>
+          <FormField label="Role / Title">
+            <Input value={form.role_or_title} onChange={(e) => setField('role_or_title', e.target.value)} />
+          </FormField>
+          <FormField label="Company">
+            <Select value={form.company_id || '_none'} onValueChange={(value) => setField('company_id', value === '_none' ? '' : value)}>
               <SelectTrigger><SelectValue placeholder="Select company" /></SelectTrigger>
               <SelectContent>
                 <div className="px-2 py-1.5">
                   <Input
                     placeholder="Search companies…"
                     value={companySearch}
-                    onChange={e => setCompanySearch(e.target.value)}
+                    onChange={(e) => setCompanySearch(e.target.value)}
                     className="h-8 text-xs"
-                    onClick={e => e.stopPropagation()}
+                    onClick={(e) => e.stopPropagation()}
                   />
                 </div>
                 <SelectItem value="_none">No company</SelectItem>
-                {filteredCompanies.map(c => (
-                  <SelectItem key={c.id} value={c.id}>{c.company_name}</SelectItem>
+                {filteredCompanies.map((company) => (
+                  <SelectItem key={company.id} value={company.id}>{company.company_name}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
-          </Field>
-          <Field label="Notes">
-            <Textarea value={form.notes} onChange={e => set('notes', e.target.value)} rows={3} />
-          </Field>
+          </FormField>
+          <FormField label="Notes">
+            <Textarea value={form.notes} onChange={(e) => setField('notes', e.target.value)} rows={3} />
+          </FormField>
         </div>
-        <DialogFooter>
+        <DialogFooter className="flex-shrink-0">
           <Button variant="outline" onClick={onClose} disabled={saving}>Cancel</Button>
           <Button onClick={handleSave} disabled={saving}>{saving ? 'Saving…' : 'Save Changes'}</Button>
         </DialogFooter>
