@@ -28,6 +28,7 @@ const DealDetailPage = () => {
   const { getDeal, getCompany, getContact, getDealHealth, softDeleteDeal, updateDeal } = useCrm();
   const { selectedView } = useUserView();
   const [showDelete, setShowDelete] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [stageTarget, setStageTarget] = useState<DealStage | null>(null);
   const [stageLoading, setStageLoading] = useState(false);
