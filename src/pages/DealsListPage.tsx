@@ -72,7 +72,8 @@ const DealsListPage = () => {
                 <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Company</th>
                 <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Stage</th>
                 <th className="text-right px-4 py-2.5 font-medium text-muted-foreground">Value</th>
-                <th className="text-right px-4 py-2.5 font-medium text-muted-foreground">Weighted</th>
+                <th className="text-right px-4 py-2.5 font-medium text-muted-foreground">Margin £</th>
+                <th className="text-right px-4 py-2.5 font-medium text-muted-foreground">Margin %</th>
                 <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Category</th>
                 <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Close Date</th>
                 <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Owner</th>
