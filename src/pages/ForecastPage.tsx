@@ -11,8 +11,9 @@ const ForecastPage = () => {
 
   const months = useMemo(() => {
     const result: Date[] = [];
-    const start = startOfMonth(new Date());
-    for (let i = 0; i < 12; i++) result.push(addMonths(start, i));
+    const now = startOfMonth(new Date());
+    // Include 12 months back and 12 months forward
+    for (let i = -12; i < 12; i++) result.push(addMonths(now, i));
     return result;
   }, []);
 
@@ -22,12 +23,29 @@ const ForecastPage = () => {
       let pipeline = 0, bestCase = 0, commit = 0, closedWon = 0;
 
       deals.forEach(deal => {
-        if (!deal.expected_start_date || deal.delivery_duration_months <= 0) return;
-        const startDate = new Date(deal.expected_start_date);
+        // Skip Closed Lost deals entirely
+        if (deal.status === 'closed_lost' || deal.forecast_category === 'Closed Lost') return;
+
+        // Determine the revenue start date based on deal status
+        let revenueStartDate: Date | null = null;
+
+        if (deal.status === 'closed_won') {
+          // For Closed Won: use won_date, then expected_start_date, then expected_close_date
+          if (deal.won_date) revenueStartDate = new Date(deal.won_date);
+          else if (deal.expected_start_date) revenueStartDate = new Date(deal.expected_start_date);
+          else if (deal.expected_close_date) revenueStartDate = new Date(deal.expected_close_date);
+        } else {
+          // For open deals: use expected_start_date, fall back to expected_close_date
+          if (deal.expected_start_date) revenueStartDate = new Date(deal.expected_start_date);
+          else if (deal.expected_close_date) revenueStartDate = new Date(deal.expected_close_date);
+        }
+
+        if (!revenueStartDate || deal.delivery_duration_months <= 0) return;
+
         const monthlyAmt = deal.value / deal.delivery_duration_months;
 
         for (let i = 0; i < deal.delivery_duration_months; i++) {
-          const m = addMonths(startDate, i);
+          const m = addMonths(startOfMonth(revenueStartDate), i);
           if (isSameMonth(m, month)) {
             if (deal.forecast_category === 'Closed Won') closedWon += monthlyAmt;
             else if (deal.forecast_category === 'Commit') commit += monthlyAmt;
