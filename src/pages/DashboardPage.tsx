@@ -134,6 +134,37 @@ const DashboardPage = () => {
         </div>
       </div>
 
+      {/* PROFITABILITY */}
+      <div>
+        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
+          <Percent size={14} /> Profitability
+        </h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <KpiCard label="Pipeline Margin" value={formatGBP(pipelineMargin)} icon={TrendingUp} variant={pipelineMargin >= 0 ? 'green' : 'red'} sub={`${openDeals.filter(d => (d as any).estimated_delivery_cost > 0).length} deals costed`} />
+          <KpiCard label="Weighted Margin" value={formatGBP(Math.round(weightedMargin))} icon={Target} sub="Confidence-adjusted" />
+          <KpiCard label="Closed Won Margin" value={formatGBP(closedWonMargin)} icon={CheckCircle2} variant="green" sub={`${closedWonDeals.filter(d => (d as any).estimated_delivery_cost > 0).length} deals`} />
+          <KpiCard label="Avg Margin %" value={`${Math.round(avgMarginPercent)}%`} icon={Percent} variant={avgMarginPercent >= 20 ? 'green' : avgMarginPercent >= 0 ? 'amber' : 'red'} sub={`${dealsWithMargin.length} deals with costs`} />
+        </div>
+        {lowMarginDeals.length > 0 && (
+          <div className="mt-3 bg-card rounded-lg border border-border p-4">
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+              {negativeMarginDeals.length > 0 && <span className="text-health-red mr-1">⚠</span>}
+              Low Margin Deals ({lowMarginDeals.length})
+            </h3>
+            <div className="space-y-1.5">
+              {lowMarginDeals.slice(0, 8).map(d => (
+                <a key={d.id} href={`/deals/${d.id}`} className="flex items-center justify-between p-2 rounded-md hover:bg-accent transition-colors text-sm">
+                  <span className="font-medium text-card-foreground">{d.deal_name}</span>
+                  <span className={`text-xs font-medium ${(d as any).gross_margin_percent < 0 ? 'text-health-red' : 'text-health-amber'}`}>
+                    {Math.round((d as any).gross_margin_percent)}% · {formatGBP((d as any).gross_margin_value || 0)}
+                  </span>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* ACTIVITY & HEALTH */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <KpiCard label="Meetings This Week" value={String(meetingsThisWeek.length)} icon={CalendarDays} />
