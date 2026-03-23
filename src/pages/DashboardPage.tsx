@@ -2,7 +2,7 @@ import { useFilteredCrm } from '@/hooks/useFilteredCrm';
 import { useUserView } from '@/context/UserViewContext';
 import { useAllActivities } from '@/hooks/useActivities';
 import { format, isAfter, isBefore, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, startOfWeek, endOfWeek, subDays } from 'date-fns';
-import { TrendingUp, AlertTriangle, PoundSterling, Target, CheckCircle2, XCircle, Clock, CalendarDays, Users, TriangleAlert, BarChart3 } from 'lucide-react';
+import { TrendingUp, AlertTriangle, PoundSterling, Target, CheckCircle2, XCircle, Clock, CalendarDays, Users, TriangleAlert, BarChart3, Percent } from 'lucide-react';
 import { formatGBP } from '@/lib/currency';
 
 const KpiCard = ({ label, value, icon: Icon, variant = 'default', sub }: { label: string; value: string; icon: any; variant?: string; sub?: string }) => (
@@ -59,6 +59,20 @@ const DashboardPage = () => {
 
   const overdueActions = openDeals.filter(d => d.next_action_date && isBefore(new Date(d.next_action_date), now));
   const slippedDeals = openDeals.filter(d => d.slip_count > 0);
+
+  // === MARGIN METRICS ===
+  const pipelineMargin = openDeals.reduce((s, d) => s + ((d as any).gross_margin_value || 0), 0);
+  const weightedMargin = openDeals.reduce((s, d) => {
+    const margin = (d as any).gross_margin_value || 0;
+    return s + (margin * (d.confidence_percent / 100));
+  }, 0);
+  const closedWonMargin = closedWonDeals.reduce((s, d) => s + ((d as any).gross_margin_value || 0), 0);
+  const dealsWithMargin = [...openDeals, ...closedWonDeals].filter(d => (d as any).estimated_delivery_cost > 0);
+  const avgMarginPercent = dealsWithMargin.length > 0
+    ? dealsWithMargin.reduce((s, d) => s + ((d as any).gross_margin_percent || 0), 0) / dealsWithMargin.length
+    : 0;
+  const lowMarginDeals = openDeals.filter(d => (d as any).estimated_delivery_cost > 0 && (d as any).gross_margin_percent < 20);
+  const negativeMarginDeals = openDeals.filter(d => (d as any).estimated_delivery_cost > 0 && (d as any).gross_margin_percent < 0);
 
   // Activity widgets
   const filteredActivities = selectedView === 'COEX'
@@ -118,6 +132,37 @@ const DashboardPage = () => {
           <KpiCard label="Best Case This Month" value={formatGBP(bestCaseThisMonth)} icon={TrendingUp} />
           <KpiCard label="Total Open Pipeline" value={formatGBP(openDeals.reduce((s, d) => s + d.value, 0))} icon={PoundSterling} />
         </div>
+      </div>
+
+      {/* PROFITABILITY */}
+      <div>
+        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
+          <Percent size={14} /> Profitability
+        </h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <KpiCard label="Pipeline Margin" value={formatGBP(pipelineMargin)} icon={TrendingUp} variant={pipelineMargin >= 0 ? 'green' : 'red'} sub={`${openDeals.filter(d => (d as any).estimated_delivery_cost > 0).length} deals costed`} />
+          <KpiCard label="Weighted Margin" value={formatGBP(Math.round(weightedMargin))} icon={Target} sub="Confidence-adjusted" />
+          <KpiCard label="Closed Won Margin" value={formatGBP(closedWonMargin)} icon={CheckCircle2} variant="green" sub={`${closedWonDeals.filter(d => (d as any).estimated_delivery_cost > 0).length} deals`} />
+          <KpiCard label="Avg Margin %" value={`${Math.round(avgMarginPercent)}%`} icon={Percent} variant={avgMarginPercent >= 20 ? 'green' : avgMarginPercent >= 0 ? 'amber' : 'red'} sub={`${dealsWithMargin.length} deals with costs`} />
+        </div>
+        {lowMarginDeals.length > 0 && (
+          <div className="mt-3 bg-card rounded-lg border border-border p-4">
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+              {negativeMarginDeals.length > 0 && <span className="text-health-red mr-1">⚠</span>}
+              Low Margin Deals ({lowMarginDeals.length})
+            </h3>
+            <div className="space-y-1.5">
+              {lowMarginDeals.slice(0, 8).map(d => (
+                <a key={d.id} href={`/deals/${d.id}`} className="flex items-center justify-between p-2 rounded-md hover:bg-accent transition-colors text-sm">
+                  <span className="font-medium text-card-foreground">{d.deal_name}</span>
+                  <span className={`text-xs font-medium ${(d as any).gross_margin_percent < 0 ? 'text-health-red' : 'text-health-amber'}`}>
+                    {Math.round((d as any).gross_margin_percent)}% · {formatGBP((d as any).gross_margin_value || 0)}
+                  </span>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ACTIVITY & HEALTH */}
