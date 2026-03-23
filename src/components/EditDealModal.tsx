@@ -28,6 +28,11 @@ interface LayoutProps {
   children: React.ReactNode;
 }
 
+interface FormFieldProps {
+  label: string;
+  children: React.ReactNode;
+}
+
 const FormSection = ({ title, children }: SectionProps) => (
   <div className="space-y-3">
     <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{title}</h3>
@@ -39,7 +44,7 @@ const FormRow = ({ children }: LayoutProps) => (
   <div className="grid grid-cols-2 gap-3">{children}</div>
 );
 
-const FormField = ({ label, children }: SectionProps) => (
+const FormField = ({ label, children }: FormFieldProps) => (
   <div className="space-y-1">
     <Label className="text-xs">{label}</Label>
     {children}
