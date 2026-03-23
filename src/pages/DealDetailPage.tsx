@@ -223,6 +223,29 @@ const DealDetailPage = () => {
         </div>
       </div>
 
+      {/* Commercials & Margin */}
+      {((deal as any).estimated_delivery_days > 0 || (deal as any).contractor_day_rate > 0 || deal.value > 0) && (
+        <div className="bg-card rounded-lg border border-border p-5">
+          <h2 className="text-sm font-semibold text-card-foreground flex items-center gap-1.5 mb-3"><TrendingUp size={14} /> Delivery Cost & Margin</h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <Field label="Deal Value" value={formatGBP(deal.value)} />
+            <Field label="Est. Delivery Days" value={(deal as any).estimated_delivery_days || '—'} />
+            <Field label="Contractor Day Rate" value={(deal as any).contractor_day_rate > 0 ? formatGBP((deal as any).contractor_day_rate) : '—'} />
+            <Field label="Est. Delivery Cost" value={(deal as any).estimated_delivery_cost > 0 ? formatGBP((deal as any).estimated_delivery_cost) : '—'} />
+            <Field label="Gross Margin £" value={
+              (deal as any).estimated_delivery_cost > 0
+                ? <span className={(deal.value - (deal as any).estimated_delivery_cost) >= 0 ? 'text-health-green' : 'text-health-red'}>{formatGBP(deal.value - (deal as any).estimated_delivery_cost)}</span>
+                : '—'
+            } />
+            <Field label="Gross Margin %" value={
+              (deal as any).gross_margin_percent != null && (deal as any).estimated_delivery_cost > 0
+                ? <span className={(deal as any).gross_margin_percent >= 0 ? 'text-health-green' : 'text-health-red'}>{Math.round((deal as any).gross_margin_percent)}%</span>
+                : '—'
+            } />
+          </div>
+        </div>
+      )}
+
       {/* Slippage & Risks (always show if data exists) */}
       <div className="grid md:grid-cols-2 gap-6">
         <div className="bg-card rounded-lg border border-border p-5 space-y-3">
