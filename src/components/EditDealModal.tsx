@@ -185,8 +185,13 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
 
     setSaving(true);
     try {
-      // 1. Update deal
-      const updates: Record<string, any> = { ...form };
+      // 1. Update deal with computed margin fields
+      const updates: Record<string, any> = {
+        ...form,
+        estimated_delivery_cost: estimatedDeliveryCost,
+        gross_margin_value: grossMarginValue,
+        gross_margin_percent: Math.round(grossMarginPercent * 100) / 100,
+      };
       delete updates.weighted_value;
       if (!updates.company_id) updates.company_id = null;
       if (!updates.primary_contact_id) updates.primary_contact_id = null;
