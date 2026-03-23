@@ -2,17 +2,17 @@ import { useFilteredCrm } from '@/hooks/useFilteredCrm';
 import { useUserView } from '@/context/UserViewContext';
 import { useAllActivities } from '@/hooks/useActivities';
 import { format, isAfter, isBefore, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, startOfWeek, endOfWeek, subDays } from 'date-fns';
-import { TrendingUp, AlertTriangle, PoundSterling, Target, CheckCircle2, XCircle, Clock, CalendarDays, Users, TriangleAlert } from 'lucide-react';
+import { TrendingUp, AlertTriangle, PoundSterling, Target, CheckCircle2, XCircle, Clock, CalendarDays, Users, TriangleAlert, BarChart3 } from 'lucide-react';
 import { formatGBP } from '@/lib/currency';
-import { useNavigate } from 'react-router-dom';
 
-const KpiCard = ({ label, value, icon: Icon, variant = 'default' }: { label: string; value: string; icon: any; variant?: string }) => (
+const KpiCard = ({ label, value, icon: Icon, variant = 'default', sub }: { label: string; value: string; icon: any; variant?: string; sub?: string }) => (
   <div className="bg-card rounded-lg border border-border p-5">
     <div className="flex items-center justify-between mb-2">
       <span className="text-sm font-medium text-muted-foreground">{label}</span>
       <Icon size={18} className={variant === 'green' ? 'text-health-green' : variant === 'red' ? 'text-health-red' : variant === 'amber' ? 'text-health-amber' : 'text-primary'} />
     </div>
     <p className="text-2xl font-bold text-card-foreground">{value}</p>
+    {sub && <p className="text-xs text-muted-foreground mt-1">{sub}</p>}
   </div>
 );
 
@@ -20,7 +20,6 @@ const DashboardPage = () => {
   const { deals, getCompany, getDealHealth, loading } = useFilteredCrm();
   const { selectedView } = useUserView();
   const { activities } = useAllActivities();
-  const navigate = useNavigate();
   const now = new Date();
   const thisMonthStart = startOfMonth(now);
   const thisMonthEnd = endOfMonth(now);
@@ -31,8 +30,23 @@ const DashboardPage = () => {
 
   if (loading) return <div className="p-6"><p className="text-muted-foreground">Loading…</p></div>;
 
+  // === ACTUALS (Closed Won, placed by won_date) ===
+  const closedWonDeals = deals.filter(d => d.status === 'closed_won');
+
+  const actualsThisMonth = closedWonDeals
+    .filter(d => d.won_date && isAfter(new Date(d.won_date), thisMonthStart) && isBefore(new Date(d.won_date), thisMonthEnd))
+    .reduce((s, d) => s + d.value, 0);
+
+  const actualsThisQuarter = closedWonDeals
+    .filter(d => d.won_date && isAfter(new Date(d.won_date), thisQStart) && isBefore(new Date(d.won_date), thisQEnd))
+    .reduce((s, d) => s + d.value, 0);
+
+  const closedLostQ = deals
+    .filter(d => d.status === 'closed_lost' && d.lost_date && isAfter(new Date(d.lost_date), thisQStart) && isBefore(new Date(d.lost_date), thisQEnd));
+  const closedLostQValue = closedLostQ.reduce((s, d) => s + d.value, 0);
+
+  // === PIPELINE FORECAST (Open deals only) ===
   const openDeals = deals.filter(d => d.status === 'open');
-  const totalPipeline = openDeals.reduce((s, d) => s + d.value, 0);
   const weightedPipeline = openDeals.reduce((s, d) => s + (d.weighted_value || 0), 0);
 
   const commitThisMonth = openDeals
@@ -43,13 +57,10 @@ const DashboardPage = () => {
     .filter(d => (d.forecast_category === 'Commit' || d.forecast_category === 'Best Case') && d.expected_close_date && isBefore(new Date(d.expected_close_date), thisMonthEnd) && isAfter(new Date(d.expected_close_date), thisMonthStart))
     .reduce((s, d) => s + (d.weighted_value || 0), 0);
 
-  const closedWonQ = deals.filter(d => d.status === 'closed_won' && d.won_date && isAfter(new Date(d.won_date), thisQStart) && isBefore(new Date(d.won_date), thisQEnd));
-  const closedLostQ = deals.filter(d => d.status === 'closed_lost' && d.lost_date && isAfter(new Date(d.lost_date), thisQStart) && isBefore(new Date(d.lost_date), thisQEnd));
-
   const overdueActions = openDeals.filter(d => d.next_action_date && isBefore(new Date(d.next_action_date), now));
   const slippedDeals = openDeals.filter(d => d.slip_count > 0);
 
-  // Activity widgets - filter by owner if not COEX
+  // Activity widgets
   const filteredActivities = selectedView === 'COEX'
     ? activities
     : activities.filter(a => a.owner === selectedView);
@@ -63,7 +74,6 @@ const DashboardPage = () => {
     a.next_step_date && a.status !== 'Cancelled' && isBefore(new Date(a.next_step_date), now) && a.next_step
   );
 
-  // Deals with no activity in last 14 days
   const fourteenDaysAgo = subDays(now, 14);
   const dealActivityMap = new Map<string, Date>();
   activities.forEach(a => {
@@ -85,25 +95,37 @@ const DashboardPage = () => {
         <p className="text-sm text-muted-foreground">{selectedView === 'COEX' ? 'COEX overview' : selectedView} · {format(now, 'MMMM yyyy')}</p>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <KpiCard label="Total Pipeline" value={formatGBP(totalPipeline)} icon={PoundSterling} />
-        <KpiCard label="Weighted Pipeline" value={formatGBP(weightedPipeline)} icon={Target} />
-        <KpiCard label="Commit This Month" value={formatGBP(commitThisMonth)} icon={TrendingUp} variant="green" />
-        <KpiCard label="Best Case This Month" value={formatGBP(bestCaseThisMonth)} icon={TrendingUp} />
+      {/* ACTUALS SECTION */}
+      <div>
+        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
+          <CheckCircle2 size={14} /> Actuals — Closed Revenue
+        </h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <KpiCard label="Actuals This Month" value={formatGBP(actualsThisMonth)} icon={CheckCircle2} variant="green" sub={`${closedWonDeals.filter(d => d.won_date && isAfter(new Date(d.won_date), thisMonthStart) && isBefore(new Date(d.won_date), thisMonthEnd)).length} deals`} />
+          <KpiCard label="Actuals This Quarter" value={formatGBP(actualsThisQuarter)} icon={CheckCircle2} variant="green" sub={`${closedWonDeals.filter(d => d.won_date && isAfter(new Date(d.won_date), thisQStart) && isBefore(new Date(d.won_date), thisQEnd)).length} deals`} />
+          <KpiCard label="Closed Lost (Quarter)" value={formatGBP(closedLostQValue)} icon={XCircle} variant="red" sub={`${closedLostQ.length} deals`} />
+        </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <KpiCard label="Closed Won (Q)" value={formatGBP(closedWonQ.reduce((s, d) => s + d.value, 0))} icon={CheckCircle2} variant="green" />
-        <KpiCard label="Closed Lost (Q)" value={formatGBP(closedLostQ.reduce((s, d) => s + d.value, 0))} icon={XCircle} variant="red" />
-        <KpiCard label="Overdue Actions" value={String(overdueActions.length)} icon={AlertTriangle} variant={overdueActions.length > 0 ? 'amber' : 'default'} />
-        <KpiCard label="Slipped Deals" value={String(slippedDeals.length)} icon={Clock} variant={slippedDeals.length > 0 ? 'amber' : 'default'} />
+      {/* PIPELINE FORECAST SECTION */}
+      <div>
+        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
+          <BarChart3 size={14} /> Pipeline Forecast — Open Deals
+        </h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <KpiCard label="Open Weighted Pipeline" value={formatGBP(weightedPipeline)} icon={Target} sub={`${openDeals.length} deals`} />
+          <KpiCard label="Commit This Month" value={formatGBP(commitThisMonth)} icon={TrendingUp} variant="green" />
+          <KpiCard label="Best Case This Month" value={formatGBP(bestCaseThisMonth)} icon={TrendingUp} />
+          <KpiCard label="Total Open Pipeline" value={formatGBP(openDeals.reduce((s, d) => s + d.value, 0))} icon={PoundSterling} />
+        </div>
       </div>
 
-      {/* Activity KPIs */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+      {/* ACTIVITY & HEALTH */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <KpiCard label="Meetings This Week" value={String(meetingsThisWeek.length)} icon={CalendarDays} />
         <KpiCard label="Overdue Follow-ups" value={String(overdueFollowUps.length)} icon={TriangleAlert} variant={overdueFollowUps.length > 0 ? 'red' : 'default'} />
-        <KpiCard label="Deals — No Recent Activity" value={String(dealsNoRecentActivity.length)} icon={Users} variant={dealsNoRecentActivity.length > 0 ? 'amber' : 'default'} />
+        <KpiCard label="Overdue Actions" value={String(overdueActions.length)} icon={AlertTriangle} variant={overdueActions.length > 0 ? 'amber' : 'default'} />
+        <KpiCard label="Deals — No Activity (14d)" value={String(dealsNoRecentActivity.length)} icon={Users} variant={dealsNoRecentActivity.length > 0 ? 'amber' : 'default'} />
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
@@ -146,7 +168,6 @@ const DashboardPage = () => {
         </div>
       </div>
 
-      {/* Deals with no recent activity */}
       {dealsNoRecentActivity.length > 0 && (
         <div className="bg-card rounded-lg border border-border p-5">
           <h2 className="text-sm font-semibold text-card-foreground mb-3">Deals With No Recent Activity (14+ days)</h2>
@@ -169,7 +190,6 @@ const DashboardPage = () => {
         </div>
       )}
 
-      {/* Overdue Follow-ups detail */}
       {overdueFollowUps.length > 0 && (
         <div className="bg-card rounded-lg border border-border p-5">
           <h2 className="text-sm font-semibold text-card-foreground mb-3">Overdue Follow-ups</h2>
