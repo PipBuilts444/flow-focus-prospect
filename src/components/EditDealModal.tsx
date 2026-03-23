@@ -59,7 +59,7 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
   const [companyForm, setCompanyForm] = useState<Record<string, any>>({});
   const [valueDisplay, setValueDisplay] = useState('');
 
-  const [dayRateDisplay, setDayRateDisplay] = useState('');
+  const [deliveryCostDisplay, setDeliveryCostDisplay] = useState('');
 
   useEffect(() => {
     if (!open) return;
