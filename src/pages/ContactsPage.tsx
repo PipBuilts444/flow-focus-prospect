@@ -1,12 +1,15 @@
 import { useFilteredCrm } from '@/hooks/useFilteredCrm';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { Search } from 'lucide-react';
+import { Search, Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import AddContactModal from '@/components/AddContactModal';
 
 const ContactsPage = () => {
   const { contacts, getCompany, deals, loading } = useFilteredCrm();
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
+  const [showAdd, setShowAdd] = useState(false);
 
   if (loading) return <div className="p-6"><p className="text-muted-foreground">Loading…</p></div>;
 
@@ -16,9 +19,14 @@ const ContactsPage = () => {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-4">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Contacts</h1>
-        <p className="text-sm text-muted-foreground">{filtered.length} contacts</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Contacts</h1>
+          <p className="text-sm text-muted-foreground">{filtered.length} contacts</p>
+        </div>
+        <Button onClick={() => setShowAdd(true)} className="flex items-center gap-1.5">
+          <Plus size={16} /> Add Contact
+        </Button>
       </div>
 
       <div className="relative w-64">
