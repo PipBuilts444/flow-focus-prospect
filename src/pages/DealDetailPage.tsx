@@ -224,13 +224,11 @@ const DealDetailPage = () => {
       </div>
 
       {/* Commercials & Margin */}
-      {((deal as any).estimated_delivery_days > 0 || (deal as any).contractor_day_rate > 0 || deal.value > 0) && (
+      {((deal as any).estimated_delivery_cost > 0 || deal.value > 0) && (
         <div className="bg-card rounded-lg border border-border p-5">
-          <h2 className="text-sm font-semibold text-card-foreground flex items-center gap-1.5 mb-3"><TrendingUp size={14} /> Delivery Cost & Margin</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <h2 className="text-sm font-semibold text-card-foreground flex items-center gap-1.5 mb-3"><TrendingUp size={14} /> Commercials</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Field label="Deal Value" value={formatGBP(deal.value)} />
-            <Field label="Est. Delivery Days" value={(deal as any).estimated_delivery_days || '—'} />
-            <Field label="Contractor Day Rate" value={(deal as any).contractor_day_rate > 0 ? formatGBP((deal as any).contractor_day_rate) : '—'} />
             <Field label="Est. Delivery Cost" value={(deal as any).estimated_delivery_cost > 0 ? formatGBP((deal as any).estimated_delivery_cost) : '—'} />
             <Field label="Gross Margin £" value={
               (deal as any).estimated_delivery_cost > 0

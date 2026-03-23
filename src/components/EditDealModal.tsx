@@ -396,27 +396,18 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
 
           {/* ── Delivery Cost & Margin ── */}
           <FormSection title="Delivery Cost & Margin">
-            <FormRow>
-              <FormField label="Estimated Delivery Days">
-                <Input type="number" min={0} value={form.estimated_delivery_days || ''} onChange={(e) => setField('estimated_delivery_days', parseFloat(e.target.value) || 0)} placeholder="0" />
-              </FormField>
-              <FormField label="Contractor Day Rate">
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">£</span>
-                  <Input
-                    className="pl-7"
-                    value={dayRateDisplay.replace('£', '')}
-                    onChange={(e) => handleDayRateChange(e.target.value)}
-                    placeholder="0"
-                  />
-                </div>
-              </FormField>
-            </FormRow>
-            <div className="grid grid-cols-3 gap-3">
-              <div className="bg-secondary/50 rounded-md p-3">
-                <p className="text-[10px] font-medium text-muted-foreground uppercase">Est. Delivery Cost</p>
-                <p className="text-sm font-semibold text-card-foreground mt-0.5">{formatGBP(estimatedDeliveryCost)}</p>
+            <FormField label="Estimated Delivery Cost">
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">£</span>
+                <Input
+                  className="pl-7"
+                  value={deliveryCostDisplay.replace('£', '')}
+                  onChange={(e) => handleDeliveryCostChange(e.target.value)}
+                  placeholder="0"
+                />
               </div>
+            </FormField>
+            <div className="grid grid-cols-2 gap-3">
               <div className="bg-secondary/50 rounded-md p-3">
                 <p className="text-[10px] font-medium text-muted-foreground uppercase">Gross Margin £</p>
                 <p className={`text-sm font-semibold mt-0.5 ${grossMarginValue >= 0 ? 'text-health-green' : 'text-health-red'}`}>{formatGBP(grossMarginValue)}</p>
