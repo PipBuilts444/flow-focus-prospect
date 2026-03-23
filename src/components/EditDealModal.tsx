@@ -59,7 +59,7 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
   const [companyForm, setCompanyForm] = useState<Record<string, any>>({});
   const [valueDisplay, setValueDisplay] = useState('');
 
-  const [dayRateDisplay, setDayRateDisplay] = useState('');
+  const [deliveryCostDisplay, setDeliveryCostDisplay] = useState('');
 
   useEffect(() => {
     if (!open) return;
@@ -96,11 +96,10 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
       final_commercial_assumptions: deal.final_commercial_assumptions || '',
       lost_reason: deal.lost_reason || '',
       lost_notes: deal.lost_notes || '',
-      estimated_delivery_days: (deal as any).estimated_delivery_days || 0,
-      contractor_day_rate: (deal as any).contractor_day_rate || 0,
+      estimated_delivery_cost: (deal as any).estimated_delivery_cost || 0,
     });
     setValueDisplay(deal.value > 0 ? formatInputDisplay(String(deal.value)) : '');
-    setDayRateDisplay((deal as any).contractor_day_rate > 0 ? formatInputDisplay(String((deal as any).contractor_day_rate)) : '');
+    setDeliveryCostDisplay((deal as any).estimated_delivery_cost > 0 ? formatInputDisplay(String((deal as any).estimated_delivery_cost)) : '');
 
     // Load linked contact
     const contact = deal.primary_contact_id ? getContact(deal.primary_contact_id) : null;
@@ -165,16 +164,15 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
     setField('value', num);
   };
 
-  const handleDayRateChange = (raw: string) => {
+  const handleDeliveryCostChange = (raw: string) => {
     const cleaned = stripFormatting(raw);
     const num = parseFloat(cleaned) || 0;
-    setDayRateDisplay(formatInputDisplay(cleaned));
-    setField('contractor_day_rate', num);
+    setDeliveryCostDisplay(formatInputDisplay(cleaned));
+    setField('estimated_delivery_cost', num);
   };
 
   // Auto-calculated margin fields
-  const estimatedDeliveryCost = (form.estimated_delivery_days || 0) * (form.contractor_day_rate || 0);
-  const grossMarginValue = (form.value || 0) - estimatedDeliveryCost;
+  const grossMarginValue = (form.value || 0) - (form.estimated_delivery_cost || 0);
   const grossMarginPercent = (form.value || 0) > 0 ? (grossMarginValue / form.value) * 100 : 0;
 
   const handleSave = async () => {
@@ -188,7 +186,6 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
       // 1. Update deal with computed margin fields
       const updates: Record<string, any> = {
         ...form,
-        estimated_delivery_cost: estimatedDeliveryCost,
         gross_margin_value: grossMarginValue,
         gross_margin_percent: Math.round(grossMarginPercent * 100) / 100,
       };
@@ -399,27 +396,18 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
 
           {/* ── Delivery Cost & Margin ── */}
           <FormSection title="Delivery Cost & Margin">
-            <FormRow>
-              <FormField label="Estimated Delivery Days">
-                <Input type="number" min={0} value={form.estimated_delivery_days || ''} onChange={(e) => setField('estimated_delivery_days', parseFloat(e.target.value) || 0)} placeholder="0" />
-              </FormField>
-              <FormField label="Contractor Day Rate">
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">£</span>
-                  <Input
-                    className="pl-7"
-                    value={dayRateDisplay.replace('£', '')}
-                    onChange={(e) => handleDayRateChange(e.target.value)}
-                    placeholder="0"
-                  />
-                </div>
-              </FormField>
-            </FormRow>
-            <div className="grid grid-cols-3 gap-3">
-              <div className="bg-secondary/50 rounded-md p-3">
-                <p className="text-[10px] font-medium text-muted-foreground uppercase">Est. Delivery Cost</p>
-                <p className="text-sm font-semibold text-card-foreground mt-0.5">{formatGBP(estimatedDeliveryCost)}</p>
+            <FormField label="Estimated Delivery Cost">
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">£</span>
+                <Input
+                  className="pl-7"
+                  value={deliveryCostDisplay.replace('£', '')}
+                  onChange={(e) => handleDeliveryCostChange(e.target.value)}
+                  placeholder="0"
+                />
               </div>
+            </FormField>
+            <div className="grid grid-cols-2 gap-3">
               <div className="bg-secondary/50 rounded-md p-3">
                 <p className="text-[10px] font-medium text-muted-foreground uppercase">Gross Margin £</p>
                 <p className={`text-sm font-semibold mt-0.5 ${grossMarginValue >= 0 ? 'text-health-green' : 'text-health-red'}`}>{formatGBP(grossMarginValue)}</p>
