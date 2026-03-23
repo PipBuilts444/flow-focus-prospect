@@ -379,6 +379,11 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
                 <Input type="date" value={form.expected_start_date || ''} onChange={(e) => setField('expected_start_date', e.target.value)} />
               </FormField>
             </FormRow>
+            {(form.stage === 'Closed Won' || form.won_date) && (
+              <FormField label="Won Date">
+                <Input type="date" value={form.won_date || ''} onChange={(e) => setField('won_date', e.target.value)} />
+              </FormField>
+            )}
             <FormRow>
               <FormField label="Procurement Status">
                 <Input value={form.procurement_status || ''} onChange={(e) => setField('procurement_status', e.target.value)} />
