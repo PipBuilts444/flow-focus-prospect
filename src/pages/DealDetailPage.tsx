@@ -6,6 +6,7 @@ import type { DealStage } from '@/types/crm';
 import { ArrowLeft, Building2, User, Calendar, AlertTriangle, TrendingUp, Trash2, ChevronRight, Pencil, Users } from 'lucide-react';
 import { format, addMonths } from 'date-fns';
 import { formatGBP } from '@/lib/currency';
+import { safeParseDate } from '@/lib/dateUtils';
 import ActivityTimeline from '@/components/ActivityTimeline';
 import ConfirmDeleteModal from '@/components/ConfirmDeleteModal';
 import StageGateModal from '@/components/StageGateModal';

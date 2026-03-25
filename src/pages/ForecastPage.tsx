@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { format, addMonths, startOfMonth, isSameMonth, isBefore } from 'date-fns';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { formatGBP, formatGBPCompact } from '@/lib/currency';
+import { safeParseDate } from '@/lib/dateUtils';
 
 const ForecastPage = () => {
   const { deals, loading } = useFilteredCrm();

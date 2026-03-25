@@ -5,6 +5,7 @@ import { format, isAfter, isBefore, startOfMonth, endOfMonth, startOfQuarter, en
 import { TrendingUp, AlertTriangle, PoundSterling, Target, CheckCircle2, XCircle, Clock, CalendarDays, Users, TriangleAlert, BarChart3, Percent } from 'lucide-react';
 import OutstandingActions from '@/components/OutstandingActions';
 import { formatGBP } from '@/lib/currency';
+import { safeParseDate } from '@/lib/dateUtils';
 
 const KpiCard = ({ label, value, icon: Icon, variant = 'default', sub }: { label: string; value: string; icon: any; variant?: string; sub?: string }) => (
   <div className="bg-card rounded-lg border border-border p-5">
