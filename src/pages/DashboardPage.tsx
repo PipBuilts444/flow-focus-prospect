@@ -141,9 +141,9 @@ const DashboardPage = () => {
           <Percent size={14} /> Profitability
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <KpiCard label="Pipeline Margin" value={formatGBP(pipelineMargin)} icon={TrendingUp} variant={pipelineMargin >= 0 ? 'green' : 'red'} sub={`${openDeals.filter(d => (d as any).estimated_delivery_cost > 0).length} deals costed`} />
+          <KpiCard label="Pipeline Margin" value={formatGBP(pipelineMargin)} icon={TrendingUp} variant={pipelineMargin >= 0 ? 'green' : 'red'} sub={`${openDeals.filter(d => (d.estimated_delivery_cost ?? 0) > 0).length} deals costed`} />
           <KpiCard label="Weighted Margin" value={formatGBP(Math.round(weightedMargin))} icon={Target} sub="Confidence-adjusted" />
-          <KpiCard label="Closed Won Margin" value={formatGBP(closedWonMargin)} icon={CheckCircle2} variant="green" sub={`${closedWonDeals.filter(d => (d as any).estimated_delivery_cost > 0).length} deals`} />
+          <KpiCard label="Closed Won Margin" value={formatGBP(closedWonMargin)} icon={CheckCircle2} variant="green" sub={`${closedWonDeals.filter(d => (d.estimated_delivery_cost ?? 0) > 0).length} deals`} />
           <KpiCard label="Avg Margin %" value={`${Math.round(avgMarginPercent)}%`} icon={Percent} variant={avgMarginPercent >= 20 ? 'green' : avgMarginPercent >= 0 ? 'amber' : 'red'} sub={`${dealsWithMargin.length} deals with costs`} />
         </div>
         {lowMarginDeals.length > 0 && (
