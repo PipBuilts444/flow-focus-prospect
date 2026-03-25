@@ -62,7 +62,11 @@ const NewDealPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!dealName.trim()) { toast.error('Deal name is required'); return; }
-
+    if (ownershipSplit.length > 0) {
+      const total = ownershipSplit.reduce((s, o) => s + o.ownership_percent, 0);
+      if (total !== 100) { toast.error('Ownership split must total 100%'); return; }
+      if (!ownershipSplit.some(o => o.role === 'primary')) { toast.error('One owner must be primary'); return; }
+    }
     setSubmitting(true);
     try {
       // 1. Resolve or create company
