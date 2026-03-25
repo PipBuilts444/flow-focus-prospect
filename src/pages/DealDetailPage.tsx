@@ -224,20 +224,20 @@ const DealDetailPage = () => {
       </div>
 
       {/* Commercials & Margin */}
-      {((deal as any).estimated_delivery_cost > 0 || deal.value > 0) && (
+      {((deal.estimated_delivery_cost ?? 0) > 0 || deal.value > 0) && (
         <div className="bg-card rounded-lg border border-border p-5">
           <h2 className="text-sm font-semibold text-card-foreground flex items-center gap-1.5 mb-3"><TrendingUp size={14} /> Commercials</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Field label="Deal Value" value={formatGBP(deal.value)} />
-            <Field label="Est. Delivery Cost" value={(deal as any).estimated_delivery_cost > 0 ? formatGBP((deal as any).estimated_delivery_cost) : '—'} />
+            <Field label="Est. Delivery Cost" value={(deal.estimated_delivery_cost ?? 0) > 0 ? formatGBP(deal.estimated_delivery_cost!) : '—'} />
             <Field label="Gross Margin £" value={
-              (deal as any).estimated_delivery_cost > 0
-                ? <span className={(deal.value - (deal as any).estimated_delivery_cost) >= 0 ? 'text-health-green' : 'text-health-red'}>{formatGBP(deal.value - (deal as any).estimated_delivery_cost)}</span>
+              (deal.estimated_delivery_cost ?? 0) > 0
+                ? <span className={(deal.gross_margin_value ?? 0) >= 0 ? 'text-health-green' : 'text-health-red'}>{formatGBP(deal.gross_margin_value ?? 0)}</span>
                 : '—'
             } />
             <Field label="Gross Margin %" value={
-              (deal as any).gross_margin_percent != null && (deal as any).estimated_delivery_cost > 0
-                ? <span className={(deal as any).gross_margin_percent >= 0 ? 'text-health-green' : 'text-health-red'}>{Math.round((deal as any).gross_margin_percent)}%</span>
+              deal.gross_margin_percent != null && (deal.estimated_delivery_cost ?? 0) > 0
+                ? <span className={(deal.gross_margin_percent ?? 0) >= 0 ? 'text-health-green' : 'text-health-red'}>{Math.round(deal.gross_margin_percent)}%</span>
                 : '—'
             } />
           </div>
