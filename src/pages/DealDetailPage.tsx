@@ -216,6 +216,32 @@ const DealDetailPage = () => {
         })}
       </div>
 
+      {/* Ownership Split */}
+      {dealOwners.length > 1 && (
+        <div className="bg-card rounded-lg border border-border p-5">
+          <h2 className="text-sm font-semibold text-card-foreground flex items-center gap-1.5 mb-3"><Users size={14} /> Ownership Split</h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {dealOwners.map(o => (
+              <div key={o.id} className="flex items-center justify-between p-3 bg-secondary/50 rounded-md">
+                <div>
+                  <p className="text-sm font-medium text-card-foreground">{o.user_name}</p>
+                  <p className="text-xs text-muted-foreground capitalize">{o.role}</p>
+                </div>
+                <span className="text-lg font-bold text-card-foreground">{o.ownership_percent}%</span>
+              </div>
+            ))}
+          </div>
+          <div className="mt-3 grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+            {dealOwners.map(o => (
+              <div key={o.id + '-val'}>
+                <p className="text-xs text-muted-foreground">{o.user_name}'s share</p>
+                <p className="font-semibold text-card-foreground">{formatGBP(deal.value * o.ownership_percent / 100)}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Linked Records */}
       <div className="grid md:grid-cols-2 gap-6">
         <div className="bg-card rounded-lg border border-border p-5 space-y-3">
