@@ -166,6 +166,9 @@ const DashboardPage = () => {
         )}
       </div>
 
+      {/* OUTSTANDING ACTIONS */}
+      <OutstandingActions />
+
       {/* ACTIVITY & HEALTH */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <KpiCard label="Meetings This Week" value={String(meetingsThisWeek.length)} icon={CalendarDays} />
