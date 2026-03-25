@@ -5,13 +5,9 @@ import { useDealOwners } from '@/hooks/useDealOwners';
 import type { Deal } from '@/types/crm';
 
 export interface SplitDeal extends Deal {
-  /** The split fraction applied to this deal for the current view (1.0 for COEX) */
   splitFraction: number;
-  /** Value adjusted by ownership split */
   splitValue: number;
-  /** Weighted value adjusted by ownership split */
   splitWeightedValue: number;
-  /** Gross margin value adjusted by ownership split */
   splitMarginValue: number;
 }
 
@@ -22,10 +18,7 @@ export const useFilteredCrm = () => {
 
   const filteredDeals = useMemo((): SplitDeal[] => {
     const base = isFiltered
-      ? crm.deals.filter(d => {
-          // Include deal if user is in deal_owners OR is legacy owner
-          return isOwner(d.id, selectedView) || d.owner === selectedView;
-        })
+      ? crm.deals.filter(d => isOwner(d.id, selectedView) || d.owner === selectedView)
       : crm.deals;
 
     return base.map(d => {
@@ -34,13 +27,13 @@ export const useFilteredCrm = () => {
         ...d,
         splitFraction: fraction,
         splitValue: d.value * fraction,
-        splitWeightedValue: (d.weighted    _value || 0) * fraction,
+        splitWeightedValue: (d.weighted_value || 0) * fraction,
         splitMarginValue: (d.gross_margin_value || 0) * fraction,
       };
     });
   }, [crm.deals, selectedView, isFiltered, owners]);
 
-  const filteredCompanies = useMemo(() (
+  const filteredCompanies = useMemo(() => {
     if (!isFiltered) return crm.companies;
     return crm.companies.filter(c => c.account_owner === selectedView);
   }, [crm.companies, selectedView, isFiltered]);
