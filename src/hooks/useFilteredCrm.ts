@@ -1,24 +1,52 @@
 import { useMemo } from 'react';
 import { useCrm } from '@/context/CrmContext';
 import { useUserView } from '@/context/UserViewContext';
+import { useDealOwners } from '@/hooks/useDealOwners';
+import type { Deal } from '@/types/crm';
+
+export interface SplitDeal extends Deal {
+  /** The split fraction applied to this deal for the current view (1.0 for COEX) */
+  splitFraction: number;
+  /** Value adjusted by ownership split */
+  splitValue: number;
+  /** Weighted value adjusted by ownership split */
+  splitWeightedValue: number;
+  /** Gross margin value adjusted by ownership split */
+  splitMarginValue: number;
+}
 
 export const useFilteredCrm = () => {
   const crm = useCrm();
   const { selectedView, isFiltered } = useUserView();
+  const { owners, getOwnershipPercent, isOwner, loading: ownersLoading, getOwnersForDeal, getPrimaryOwner, saveDealOwners, refresh: refreshOwners } = useDealOwners();
 
-  const filteredDeals = useMemo(() => {
-    if (!isFiltered) return crm.deals;
-    return crm.deals.filter(d => d.owner === selectedView);
-  }, [crm.deals, selectedView, isFiltered]);
+  const filteredDeals = useMemo((): SplitDeal[] => {
+    const base = isFiltered
+      ? crm.deals.filter(d => {
+          // Include deal if user is in deal_owners OR is legacy owner
+          return isOwner(d.id, selectedView) || d.owner === selectedView;
+        })
+      : crm.deals;
 
-  const filteredCompanies = useMemo(() => {
+    return base.map(d => {
+      const fraction = isFiltered ? (getOwnershipPercent(d.id, selectedView) || 1) : 1;
+      return {
+        ...d,
+        splitFraction: fraction,
+        splitValue: d.value * fraction,
+        splitWeightedValue: (d.weighted    _value || 0) * fraction,
+        splitMarginValue: (d.gross_margin_value || 0) * fraction,
+      };
+    });
+  }, [crm.deals, selectedView, isFiltered, owners]);
+
+  const filteredCompanies = useMemo(() (
     if (!isFiltered) return crm.companies;
     return crm.companies.filter(c => c.account_owner === selectedView);
   }, [crm.companies, selectedView, isFiltered]);
 
   const filteredContacts = useMemo(() => {
     if (!isFiltered) return crm.contacts;
-    // Filter contacts by company ownership
     const ownedCompanyIds = new Set(filteredCompanies.map(c => c.id));
     return crm.contacts.filter(c => c.company_id && ownedCompanyIds.has(c.company_id));
   }, [crm.contacts, filteredCompanies, isFiltered]);
@@ -28,5 +56,6 @@ export const useFilteredCrm = () => {
     deals: filteredDeals,
     companies: filteredCompanies,
     contacts: filteredContacts,
+    dealOwners: { owners, getOwnersForDeal, getPrimaryOwner, getOwnershipPercent, isOwner, saveDealOwners, refreshOwners, loading: ownersLoading },
   };
 };
