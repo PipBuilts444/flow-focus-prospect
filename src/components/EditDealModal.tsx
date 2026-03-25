@@ -270,8 +270,14 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
               <Input value={form.deal_name || ''} onChange={(e) => setField('deal_name', e.target.value)} placeholder="Enter deal name" />
             </FormField>
             <FormRow>
-              <FormField label="Owner">
-                <Select value={form.owner || '_none'} onValueChange={(v) => setField('owner', v === '_none' ? '' : v)}>
+              <FormField label="Primary Owner">
+                <Select value={form.owner || '_none'} onValueChange={(v) => {
+                  const name = v === '_none' ? '' : v;
+                  setField('owner', name);
+                  if (name && ownershipSplit.length === 0) {
+                    setOwnershipSplit([{ user_name: name, ownership_percent: 100, role: 'primary' }]);
+                  }
+                }}>
                   <SelectTrigger><SelectValue placeholder="Select owner" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="_none">Unassigned</SelectItem>
@@ -283,6 +289,11 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
                 <Input value={form.source || ''} onChange={(e) => setField('source', e.target.value)} placeholder="Referral, Inbound…" />
               </FormField>
             </FormRow>
+            {ownershipSplit.length > 0 && (
+              <FormField label="Ownership Split">
+                <OwnershipSplitEditor value={ownershipSplit} onChange={setOwnershipSplit} />
+              </FormField>
+            )}
             <FormRow>
               <FormField label="Stage">
                 <Select value={form.stage} onValueChange={(v) => setField('stage', v)}>
