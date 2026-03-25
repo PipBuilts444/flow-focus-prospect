@@ -121,6 +121,17 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
       industry: company?.industry || '',
       website: company?.website || '',
     });
+
+    // Load ownership records
+    supabase.from('deal_owners').select('*').eq('deal_id', deal.id).order('role').then(({ data }) => {
+      if (data && data.length > 0) {
+        setOwnershipSplit(data.map((o: any) => ({ user_name: o.user_name, ownership_percent: o.ownership_percent, role: o.role })));
+      } else if (deal.owner) {
+        setOwnershipSplit([{ user_name: deal.owner, ownership_percent: 100, role: 'primary' }]);
+      } else {
+        setOwnershipSplit([]);
+      }
+    });
   }, [open, deal.id]);
 
   // When contact selection changes, reload contact fields
