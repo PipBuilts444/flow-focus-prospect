@@ -29,6 +29,7 @@ const NewDealPage = () => {
   const [owner, setOwner] = useState('');
   const [ownershipSplit, setOwnershipSplit] = useState<OwnerEntry[]>([]);
   const [source, setSource] = useState('');
+  const [nextAction, setNextAction] = useState('');
   const [nextActionDate, setNextActionDate] = useState('');
   const [notes, setNotes] = useState('');
 
