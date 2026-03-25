@@ -96,10 +96,10 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
       final_commercial_assumptions: deal.final_commercial_assumptions || '',
       lost_reason: deal.lost_reason || '',
       lost_notes: deal.lost_notes || '',
-      estimated_delivery_cost: (deal as any).estimated_delivery_cost || 0,
+      estimated_delivery_cost: deal.estimated_delivery_cost || 0,
     });
     setValueDisplay(deal.value > 0 ? formatInputDisplay(String(deal.value)) : '');
-    setDeliveryCostDisplay((deal as any).estimated_delivery_cost > 0 ? formatInputDisplay(String((deal as any).estimated_delivery_cost)) : '');
+    setDeliveryCostDisplay(deal.estimated_delivery_cost && deal.estimated_delivery_cost > 0 ? formatInputDisplay(String(deal.estimated_delivery_cost)) : '');
 
     // Load linked contact
     const contact = deal.primary_contact_id ? getContact(deal.primary_contact_id) : null;

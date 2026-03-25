@@ -156,8 +156,8 @@ const DashboardPage = () => {
               {lowMarginDeals.slice(0, 8).map(d => (
                 <a key={d.id} href={`/deals/${d.id}`} className="flex items-center justify-between p-2 rounded-md hover:bg-accent transition-colors text-sm">
                   <span className="font-medium text-card-foreground">{d.deal_name}</span>
-                  <span className={`text-xs font-medium ${(d as any).gross_margin_percent < 0 ? 'text-health-red' : 'text-health-amber'}`}>
-                    {Math.round((d as any).gross_margin_percent)}% · {formatGBP((d as any).gross_margin_value || 0)}
+                  <span className={`text-xs font-medium ${(d.gross_margin_percent ?? 0) < 0 ? 'text-health-red' : 'text-health-amber'}`}>
+                    {Math.round(d.gross_margin_percent ?? 0)}% · {formatGBP(d.gross_margin_value || 0)}
                   </span>
                 </a>
               ))}
