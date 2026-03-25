@@ -12,6 +12,8 @@ import type { Deal } from '@/types/crm';
 import { formatInputDisplay, stripFormatting, formatGBP } from '@/lib/currency';
 import ContactSearchSelect from './ContactSearchSelect';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import OwnershipSplitEditor, { type OwnerEntry } from './OwnershipSplitEditor';
 
 interface Props {
   open: boolean;
