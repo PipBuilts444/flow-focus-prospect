@@ -237,6 +237,14 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
         } as any);
       }
 
+      // 4. Save ownership split
+      if (ownershipSplit.length > 0) {
+        const total = ownershipSplit.reduce((s, o) => s + o.ownership_percent, 0);
+        if (total !== 100) { toast.error('Ownership split must total 100%'); setSaving(false); return; }
+        await supabase.from('deal_owners').delete().eq('deal_id', deal.id);
+        await supabase.from('deal_owners').insert(ownershipSplit.map(o => ({ deal_id: deal.id, ...o })));
+      }
+
       toast.success('Deal updated');
       onClose();
     } catch {
