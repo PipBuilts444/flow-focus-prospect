@@ -28,7 +28,7 @@ const NewDealPage = () => {
   const [expectedStartDate, setExpectedStartDate] = useState('');
   const [deliveryMonths, setDeliveryMonths] = useState('1');
   const [owner, setOwner] = useState('');
-  const [source, setSource] = useState('');
+  const [ownershipSplit, setOwnershipSplit] = useState<OwnerEntry[]>([]);
   const [nextAction, setNextAction] = useState('');
   const [nextActionDate, setNextActionDate] = useState('');
   const [notes, setNotes] = useState('');
