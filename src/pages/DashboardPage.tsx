@@ -62,12 +62,11 @@ const DashboardPage = () => {
   const slippedDeals = openDeals.filter(d => d.slip_count > 0);
 
   // === MARGIN METRICS ===
-  const pipelineMargin = openDeals.reduce((s, d) => s + (d.gross_margin_value || 0), 0);
+  const pipelineMargin = openDeals.reduce((s, d) => s + d.splitMarginValue, 0);
   const weightedMargin = openDeals.reduce((s, d) => {
-    const margin = d.gross_margin_value || 0;
-    return s + (margin * (d.confidence_percent / 100));
+    return s + (d.splitMarginValue * (d.confidence_percent / 100));
   }, 0);
-  const closedWonMargin = closedWonDeals.reduce((s, d) => s + (d.gross_margin_value || 0), 0);
+  const closedWonMargin = closedWonDeals.reduce((s, d) => s + d.splitMarginValue, 0);
   const dealsWithMargin = [...openDeals, ...closedWonDeals].filter(d => (d.estimated_delivery_cost ?? 0) > 0);
   const avgMarginPercent = dealsWithMargin.length > 0
     ? dealsWithMargin.reduce((s, d) => s + (d.gross_margin_percent || 0), 0) / dealsWithMargin.length
