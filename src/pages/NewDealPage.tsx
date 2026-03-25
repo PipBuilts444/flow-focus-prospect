@@ -340,6 +340,17 @@ const NewDealPage = () => {
           </div>
         </section>
 
+        {/* Ownership Split */}
+        {ownershipSplit.length > 0 && (
+          <section className="bg-card rounded-lg border border-border p-5 space-y-4">
+            <div className="flex items-center gap-2 text-foreground font-semibold">
+              <Users size={18} className="text-primary" />
+              Ownership Split
+            </div>
+            <OwnershipSplitEditor value={ownershipSplit} onChange={setOwnershipSplit} />
+          </section>
+        )}
+
         {/* Next Action & Notes */}
         <section className="bg-card rounded-lg border border-border p-5 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
