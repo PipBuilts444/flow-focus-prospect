@@ -1,15 +1,37 @@
 import { useMemo } from 'react';
 import { useCrm } from '@/context/CrmContext';
 import { useUserView } from '@/context/UserViewContext';
+import { useDealOwners } from '@/hooks/useDealOwners';
+import type { Deal } from '@/types/crm';
+
+export interface SplitDeal extends Deal {
+  splitFraction: number;
+  splitValue: number;
+  splitWeightedValue: number;
+  splitMarginValue: number;
+}
 
 export const useFilteredCrm = () => {
   const crm = useCrm();
   const { selectedView, isFiltered } = useUserView();
+  const { owners, getOwnershipPercent, isOwner, loading: ownersLoading, getOwnersForDeal, getPrimaryOwner, saveDealOwners, refresh: refreshOwners } = useDealOwners();
 
-  const filteredDeals = useMemo(() => {
-    if (!isFiltered) return crm.deals;
-    return crm.deals.filter(d => d.owner === selectedView);
-  }, [crm.deals, selectedView, isFiltered]);
+  const filteredDeals = useMemo((): SplitDeal[] => {
+    const base = isFiltered
+      ? crm.deals.filter(d => isOwner(d.id, selectedView) || d.owner === selectedView)
+      : crm.deals;
+
+    return base.map(d => {
+      const fraction = isFiltered ? (getOwnershipPercent(d.id, selectedView) || 1) : 1;
+      return {
+        ...d,
+        splitFraction: fraction,
+        splitValue: d.value * fraction,
+        splitWeightedValue: (d.weighted_value || 0) * fraction,
+        splitMarginValue: (d.gross_margin_value || 0) * fraction,
+      };
+    });
+  }, [crm.deals, selectedView, isFiltered, owners]);
 
   const filteredCompanies = useMemo(() => {
     if (!isFiltered) return crm.companies;
@@ -18,7 +40,6 @@ export const useFilteredCrm = () => {
 
   const filteredContacts = useMemo(() => {
     if (!isFiltered) return crm.contacts;
-    // Filter contacts by company ownership
     const ownedCompanyIds = new Set(filteredCompanies.map(c => c.id));
     return crm.contacts.filter(c => c.company_id && ownedCompanyIds.has(c.company_id));
   }, [crm.contacts, filteredCompanies, isFiltered]);
@@ -28,5 +49,6 @@ export const useFilteredCrm = () => {
     deals: filteredDeals,
     companies: filteredCompanies,
     contacts: filteredContacts,
+    dealOwners: { owners, getOwnersForDeal, getPrimaryOwner, getOwnershipPercent, isOwner, saveDealOwners, refreshOwners, loading: ownersLoading },
   };
 };

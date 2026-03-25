@@ -25,18 +25,17 @@ const ForecastPage = () => {
 
       deals.forEach(deal => {
         if (deal.status === 'closed_lost' || deal.forecast_category === 'Closed Lost') return;
+        const fraction = deal.splitFraction;
 
         if (deal.status === 'closed_won') {
-          // ACTUALS: Closed Won deals belong only to the won month
           if (!deal.won_date) return;
           const wonMonth = startOfMonth(new Date(deal.won_date));
-          if (isSameMonth(wonMonth, month)) actuals += deal.value;
+          if (isSameMonth(wonMonth, month)) actuals += deal.value * fraction;
           return;
         }
 
         if (deal.status !== 'open') return;
 
-        // PIPELINE: Open deals only, using expected_start_date or expected_close_date
         const startDate = deal.expected_start_date
           ? startOfMonth(new Date(deal.expected_start_date))
           : deal.expected_close_date
@@ -45,7 +44,7 @@ const ForecastPage = () => {
 
         if (!startDate || deal.delivery_duration_months <= 0) return;
 
-        const monthlyAmt = deal.value / deal.delivery_duration_months;
+        const monthlyAmt = (deal.value * fraction) / deal.delivery_duration_months;
         for (let i = 0; i < deal.delivery_duration_months; i++) {
           if (isSameMonth(addMonths(startDate, i), month)) {
             if (deal.forecast_category === 'Commit') commit += monthlyAmt;
@@ -71,10 +70,10 @@ const ForecastPage = () => {
   const openDeals = deals.filter(d => d.status === 'open');
   const closedWonDeals = deals.filter(d => d.status === 'closed_won' && d.won_date);
   const totals = {
-    actuals: closedWonDeals.reduce((s, d) => s + d.value, 0),
-    pipeline: openDeals.filter(d => d.forecast_category === 'Pipeline').reduce((s, d) => s + d.value, 0),
-    bestCase: openDeals.filter(d => d.forecast_category === 'Best Case').reduce((s, d) => s + d.value, 0),
-    commit: openDeals.filter(d => d.forecast_category === 'Commit').reduce((s, d) => s + d.value, 0),
+    actuals: closedWonDeals.reduce((s, d) => s + d.splitValue, 0),
+    pipeline: openDeals.filter(d => d.forecast_category === 'Pipeline').reduce((s, d) => s + d.splitValue, 0),
+    bestCase: openDeals.filter(d => d.forecast_category === 'Best Case').reduce((s, d) => s + d.splitValue, 0),
+    commit: openDeals.filter(d => d.forecast_category === 'Commit').reduce((s, d) => s + d.splitValue, 0),
   };
 
   return (

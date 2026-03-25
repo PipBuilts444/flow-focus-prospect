@@ -12,6 +12,8 @@ import type { Deal } from '@/types/crm';
 import { formatInputDisplay, stripFormatting, formatGBP } from '@/lib/currency';
 import ContactSearchSelect from './ContactSearchSelect';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import OwnershipSplitEditor, { type OwnerEntry } from './OwnershipSplitEditor';
 
 interface Props {
   open: boolean;
@@ -59,6 +61,7 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
   const [companyForm, setCompanyForm] = useState<Record<string, any>>({});
   const [valueDisplay, setValueDisplay] = useState('');
   const [deliveryCostDisplay, setDeliveryCostDisplay] = useState('');
+  const [ownershipSplit, setOwnershipSplit] = useState<OwnerEntry[]>([]);
 
   useEffect(() => {
     if (!open) return;
@@ -117,6 +120,17 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
       company_name: company?.company_name || '',
       industry: company?.industry || '',
       website: company?.website || '',
+    });
+
+    // Load ownership records
+    supabase.from('deal_owners').select('*').eq('deal_id', deal.id).order('role').then(({ data }) => {
+      if (data && data.length > 0) {
+        setOwnershipSplit(data.map((o: any) => ({ user_name: o.user_name, ownership_percent: o.ownership_percent, role: o.role })));
+      } else if (deal.owner) {
+        setOwnershipSplit([{ user_name: deal.owner, ownership_percent: 100, role: 'primary' }]);
+      } else {
+        setOwnershipSplit([]);
+      }
     });
   }, [open, deal.id]);
 
@@ -223,6 +237,14 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
         } as any);
       }
 
+      // 4. Save ownership split
+      if (ownershipSplit.length > 0) {
+        const total = ownershipSplit.reduce((s, o) => s + o.ownership_percent, 0);
+        if (total !== 100) { toast.error('Ownership split must total 100%'); setSaving(false); return; }
+        await supabase.from('deal_owners').delete().eq('deal_id', deal.id);
+        await supabase.from('deal_owners').insert(ownershipSplit.map(o => ({ deal_id: deal.id, ...o })));
+      }
+
       toast.success('Deal updated');
       onClose();
     } catch {
@@ -248,8 +270,14 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
               <Input value={form.deal_name || ''} onChange={(e) => setField('deal_name', e.target.value)} placeholder="Enter deal name" />
             </FormField>
             <FormRow>
-              <FormField label="Owner">
-                <Select value={form.owner || '_none'} onValueChange={(v) => setField('owner', v === '_none' ? '' : v)}>
+              <FormField label="Primary Owner">
+                <Select value={form.owner || '_none'} onValueChange={(v) => {
+                  const name = v === '_none' ? '' : v;
+                  setField('owner', name);
+                  if (name && ownershipSplit.length === 0) {
+                    setOwnershipSplit([{ user_name: name, ownership_percent: 100, role: 'primary' }]);
+                  }
+                }}>
                   <SelectTrigger><SelectValue placeholder="Select owner" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="_none">Unassigned</SelectItem>
@@ -261,6 +289,11 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
                 <Input value={form.source || ''} onChange={(e) => setField('source', e.target.value)} placeholder="Referral, Inbound…" />
               </FormField>
             </FormRow>
+            {ownershipSplit.length > 0 && (
+              <FormField label="Ownership Split">
+                <OwnershipSplitEditor value={ownershipSplit} onChange={setOwnershipSplit} />
+              </FormField>
+            )}
             <FormRow>
               <FormField label="Stage">
                 <Select value={form.stage} onValueChange={(v) => setField('stage', v)}>

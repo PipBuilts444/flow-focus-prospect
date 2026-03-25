@@ -36,38 +36,37 @@ const DashboardPage = () => {
 
   const actualsThisMonth = closedWonDeals
     .filter(d => d.won_date && isAfter(new Date(d.won_date), thisMonthStart) && isBefore(new Date(d.won_date), thisMonthEnd))
-    .reduce((s, d) => s + d.value, 0);
+    .reduce((s, d) => s + d.splitValue, 0);
 
   const actualsThisQuarter = closedWonDeals
     .filter(d => d.won_date && isAfter(new Date(d.won_date), thisQStart) && isBefore(new Date(d.won_date), thisQEnd))
-    .reduce((s, d) => s + d.value, 0);
+    .reduce((s, d) => s + d.splitValue, 0);
 
   const closedLostQ = deals
     .filter(d => d.status === 'closed_lost' && d.lost_date && isAfter(new Date(d.lost_date), thisQStart) && isBefore(new Date(d.lost_date), thisQEnd));
-  const closedLostQValue = closedLostQ.reduce((s, d) => s + d.value, 0);
+  const closedLostQValue = closedLostQ.reduce((s, d) => s + d.splitValue, 0);
 
   // === PIPELINE FORECAST (Open deals only) ===
   const openDeals = deals.filter(d => d.status === 'open');
-  const weightedPipeline = openDeals.reduce((s, d) => s + (d.weighted_value || 0), 0);
+  const weightedPipeline = openDeals.reduce((s, d) => s + d.splitWeightedValue, 0);
 
   const commitThisMonth = openDeals
     .filter(d => d.forecast_category === 'Commit' && d.expected_close_date && isBefore(new Date(d.expected_close_date), thisMonthEnd) && isAfter(new Date(d.expected_close_date), thisMonthStart))
-    .reduce((s, d) => s + (d.weighted_value || 0), 0);
+    .reduce((s, d) => s + d.splitWeightedValue, 0);
 
   const bestCaseThisMonth = openDeals
     .filter(d => (d.forecast_category === 'Commit' || d.forecast_category === 'Best Case') && d.expected_close_date && isBefore(new Date(d.expected_close_date), thisMonthEnd) && isAfter(new Date(d.expected_close_date), thisMonthStart))
-    .reduce((s, d) => s + (d.weighted_value || 0), 0);
+    .reduce((s, d) => s + d.splitWeightedValue, 0);
 
   const overdueActions = openDeals.filter(d => d.next_action_date && isBefore(new Date(d.next_action_date), now));
   const slippedDeals = openDeals.filter(d => d.slip_count > 0);
 
   // === MARGIN METRICS ===
-  const pipelineMargin = openDeals.reduce((s, d) => s + (d.gross_margin_value || 0), 0);
+  const pipelineMargin = openDeals.reduce((s, d) => s + d.splitMarginValue, 0);
   const weightedMargin = openDeals.reduce((s, d) => {
-    const margin = d.gross_margin_value || 0;
-    return s + (margin * (d.confidence_percent / 100));
+    return s + (d.splitMarginValue * (d.confidence_percent / 100));
   }, 0);
-  const closedWonMargin = closedWonDeals.reduce((s, d) => s + (d.gross_margin_value || 0), 0);
+  const closedWonMargin = closedWonDeals.reduce((s, d) => s + d.splitMarginValue, 0);
   const dealsWithMargin = [...openDeals, ...closedWonDeals].filter(d => (d.estimated_delivery_cost ?? 0) > 0);
   const avgMarginPercent = dealsWithMargin.length > 0
     ? dealsWithMargin.reduce((s, d) => s + (d.gross_margin_percent || 0), 0) / dealsWithMargin.length
@@ -131,7 +130,7 @@ const DashboardPage = () => {
           <KpiCard label="Open Weighted Pipeline" value={formatGBP(weightedPipeline)} icon={Target} sub={`${openDeals.length} deals`} />
           <KpiCard label="Commit This Month" value={formatGBP(commitThisMonth)} icon={TrendingUp} variant="green" />
           <KpiCard label="Best Case This Month" value={formatGBP(bestCaseThisMonth)} icon={TrendingUp} />
-          <KpiCard label="Total Open Pipeline" value={formatGBP(openDeals.reduce((s, d) => s + d.value, 0))} icon={PoundSterling} />
+          <KpiCard label="Total Open Pipeline" value={formatGBP(openDeals.reduce((s, d) => s + d.splitValue, 0))} icon={PoundSterling} />
         </div>
       </div>
 

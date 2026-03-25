@@ -197,6 +197,41 @@ export type Database = {
           },
         ]
       }
+      deal_owners: {
+        Row: {
+          created_at: string
+          deal_id: string
+          id: string
+          ownership_percent: number
+          role: string
+          user_name: string
+        }
+        Insert: {
+          created_at?: string
+          deal_id: string
+          id?: string
+          ownership_percent?: number
+          role?: string
+          user_name: string
+        }
+        Update: {
+          created_at?: string
+          deal_id?: string
+          id?: string
+          ownership_percent?: number
+          role?: string
+          user_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deal_owners_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       deal_revenue_schedule: {
         Row: {
           created_at: string

@@ -5,8 +5,9 @@ import { DEAL_STAGES, FORECAST_CATEGORIES, DEAL_TYPES, STAGE_CONFIDENCE } from '
 import type { DealStage, ForecastCategory, DealType } from '@/types/crm';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { ArrowLeft, Building2, User, Briefcase, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Building2, User, Briefcase, Users } from 'lucide-react';
 import { formatGBP, formatInputDisplay, stripFormatting } from '@/lib/currency';
+import OwnershipSplitEditor, { type OwnerEntry } from '@/components/OwnershipSplitEditor';
 
 const OPEN_STAGES = DEAL_STAGES.filter(s => s !== 'Closed Won' && s !== 'Closed Lost');
 
@@ -26,6 +27,7 @@ const NewDealPage = () => {
   const [expectedStartDate, setExpectedStartDate] = useState('');
   const [deliveryMonths, setDeliveryMonths] = useState('1');
   const [owner, setOwner] = useState('');
+  const [ownershipSplit, setOwnershipSplit] = useState<OwnerEntry[]>([]);
   const [source, setSource] = useState('');
   const [nextAction, setNextAction] = useState('');
   const [nextActionDate, setNextActionDate] = useState('');
@@ -60,7 +62,11 @@ const NewDealPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!dealName.trim()) { toast.error('Deal name is required'); return; }
-
+    if (ownershipSplit.length > 0) {
+      const total = ownershipSplit.reduce((s, o) => s + o.ownership_percent, 0);
+      if (total !== 100) { toast.error('Ownership split must total 100%'); return; }
+      if (!ownershipSplit.some(o => o.role === 'primary')) { toast.error('One owner must be primary'); return; }
+    }
     setSubmitting(true);
     try {
       // 1. Resolve or create company
@@ -135,6 +141,17 @@ const NewDealPage = () => {
           });
         }
         await supabase.from('deal_revenue_schedule').insert(scheduleRows);
+      }
+
+      // 5. Create ownership records
+      if (deal && ownershipSplit.length > 0) {
+        const ownerRows = ownershipSplit.map(o => ({
+          deal_id: deal.id,
+          user_name: o.user_name,
+          ownership_percent: o.ownership_percent,
+          role: o.role,
+        }));
+        await supabase.from('deal_owners').insert(ownerRows);
       }
 
       await refresh();
@@ -275,10 +292,17 @@ const NewDealPage = () => {
                 {DEAL_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
               </select>
             </div>
-            <div>
+            <div className="md:col-span-2">
               <label className={labelClass}>Owner</label>
-              <select value={owner} onChange={e => setOwner(e.target.value)} className={inputClass}>
-                <option value="">Select owner…</option>
+              <select value={owner} onChange={e => {
+                setOwner(e.target.value);
+                if (e.target.value && ownershipSplit.length === 0) {
+                  setOwnershipSplit([{ user_name: e.target.value, ownership_percent: 100, role: 'primary' }]);
+                } else if (e.target.value) {
+                  setOwnershipSplit(prev => prev.map((o, i) => i === 0 ? { ...o, user_name: e.target.value } : o));
+                }
+              }} className={inputClass}>
+                <option value="">Select primary owner…</option>
                 <option value="Pippa Bradley-Dixon">Pippa Bradley-Dixon</option>
                 <option value="Craig Davies">Craig Davies</option>
                 <option value="Adam Solomons">Adam Solomons</option>
@@ -326,6 +350,17 @@ const NewDealPage = () => {
             </div>
           </div>
         </section>
+
+        {/* Ownership Split */}
+        {ownershipSplit.length > 0 && (
+          <section className="bg-card rounded-lg border border-border p-5 space-y-4">
+            <div className="flex items-center gap-2 text-foreground font-semibold">
+              <Users size={18} className="text-primary" />
+              Ownership Split
+            </div>
+            <OwnershipSplitEditor value={ownershipSplit} onChange={setOwnershipSplit} />
+          </section>
+        )}
 
         {/* Next Action & Notes */}
         <section className="bg-card rounded-lg border border-border p-5 space-y-4">

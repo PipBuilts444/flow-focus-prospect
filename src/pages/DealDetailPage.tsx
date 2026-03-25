@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCrm } from '@/context/CrmContext';
 import { DEAL_STAGES } from '@/types/crm';
 import type { DealStage } from '@/types/crm';
-import { ArrowLeft, Building2, User, Calendar, AlertTriangle, TrendingUp, Trash2, ChevronRight, Pencil } from 'lucide-react';
+import { ArrowLeft, Building2, User, Calendar, AlertTriangle, TrendingUp, Trash2, ChevronRight, Pencil, Users } from 'lucide-react';
 import { format, addMonths } from 'date-fns';
 import { formatGBP } from '@/lib/currency';
 import ActivityTimeline from '@/components/ActivityTimeline';
@@ -13,6 +13,8 @@ import EditDealModal from '@/components/EditDealModal';
 import { STAGE_FIELDS } from '@/lib/stageRequirements';
 import { toast } from 'sonner';
 import { useUserView } from '@/context/UserViewContext';
+import { supabase } from '@/integrations/supabase/client';
+import type { DealOwner } from '@/hooks/useDealOwners';
 
 const healthLabel: Record<string, { text: string; cls: string }> = {
   green: { text: 'Healthy', cls: 'bg-health-green/15 text-health-green' },
@@ -32,8 +34,16 @@ const DealDetailPage = () => {
   const [deleting, setDeleting] = useState(false);
   const [stageTarget, setStageTarget] = useState<DealStage | null>(null);
   const [stageLoading, setStageLoading] = useState(false);
+  const [dealOwners, setDealOwners] = useState<DealOwner[]>([]);
 
   const deal = getDeal(id || '');
+
+  useEffect(() => {
+    if (!id) return;
+    supabase.from('deal_owners').select('*').eq('deal_id', id).order('role').then(({ data }) => {
+      if (data) setDealOwners(data as DealOwner[]);
+    });
+  }, [id, showEdit]);
   if (!deal) return <div className="p-6"><p className="text-muted-foreground">Deal not found</p></div>;
 
   const company = getCompany(deal.company_id || '');
@@ -205,6 +215,32 @@ const DealDetailPage = () => {
           );
         })}
       </div>
+
+      {/* Ownership Split */}
+      {dealOwners.length > 1 && (
+        <div className="bg-card rounded-lg border border-border p-5">
+          <h2 className="text-sm font-semibold text-card-foreground flex items-center gap-1.5 mb-3"><Users size={14} /> Ownership Split</h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {dealOwners.map(o => (
+              <div key={o.id} className="flex items-center justify-between p-3 bg-secondary/50 rounded-md">
+                <div>
+                  <p className="text-sm font-medium text-card-foreground">{o.user_name}</p>
+                  <p className="text-xs text-muted-foreground capitalize">{o.role}</p>
+                </div>
+                <span className="text-lg font-bold text-card-foreground">{o.ownership_percent}%</span>
+              </div>
+            ))}
+          </div>
+          <div className="mt-3 grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+            {dealOwners.map(o => (
+              <div key={o.id + '-val'}>
+                <p className="text-xs text-muted-foreground">{o.user_name}'s share</p>
+                <p className="font-semibold text-card-foreground">{formatGBP(deal.value * o.ownership_percent / 100)}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Linked Records */}
       <div className="grid md:grid-cols-2 gap-6">
