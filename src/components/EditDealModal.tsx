@@ -123,17 +123,13 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
     });
 
     // Load ownership records
-    supabase.from('deal_owners').select('*').eq('deal_id', deal.id).order('role').then(({ data }) => {
+    supabase.from('deal_owners').select('*').eq('deal_id', deal.id).order('role').then(({ data, error }) => {
+      if (error) {
+        console.error('Failed to load deal owners:', error);
+      }
       if (data && data.length > 0) {
         setOwnershipSplit(data.map((o: any) => ({ user_name: o.user_name, ownership_percent: o.ownership_percent, role: o.role })));
       } else if (deal.owner) {
-        setOwnershipSplit([{ user_name: deal.owner, ownership_percent: 100, role: 'primary' }]);
-      } else {
-        setOwnershipSplit([]);
-      }
-    }).catch((err) => {
-      console.error('Failed to load deal owners:', err);
-      if (deal.owner) {
         setOwnershipSplit([{ user_name: deal.owner, ownership_percent: 100, role: 'primary' }]);
       } else {
         setOwnershipSplit([]);
