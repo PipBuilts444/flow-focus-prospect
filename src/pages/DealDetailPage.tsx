@@ -6,6 +6,7 @@ import type { DealStage } from '@/types/crm';
 import { ArrowLeft, Building2, User, Calendar, AlertTriangle, TrendingUp, Trash2, ChevronRight, Pencil, Users } from 'lucide-react';
 import { format, addMonths } from 'date-fns';
 import { formatGBP } from '@/lib/currency';
+import { safeParseDate } from '@/lib/dateUtils';
 import ActivityTimeline from '@/components/ActivityTimeline';
 import ConfirmDeleteModal from '@/components/ConfirmDeleteModal';
 import StageGateModal from '@/components/StageGateModal';
@@ -81,11 +82,13 @@ const DealDetailPage = () => {
 
   const monthlyRevenue: { month: string; amount: number }[] = [];
   if (deal.expected_start_date && deal.delivery_duration_months > 0) {
-    const start = new Date(deal.expected_start_date);
-    const monthlyAmt = deal.value / deal.delivery_duration_months;
-    for (let i = 0; i < deal.delivery_duration_months; i++) {
-      const m = addMonths(start, i);
-      monthlyRevenue.push({ month: format(m, 'MMM yyyy'), amount: Math.round(monthlyAmt) });
+    const start = safeParseDate(deal.expected_start_date);
+    if (start) {
+      const monthlyAmt = deal.value / deal.delivery_duration_months;
+      for (let i = 0; i < deal.delivery_duration_months; i++) {
+        const m = addMonths(start, i);
+        monthlyRevenue.push({ month: format(m, 'MMM yyyy'), amount: Math.round(monthlyAmt) });
+      }
     }
   }
 

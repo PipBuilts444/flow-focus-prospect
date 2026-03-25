@@ -5,6 +5,7 @@ import { format, isAfter, isBefore, startOfMonth, endOfMonth, startOfQuarter, en
 import { TrendingUp, AlertTriangle, PoundSterling, Target, CheckCircle2, XCircle, Clock, CalendarDays, Users, TriangleAlert, BarChart3, Percent } from 'lucide-react';
 import OutstandingActions from '@/components/OutstandingActions';
 import { formatGBP } from '@/lib/currency';
+import { safeParseDate } from '@/lib/dateUtils';
 
 const KpiCard = ({ label, value, icon: Icon, variant = 'default', sub }: { label: string; value: string; icon: any; variant?: string; sub?: string }) => (
   <div className="bg-card rounded-lg border border-border p-5">
@@ -35,15 +36,15 @@ const DashboardPage = () => {
   const closedWonDeals = deals.filter(d => d.status === 'closed_won');
 
   const actualsThisMonth = closedWonDeals
-    .filter(d => d.won_date && isAfter(new Date(d.won_date), thisMonthStart) && isBefore(new Date(d.won_date), thisMonthEnd))
+    .filter(d => { const p = safeParseDate(d.won_date); return p && isAfter(p, thisMonthStart) && isBefore(p, thisMonthEnd); })
     .reduce((s, d) => s + d.splitValue, 0);
 
   const actualsThisQuarter = closedWonDeals
-    .filter(d => d.won_date && isAfter(new Date(d.won_date), thisQStart) && isBefore(new Date(d.won_date), thisQEnd))
+    .filter(d => { const p = safeParseDate(d.won_date); return p && isAfter(p, thisQStart) && isBefore(p, thisQEnd); })
     .reduce((s, d) => s + d.splitValue, 0);
 
   const closedLostQ = deals
-    .filter(d => d.status === 'closed_lost' && d.lost_date && isAfter(new Date(d.lost_date), thisQStart) && isBefore(new Date(d.lost_date), thisQEnd));
+    .filter(d => { const p = safeParseDate(d.lost_date); return d.status === 'closed_lost' && p && isAfter(p, thisQStart) && isBefore(p, thisQEnd); });
   const closedLostQValue = closedLostQ.reduce((s, d) => s + d.splitValue, 0);
 
   // === PIPELINE FORECAST (Open deals only) ===
@@ -51,14 +52,14 @@ const DashboardPage = () => {
   const weightedPipeline = openDeals.reduce((s, d) => s + d.splitWeightedValue, 0);
 
   const commitThisMonth = openDeals
-    .filter(d => d.forecast_category === 'Commit' && d.expected_close_date && isBefore(new Date(d.expected_close_date), thisMonthEnd) && isAfter(new Date(d.expected_close_date), thisMonthStart))
+    .filter(d => { const p = safeParseDate(d.expected_close_date); return d.forecast_category === 'Commit' && p && isBefore(p, thisMonthEnd) && isAfter(p, thisMonthStart); })
     .reduce((s, d) => s + d.splitWeightedValue, 0);
 
   const bestCaseThisMonth = openDeals
-    .filter(d => (d.forecast_category === 'Commit' || d.forecast_category === 'Best Case') && d.expected_close_date && isBefore(new Date(d.expected_close_date), thisMonthEnd) && isAfter(new Date(d.expected_close_date), thisMonthStart))
+    .filter(d => { const p = safeParseDate(d.expected_close_date); return (d.forecast_category === 'Commit' || d.forecast_category === 'Best Case') && p && isBefore(p, thisMonthEnd) && isAfter(p, thisMonthStart); })
     .reduce((s, d) => s + d.splitWeightedValue, 0);
 
-  const overdueActions = openDeals.filter(d => d.next_action_date && isBefore(new Date(d.next_action_date), now));
+  const overdueActions = openDeals.filter(d => { const p = safeParseDate(d.next_action_date); return p && isBefore(p, now); });
   const slippedDeals = openDeals.filter(d => d.slip_count > 0);
 
   // === MARGIN METRICS ===

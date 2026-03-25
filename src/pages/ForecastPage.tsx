@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { format, addMonths, startOfMonth, isSameMonth, isBefore } from 'date-fns';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { formatGBP, formatGBPCompact } from '@/lib/currency';
+import { safeParseDate } from '@/lib/dateUtils';
 
 const ForecastPage = () => {
   const { deals, loading } = useFilteredCrm();
@@ -29,18 +30,17 @@ const ForecastPage = () => {
 
         if (deal.status === 'closed_won') {
           if (!deal.won_date) return;
-          const wonMonth = startOfMonth(new Date(deal.won_date));
+          const wonParsed = safeParseDate(deal.won_date);
+          if (!wonParsed) return;
+          const wonMonth = startOfMonth(wonParsed);
           if (isSameMonth(wonMonth, month)) actuals += deal.value * fraction;
           return;
         }
 
         if (deal.status !== 'open') return;
 
-        const startDate = deal.expected_start_date
-          ? startOfMonth(new Date(deal.expected_start_date))
-          : deal.expected_close_date
-            ? startOfMonth(new Date(deal.expected_close_date))
-            : null;
+        const rawStart = safeParseDate(deal.expected_start_date) ?? safeParseDate(deal.expected_close_date);
+        const startDate = rawStart ? startOfMonth(rawStart) : null;
 
         if (!startDate || deal.delivery_duration_months <= 0) return;
 
