@@ -281,10 +281,17 @@ const NewDealPage = () => {
                 {DEAL_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
               </select>
             </div>
-            <div>
+            <div className="md:col-span-2">
               <label className={labelClass}>Owner</label>
-              <select value={owner} onChange={e => setOwner(e.target.value)} className={inputClass}>
-                <option value="">Select owner…</option>
+              <select value={owner} onChange={e => {
+                setOwner(e.target.value);
+                if (e.target.value && ownershipSplit.length === 0) {
+                  setOwnershipSplit([{ user_name: e.target.value, ownership_percent: 100, role: 'primary' }]);
+                } else if (e.target.value) {
+                  setOwnershipSplit(prev => prev.map((o, i) => i === 0 ? { ...o, user_name: e.target.value } : o));
+                }
+              }} className={inputClass}>
+                <option value="">Select primary owner…</option>
                 <option value="Pippa Bradley-Dixon">Pippa Bradley-Dixon</option>
                 <option value="Craig Davies">Craig Davies</option>
                 <option value="Adam Solomons">Adam Solomons</option>
