@@ -143,6 +143,17 @@ const NewDealPage = () => {
         await supabase.from('deal_revenue_schedule').insert(scheduleRows);
       }
 
+      // 5. Create ownership records
+      if (deal && ownershipSplit.length > 0) {
+        const ownerRows = ownershipSplit.map(o => ({
+          deal_id: deal.id,
+          user_name: o.user_name,
+          ownership_percent: o.ownership_percent,
+          role: o.role,
+        }));
+        await supabase.from('deal_owners').insert(ownerRows);
+      }
+
       await refresh();
       toast.success('Deal created successfully');
       navigate(`/deals/${deal?.id}`);
