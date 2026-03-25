@@ -52,14 +52,14 @@ const DashboardPage = () => {
   const weightedPipeline = openDeals.reduce((s, d) => s + d.splitWeightedValue, 0);
 
   const commitThisMonth = openDeals
-    .filter(d => d.forecast_category === 'Commit' && d.expected_close_date && isBefore(new Date(d.expected_close_date), thisMonthEnd) && isAfter(new Date(d.expected_close_date), thisMonthStart))
+    .filter(d => { const p = safeParseDate(d.expected_close_date); return d.forecast_category === 'Commit' && p && isBefore(p, thisMonthEnd) && isAfter(p, thisMonthStart); })
     .reduce((s, d) => s + d.splitWeightedValue, 0);
 
   const bestCaseThisMonth = openDeals
-    .filter(d => (d.forecast_category === 'Commit' || d.forecast_category === 'Best Case') && d.expected_close_date && isBefore(new Date(d.expected_close_date), thisMonthEnd) && isAfter(new Date(d.expected_close_date), thisMonthStart))
+    .filter(d => { const p = safeParseDate(d.expected_close_date); return (d.forecast_category === 'Commit' || d.forecast_category === 'Best Case') && p && isBefore(p, thisMonthEnd) && isAfter(p, thisMonthStart); })
     .reduce((s, d) => s + d.splitWeightedValue, 0);
 
-  const overdueActions = openDeals.filter(d => d.next_action_date && isBefore(new Date(d.next_action_date), now));
+  const overdueActions = openDeals.filter(d => { const p = safeParseDate(d.next_action_date); return p && isBefore(p, now); });
   const slippedDeals = openDeals.filter(d => d.slip_count > 0);
 
   // === MARGIN METRICS ===
