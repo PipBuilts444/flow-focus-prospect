@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { ArrowLeft, Building2, User, Briefcase, Users } from 'lucide-react';
 import { formatGBP, formatInputDisplay, stripFormatting } from '@/lib/currency';
+import { safeParseDate } from '@/lib/dateUtils';
 import OwnershipSplitEditor, { type OwnerEntry } from '@/components/OwnershipSplitEditor';
 
 const OPEN_STAGES = DEAL_STAGES.filter(s => s !== 'Closed Won' && s !== 'Closed Lost');

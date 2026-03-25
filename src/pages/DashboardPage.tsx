@@ -35,15 +35,15 @@ const DashboardPage = () => {
   const closedWonDeals = deals.filter(d => d.status === 'closed_won');
 
   const actualsThisMonth = closedWonDeals
-    .filter(d => d.won_date && isAfter(new Date(d.won_date), thisMonthStart) && isBefore(new Date(d.won_date), thisMonthEnd))
+    .filter(d => { const p = safeParseDate(d.won_date); return p && isAfter(p, thisMonthStart) && isBefore(p, thisMonthEnd); })
     .reduce((s, d) => s + d.splitValue, 0);
 
   const actualsThisQuarter = closedWonDeals
-    .filter(d => d.won_date && isAfter(new Date(d.won_date), thisQStart) && isBefore(new Date(d.won_date), thisQEnd))
+    .filter(d => { const p = safeParseDate(d.won_date); return p && isAfter(p, thisQStart) && isBefore(p, thisQEnd); })
     .reduce((s, d) => s + d.splitValue, 0);
 
   const closedLostQ = deals
-    .filter(d => d.status === 'closed_lost' && d.lost_date && isAfter(new Date(d.lost_date), thisQStart) && isBefore(new Date(d.lost_date), thisQEnd));
+    .filter(d => { const p = safeParseDate(d.lost_date); return d.status === 'closed_lost' && p && isAfter(p, thisQStart) && isBefore(p, thisQEnd); });
   const closedLostQValue = closedLostQ.reduce((s, d) => s + d.splitValue, 0);
 
   // === PIPELINE FORECAST (Open deals only) ===
