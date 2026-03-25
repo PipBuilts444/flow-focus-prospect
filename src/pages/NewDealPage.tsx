@@ -130,17 +130,21 @@ const NewDealPage = () => {
         const months = parseInt(deliveryMonths) || 1;
         const monthlyAmount = numericValue / months;
         const scheduleRows = [];
-        const start = new Date(expectedStartDate + '-01');
-        for (let i = 0; i < months; i++) {
-          const d = new Date(start);
-          d.setMonth(d.getMonth() + i);
-          scheduleRows.push({
-            deal_id: deal.id,
-            month: d.toISOString().slice(0, 10),
-            revenue_amount: Math.round(monthlyAmount * 100) / 100,
-          });
+        const start = safeParseDate(expectedStartDate);
+        if (start) {
+          for (let i = 0; i < months; i++) {
+            const d = new Date(start);
+            d.setMonth(d.getMonth() + i);
+            scheduleRows.push({
+              deal_id: deal.id,
+              month: d.toISOString().slice(0, 10),
+              revenue_amount: Math.round(monthlyAmount * 100) / 100,
+            });
+          }
+          if (scheduleRows.length > 0) {
+            await supabase.from('deal_revenue_schedule').insert(scheduleRows);
+          }
         }
-        await supabase.from('deal_revenue_schedule').insert(scheduleRows);
       }
 
       // 5. Create ownership records
