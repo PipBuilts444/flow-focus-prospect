@@ -131,6 +131,13 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
       } else {
         setOwnershipSplit([]);
       }
+    }).catch((err) => {
+      console.error('Failed to load deal owners:', err);
+      if (deal.owner) {
+        setOwnershipSplit([{ user_name: deal.owner, ownership_percent: 100, role: 'primary' }]);
+      } else {
+        setOwnershipSplit([]);
+      }
     });
   }, [open, deal.id]);
 
