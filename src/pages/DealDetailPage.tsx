@@ -34,8 +34,16 @@ const DealDetailPage = () => {
   const [deleting, setDeleting] = useState(false);
   const [stageTarget, setStageTarget] = useState<DealStage | null>(null);
   const [stageLoading, setStageLoading] = useState(false);
+  const [dealOwners, setDealOwners] = useState<DealOwner[]>([]);
 
   const deal = getDeal(id || '');
+
+  useEffect(() => {
+    if (!id) return;
+    supabase.from('deal_owners').select('*').eq('deal_id', id).order('role').then(({ data }) => {
+      if (data) setDealOwners(data as DealOwner[]);
+    });
+  }, [id, showEdit]);
   if (!deal) return <div className="p-6"><p className="text-muted-foreground">Deal not found</p></div>;
 
   const company = getCompany(deal.company_id || '');
