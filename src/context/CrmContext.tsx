@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { Company, Contact, Deal, HealthStatus } from '@/types/crm';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface CrmContextType {
   companies: Company[];
@@ -52,86 +53,166 @@ export const CrmProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const deals = rawDeals.filter(d => !(d as any).is_deleted);
 
   const refresh = useCallback(async () => {
-    const [cRes, ctRes, dRes] = await Promise.all([
-      supabase.from('companies').select('*').order('company_name'),
-      supabase.from('contacts').select('*').order('full_name'),
-      supabase.from('deals').select('*').order('created_at', { ascending: false }),
-    ]);
-    if (cRes.data) setRawCompanies(cRes.data);
-    if (ctRes.data) setRawContacts(ctRes.data);
-    if (dRes.data) setRawDeals(dRes.data);
-    setLoading(false);
+    try {
+      const [cRes, ctRes, dRes] = await Promise.all([
+        supabase.from('companies').select('*').order('company_name'),
+        supabase.from('contacts').select('*').order('full_name'),
+        supabase.from('deals').select('*').order('created_at', { ascending: false }),
+      ]);
+      if (cRes.data) setRawCompanies(cRes.data);
+      if (ctRes.data) setRawContacts(ctRes.data);
+      if (dRes.data) setRawDeals(dRes.data);
+    } catch (err) {
+      console.error('Failed to refresh CRM data:', err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => { refresh(); }, [refresh]);
 
   const addCompany = useCallback(async (c: Partial<Company> & { company_name: string }) => {
-    const { data } = await supabase.from('companies').insert(c).select().single();
-    if (data) { setRawCompanies(prev => [...prev, data]); return data; }
+    try {
+      const { data, error } = await supabase.from('companies').insert(c).select().single();
+      if (error) throw error;
+      if (data) { setRawCompanies(prev => [...prev, data]); return data; }
+    } catch (err: any) {
+      console.error('Failed to add company:', err);
+      toast.error(err.message || 'Failed to add company');
+    }
     return null;
   }, []);
 
   const addContact = useCallback(async (c: Partial<Contact> & { first_name: string; last_name: string }) => {
-    const { data } = await supabase.from('contacts').insert(c).select().single();
-    if (data) { setRawContacts(prev => [...prev, data]); return data; }
+    try {
+      const { data, error } = await supabase.from('contacts').insert(c).select().single();
+      if (error) throw error;
+      if (data) { setRawContacts(prev => [...prev, data]); return data; }
+    } catch (err: any) {
+      console.error('Failed to add contact:', err);
+      toast.error(err.message || 'Failed to add contact');
+    }
     return null;
   }, []);
 
   const addDeal = useCallback(async (d: Partial<Deal> & { deal_name: string }) => {
-    const { data } = await supabase.from('deals').insert(d).select().single();
-    if (data) { setRawDeals(prev => [data, ...prev]); return data; }
+    try {
+      const { data, error } = await supabase.from('deals').insert(d).select().single();
+      if (error) throw error;
+      if (data) { setRawDeals(prev => [data, ...prev]); return data; }
+    } catch (err: any) {
+      console.error('Failed to add deal:', err);
+      toast.error(err.message || 'Failed to add deal');
+    }
     return null;
   }, []);
 
   const updateDeal = useCallback(async (id: string, updates: Partial<Deal>) => {
-    const { data } = await supabase.from('deals').update(updates).eq('id', id).select().single();
-    if (data) setRawDeals(prev => prev.map(x => x.id === id ? data : x));
+    try {
+      const { data, error } = await supabase.from('deals').update(updates).eq('id', id).select().single();
+      if (error) throw error;
+      if (data) setRawDeals(prev => prev.map(x => x.id === id ? data : x));
+    } catch (err: any) {
+      console.error('Failed to update deal:', err);
+      toast.error(err.message || 'Failed to update deal');
+      throw err; // re-throw so callers with their own try/catch can handle it
+    }
   }, []);
 
   const updateCompany = useCallback(async (id: string, updates: Partial<Company>) => {
-    const { data } = await supabase.from('companies').update(updates).eq('id', id).select().single();
-    if (data) setRawCompanies(prev => prev.map(x => x.id === id ? data : x));
+    try {
+      const { data, error } = await supabase.from('companies').update(updates).eq('id', id).select().single();
+      if (error) throw error;
+      if (data) setRawCompanies(prev => prev.map(x => x.id === id ? data : x));
+    } catch (err: any) {
+      console.error('Failed to update company:', err);
+      toast.error(err.message || 'Failed to update company');
+      throw err;
+    }
   }, []);
 
   const updateContact = useCallback(async (id: string, updates: Partial<Contact>) => {
-    const { data } = await supabase.from('contacts').update(updates).eq('id', id).select().single();
-    if (data) setRawContacts(prev => prev.map(x => x.id === id ? data : x));
+    try {
+      const { data, error } = await supabase.from('contacts').update(updates).eq('id', id).select().single();
+      if (error) throw error;
+      if (data) setRawContacts(prev => prev.map(x => x.id === id ? data : x));
+    } catch (err: any) {
+      console.error('Failed to update contact:', err);
+      toast.error(err.message || 'Failed to update contact');
+      throw err;
+    }
   }, []);
 
   const softDeleteDeal = useCallback(async (id: string, deletedBy?: string) => {
-    const updates = { is_deleted: true, deleted_at: new Date().toISOString(), deleted_by: deletedBy || null } as any;
-    const { data } = await supabase.from('deals').update(updates).eq('id', id).select().single();
-    if (data) setRawDeals(prev => prev.map(x => x.id === id ? data : x));
+    try {
+      const updates = { is_deleted: true, deleted_at: new Date().toISOString(), deleted_by: deletedBy || null } as any;
+      const { data, error } = await supabase.from('deals').update(updates).eq('id', id).select().single();
+      if (error) throw error;
+      if (data) setRawDeals(prev => prev.map(x => x.id === id ? data : x));
+    } catch (err: any) {
+      console.error('Failed to delete deal:', err);
+      toast.error(err.message || 'Failed to delete deal');
+    }
   }, []);
 
   const softDeleteContact = useCallback(async (id: string, deletedBy?: string) => {
-    const updates = { is_deleted: true, deleted_at: new Date().toISOString(), deleted_by: deletedBy || null } as any;
-    const { data } = await supabase.from('contacts').update(updates).eq('id', id).select().single();
-    if (data) setRawContacts(prev => prev.map(x => x.id === id ? data : x));
+    try {
+      const updates = { is_deleted: true, deleted_at: new Date().toISOString(), deleted_by: deletedBy || null } as any;
+      const { data, error } = await supabase.from('contacts').update(updates).eq('id', id).select().single();
+      if (error) throw error;
+      if (data) setRawContacts(prev => prev.map(x => x.id === id ? data : x));
+    } catch (err: any) {
+      console.error('Failed to delete contact:', err);
+      toast.error(err.message || 'Failed to delete contact');
+    }
   }, []);
 
   const softDeleteCompany = useCallback(async (id: string, deletedBy?: string) => {
-    const updates = { is_deleted: true, deleted_at: new Date().toISOString(), deleted_by: deletedBy || null } as any;
-    const { data } = await supabase.from('companies').update(updates).eq('id', id).select().single();
-    if (data) setRawCompanies(prev => prev.map(x => x.id === id ? data : x));
+    try {
+      const updates = { is_deleted: true, deleted_at: new Date().toISOString(), deleted_by: deletedBy || null } as any;
+      const { data, error } = await supabase.from('companies').update(updates).eq('id', id).select().single();
+      if (error) throw error;
+      if (data) setRawCompanies(prev => prev.map(x => x.id === id ? data : x));
+    } catch (err: any) {
+      console.error('Failed to delete company:', err);
+      toast.error(err.message || 'Failed to delete company');
+    }
   }, []);
 
   const restoreDeal = useCallback(async (id: string) => {
-    const updates = { is_deleted: false, deleted_at: null, deleted_by: null } as any;
-    const { data } = await supabase.from('deals').update(updates).eq('id', id).select().single();
-    if (data) setRawDeals(prev => prev.map(x => x.id === id ? data : x));
+    try {
+      const updates = { is_deleted: false, deleted_at: null, deleted_by: null } as any;
+      const { data, error } = await supabase.from('deals').update(updates).eq('id', id).select().single();
+      if (error) throw error;
+      if (data) setRawDeals(prev => prev.map(x => x.id === id ? data : x));
+    } catch (err: any) {
+      console.error('Failed to restore deal:', err);
+      toast.error(err.message || 'Failed to restore deal');
+    }
   }, []);
 
   const restoreContact = useCallback(async (id: string) => {
-    const updates = { is_deleted: false, deleted_at: null, deleted_by: null } as any;
-    const { data } = await supabase.from('contacts').update(updates).eq('id', id).select().single();
-    if (data) setRawContacts(prev => prev.map(x => x.id === id ? data : x));
+    try {
+      const updates = { is_deleted: false, deleted_at: null, deleted_by: null } as any;
+      const { data, error } = await supabase.from('contacts').update(updates).eq('id', id).select().single();
+      if (error) throw error;
+      if (data) setRawContacts(prev => prev.map(x => x.id === id ? data : x));
+    } catch (err: any) {
+      console.error('Failed to restore contact:', err);
+      toast.error(err.message || 'Failed to restore contact');
+    }
   }, []);
 
   const restoreCompany = useCallback(async (id: string) => {
-    const updates = { is_deleted: false, deleted_at: null, deleted_by: null } as any;
-    const { data } = await supabase.from('companies').update(updates).eq('id', id).select().single();
-    if (data) setRawCompanies(prev => prev.map(x => x.id === id ? data : x));
+    try {
+      const updates = { is_deleted: false, deleted_at: null, deleted_by: null } as any;
+      const { data, error } = await supabase.from('companies').update(updates).eq('id', id).select().single();
+      if (error) throw error;
+      if (data) setRawCompanies(prev => prev.map(x => x.id === id ? data : x));
+    } catch (err: any) {
+      console.error('Failed to restore company:', err);
+      toast.error(err.message || 'Failed to restore company');
+    }
   }, []);
 
   const canDeleteCompany = useCallback((companyId: string): { canDelete: boolean; reason?: string } => {
