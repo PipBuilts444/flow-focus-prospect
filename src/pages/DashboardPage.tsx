@@ -36,11 +36,11 @@ const DashboardPage = () => {
 
   const actualsThisMonth = closedWonDeals
     .filter(d => d.won_date && isAfter(new Date(d.won_date), thisMonthStart) && isBefore(new Date(d.won_date), thisMonthEnd))
-    .reduce((s, d) => s + d.value, 0);
+    .reduce((s, d) => s + d.splitValue, 0);
 
   const actualsThisQuarter = closedWonDeals
     .filter(d => d.won_date && isAfter(new Date(d.won_date), thisQStart) && isBefore(new Date(d.won_date), thisQEnd))
-    .reduce((s, d) => s + d.value, 0);
+    .reduce((s, d) => s + d.splitValue, 0);
 
   const closedLostQ = deals
     .filter(d => d.status === 'closed_lost' && d.lost_date && isAfter(new Date(d.lost_date), thisQStart) && isBefore(new Date(d.lost_date), thisQEnd));
