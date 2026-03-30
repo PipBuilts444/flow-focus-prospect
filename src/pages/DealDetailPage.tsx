@@ -11,6 +11,7 @@ import ActivityTimeline from '@/components/ActivityTimeline';
 import ConfirmDeleteModal from '@/components/ConfirmDeleteModal';
 import StageGateModal from '@/components/StageGateModal';
 import EditDealModal from '@/components/EditDealModal';
+import DealLineItems from '@/components/DealLineItems';
 import { STAGE_FIELDS } from '@/lib/stageRequirements';
 import { toast } from 'sonner';
 import { useUserView } from '@/context/UserViewContext';
@@ -282,6 +283,9 @@ const DealDetailPage = () => {
           </div>
         </div>
       )}
+
+      {/* Deal Breakdown / Phases */}
+      <DealLineItems dealId={deal.id} />
 
       {/* Slippage & Risks (always show if data exists) */}
       <div className="grid md:grid-cols-2 gap-6">
