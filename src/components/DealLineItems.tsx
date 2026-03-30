@@ -242,7 +242,7 @@ export default function DealLineItems({ dealId, dealValue = 0, dealCost = 0, onT
     } finally {
       setSaving(false);
     }
-  }, [editId, dealId, cancel, fetchItems]);
+  }, [editId, dealId, dealValue, dealCost, items.length, cancel, fetchItems]);
 
   const softDelete = useCallback(async (id: string) => {
     try {
