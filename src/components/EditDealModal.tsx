@@ -420,6 +420,11 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
                 <Input type="date" value={form.won_date || ''} onChange={(e) => setField('won_date', e.target.value)} />
               </FormField>
             )}
+            {(form.stage === 'Closed Lost' || form.lost_reason) && (
+              <FormField label="Lost Date">
+                <Input type="date" value={form.lost_date || ''} onChange={(e) => setField('lost_date', e.target.value)} />
+              </FormField>
+            )}
             <FormRow>
               <FormField label="Procurement Status">
                 <Input value={form.procurement_status || ''} onChange={(e) => setField('procurement_status', e.target.value)} />
