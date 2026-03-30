@@ -1,11 +1,13 @@
 import { useFilteredCrm } from '@/hooks/useFilteredCrm';
 import { useUserView } from '@/context/UserViewContext';
 import { useAllActivities } from '@/hooks/useActivities';
+import { useState, useEffect, useMemo } from 'react';
 import { format, isAfter, isBefore, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, startOfWeek, endOfWeek, subDays } from 'date-fns';
 import { TrendingUp, AlertTriangle, PoundSterling, Target, CheckCircle2, XCircle, Clock, CalendarDays, Users, TriangleAlert, BarChart3, Percent } from 'lucide-react';
 import OutstandingActions from '@/components/OutstandingActions';
 import { formatGBP } from '@/lib/currency';
 import { safeParseDate } from '@/lib/dateUtils';
+import { supabase } from '@/integrations/supabase/client';
 
 const KpiCard = ({ label, value, icon: Icon, variant = 'default', sub }: { label: string; value: string; icon: any; variant?: string; sub?: string }) => (
   <div className="bg-card rounded-lg border border-border p-5">
