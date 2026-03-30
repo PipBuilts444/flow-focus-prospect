@@ -29,7 +29,7 @@ const STAGE_ORDER = DEAL_STAGES.filter(s => s !== 'Closed Won' && s !== 'Closed 
 const DealDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { getDeal, getCompany, getContact, getDealHealth, softDeleteDeal, updateDeal } = useCrm();
+  const { getDeal, getCompany, getContact, getDealHealth, softDeleteDeal, updateDeal, refresh } = useCrm();
   const { selectedView } = useUserView();
   const [showDelete, setShowDelete] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
@@ -285,7 +285,7 @@ const DealDetailPage = () => {
       )}
 
       {/* Deal Breakdown / Phases */}
-      <DealLineItems dealId={deal.id} />
+      <DealLineItems dealId={deal.id} onTotalsChange={() => refresh()} />
 
       {/* Slippage & Risks (always show if data exists) */}
       <div className="grid md:grid-cols-2 gap-6">
