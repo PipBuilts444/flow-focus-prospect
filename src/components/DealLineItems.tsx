@@ -304,6 +304,7 @@ export default function DealLineItems({ dealId, dealValue = 0, dealCost = 0, onT
               <TableHead>Phase</TableHead>
               <TableHead>Type</TableHead>
               <TableHead className="text-right">Revenue</TableHead>
+              <TableHead>Billing Month</TableHead>
               <TableHead className="text-right">Cost</TableHead>
               <TableHead className="text-right">Margin £</TableHead>
               <TableHead className="text-right">Margin %</TableHead>
