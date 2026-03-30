@@ -1,22 +1,27 @@
 import { useFilteredCrm } from '@/hooks/useFilteredCrm';
 import { useUserView } from '@/context/UserViewContext';
 import { useAllActivities } from '@/hooks/useActivities';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { format, isAfter, isBefore, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, startOfWeek, endOfWeek, subDays } from 'date-fns';
 import { TrendingUp, AlertTriangle, PoundSterling, Target, CheckCircle2, XCircle, Clock, CalendarDays, Users, TriangleAlert, BarChart3, Percent } from 'lucide-react';
 import OutstandingActions from '@/components/OutstandingActions';
 import { formatGBP } from '@/lib/currency';
 import { safeParseDate } from '@/lib/dateUtils';
 import { supabase } from '@/integrations/supabase/client';
+import DrillDownPanel, { type DrillDownRow } from '@/components/DrillDownPanel';
 
-const KpiCard = ({ label, value, icon: Icon, variant = 'default', sub }: { label: string; value: string; icon: any; variant?: string; sub?: string }) => (
-  <div className="bg-card rounded-lg border border-border p-5">
+const KpiCard = ({ label, value, icon: Icon, variant = 'default', sub, onClick }: { label: string; value: string; icon: any; variant?: string; sub?: string; onClick?: () => void }) => (
+  <div
+    className={`bg-card rounded-lg border border-border p-5 ${onClick ? 'cursor-pointer hover:border-primary/40 hover:shadow-sm transition-all' : ''}`}
+    onClick={onClick}
+  >
     <div className="flex items-center justify-between mb-2">
       <span className="text-sm font-medium text-muted-foreground">{label}</span>
       <Icon size={18} className={variant === 'green' ? 'text-health-green' : variant === 'red' ? 'text-health-red' : variant === 'amber' ? 'text-health-amber' : 'text-primary'} />
     </div>
     <p className="text-2xl font-bold text-card-foreground">{value}</p>
     {sub && <p className="text-xs text-muted-foreground mt-1">{sub}</p>}
+    {onClick && <p className="text-[10px] text-primary/60 mt-1">Click to drill down</p>}
   </div>
 );
 
@@ -25,6 +30,8 @@ const DashboardPage = () => {
   const { selectedView } = useUserView();
   const { activities } = useAllActivities();
   const [lineItems, setLineItems] = useState<any[]>([]);
+  const [drillDown, setDrillDown] = useState<{ open: boolean; title: string; rows: DrillDownRow[] }>({ open: false, title: '', rows: [] });
+
   const now = new Date();
   const thisMonthStart = startOfMonth(now);
   const thisMonthEnd = endOfMonth(now);
@@ -39,6 +46,10 @@ const DashboardPage = () => {
     });
   }, [deals]);
 
+  const openDrillDown = useCallback((title: string, rows: DrillDownRow[]) => {
+    setDrillDown({ open: true, title, rows });
+  }, []);
+
   if (loading) return <div className="p-6"><p className="text-muted-foreground">Loading…</p></div>;
 
   // Build line items map
@@ -49,7 +60,68 @@ const DashboardPage = () => {
     dealLineItemsMap.set(li.deal_id, arr);
   });
 
-  // === ACTUALS (Closed Won, allocated by line item billing_month or deal won_date) ===
+  // === Helper: build drill-down rows for closed-won deals in a range ===
+  const buildActualRows = (start: Date, end: Date): DrillDownRow[] => {
+    const rows: DrillDownRow[] = [];
+    closedWonDeals.forEach(d => {
+      const items = dealLineItemsMap.get(d.id);
+      if (items && items.length > 0) {
+        items.forEach((li: any) => {
+          const billingDate = safeParseDate(li.billing_month) ?? safeParseDate(d.won_date);
+          if (billingDate && !isBefore(billingDate, start) && !isAfter(billingDate, end)) {
+            const rev = Number(li.revenue_value) * d.splitFraction;
+            const cost = Number(li.estimated_delivery_cost) * d.splitFraction;
+            const margin = rev - cost;
+            rows.push({
+              dealId: d.id,
+              dealName: d.deal_name,
+              lineItemName: li.name || 'Line Item',
+              billingMonth: li.billing_month ? format(new Date(li.billing_month), 'MMM yyyy') : '',
+              revenue: rev,
+              cost,
+              marginValue: margin,
+              marginPercent: rev > 0 ? (margin / rev) * 100 : 0,
+              owner: d.owner || '',
+            });
+          }
+        });
+      } else {
+        const p = safeParseDate(d.won_date);
+        if (p && !isBefore(p, start) && !isAfter(p, end)) {
+          rows.push({
+            dealId: d.id,
+            dealName: d.deal_name,
+            lineItemName: 'Deal Total',
+            billingMonth: p ? format(p, 'MMM yyyy') : '',
+            revenue: d.splitValue,
+            cost: (d.estimated_delivery_cost || 0) * d.splitFraction,
+            marginValue: d.splitMarginValue,
+            marginPercent: d.gross_margin_percent || 0,
+            owner: d.owner || '',
+          });
+        }
+      }
+    });
+    return rows;
+  };
+
+  // === Helper: build rows for open deals ===
+  const buildOpenDealRows = (filterFn?: (d: any) => boolean): DrillDownRow[] => {
+    const subset = filterFn ? openDeals.filter(filterFn) : openDeals;
+    return subset.map(d => ({
+      dealId: d.id,
+      dealName: d.deal_name,
+      lineItemName: d.forecast_category,
+      billingMonth: d.expected_close_date ? format(new Date(d.expected_close_date), 'MMM yyyy') : '',
+      revenue: d.splitValue,
+      cost: (d.estimated_delivery_cost || 0) * d.splitFraction,
+      marginValue: d.splitMarginValue,
+      marginPercent: d.gross_margin_percent || 0,
+      owner: d.owner || '',
+    }));
+  };
+
+  // === ACTUALS ===
   const closedWonDeals = deals.filter(d => d.status === 'closed_won');
 
   const getActualsInRange = (start: Date, end: Date) => {
@@ -76,11 +148,13 @@ const DashboardPage = () => {
   const actualsThisMonth = getActualsInRange(thisMonthStart, thisMonthEnd);
   const actualsThisQuarter = getActualsInRange(thisQStart, thisQEnd);
 
-  const closedLostQ = deals
-    .filter(d => { const p = safeParseDate(d.lost_date); return d.status === 'closed_lost' && p && isAfter(p, thisQStart) && isBefore(p, thisQEnd); });
+  const closedLostQ = deals.filter(d => {
+    const p = safeParseDate(d.lost_date);
+    return d.status === 'closed_lost' && p && !isBefore(p, thisQStart) && !isAfter(p, thisQEnd);
+  });
   const closedLostQValue = closedLostQ.reduce((s, d) => s + d.splitValue, 0);
 
-  // === PIPELINE FORECAST (Open deals only) ===
+  // === PIPELINE ===
   const openDeals = deals.filter(d => d.status === 'open');
   const weightedPipeline = openDeals.reduce((s, d) => s + d.splitWeightedValue, 0);
 
@@ -95,11 +169,9 @@ const DashboardPage = () => {
   const overdueActions = openDeals.filter(d => { const p = safeParseDate(d.next_action_date); return p && isBefore(p, now); });
   const slippedDeals = openDeals.filter(d => d.slip_count > 0);
 
-  // === MARGIN METRICS ===
+  // === MARGIN ===
   const pipelineMargin = openDeals.reduce((s, d) => s + d.splitMarginValue, 0);
-  const weightedMargin = openDeals.reduce((s, d) => {
-    return s + (d.splitMarginValue * (d.confidence_percent / 100));
-  }, 0);
+  const weightedMargin = openDeals.reduce((s, d) => s + (d.splitMarginValue * (d.confidence_percent / 100)), 0);
   const closedWonMargin = closedWonDeals.reduce((s, d) => s + d.splitMarginValue, 0);
   const dealsWithMargin = [...openDeals, ...closedWonDeals].filter(d => (d.estimated_delivery_cost ?? 0) > 0);
   const avgMarginPercent = dealsWithMargin.length > 0
@@ -149,9 +221,35 @@ const DashboardPage = () => {
           <CheckCircle2 size={14} /> Actuals — Closed Revenue
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          <KpiCard label="Actuals This Month" value={formatGBP(actualsThisMonth)} icon={CheckCircle2} variant="green" sub={`${closedWonDeals.filter(d => d.won_date && isAfter(new Date(d.won_date), thisMonthStart) && isBefore(new Date(d.won_date), thisMonthEnd)).length} deals`} />
-          <KpiCard label="Actuals This Quarter" value={formatGBP(actualsThisQuarter)} icon={CheckCircle2} variant="green" sub={`${closedWonDeals.filter(d => d.won_date && isAfter(new Date(d.won_date), thisQStart) && isBefore(new Date(d.won_date), thisQEnd)).length} deals`} />
-          <KpiCard label="Closed Lost (Quarter)" value={formatGBP(closedLostQValue)} icon={XCircle} variant="red" sub={`${closedLostQ.length} deals`} />
+          <KpiCard
+            label="Actuals This Month"
+            value={formatGBP(actualsThisMonth)}
+            icon={CheckCircle2}
+            variant="green"
+            sub={`${closedWonDeals.filter(d => d.won_date && !isBefore(new Date(d.won_date), thisMonthStart) && !isAfter(new Date(d.won_date), thisMonthEnd)).length} deals`}
+            onClick={() => openDrillDown('Actuals This Month', buildActualRows(thisMonthStart, thisMonthEnd))}
+          />
+          <KpiCard
+            label="Actuals This Quarter"
+            value={formatGBP(actualsThisQuarter)}
+            icon={CheckCircle2}
+            variant="green"
+            sub={`${closedWonDeals.filter(d => d.won_date && !isBefore(new Date(d.won_date), thisQStart) && !isAfter(new Date(d.won_date), thisQEnd)).length} deals`}
+            onClick={() => openDrillDown('Actuals This Quarter', buildActualRows(thisQStart, thisQEnd))}
+          />
+          <KpiCard
+            label="Closed Lost (Quarter)"
+            value={formatGBP(closedLostQValue)}
+            icon={XCircle}
+            variant="red"
+            sub={`${closedLostQ.length} deals`}
+            onClick={() => openDrillDown('Closed Lost This Quarter', closedLostQ.map(d => ({
+              dealId: d.id, dealName: d.deal_name, lineItemName: 'Closed Lost',
+              billingMonth: d.lost_date ? format(new Date(d.lost_date), 'MMM yyyy') : '',
+              revenue: d.splitValue, cost: (d.estimated_delivery_cost || 0) * d.splitFraction,
+              marginValue: d.splitMarginValue, marginPercent: d.gross_margin_percent || 0, owner: d.owner || '',
+            })))}
+          />
         </div>
       </div>
 
@@ -161,10 +259,38 @@ const DashboardPage = () => {
           <BarChart3 size={14} /> Pipeline Forecast — Open Deals
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <KpiCard label="Open Weighted Pipeline" value={formatGBP(weightedPipeline)} icon={Target} sub={`${openDeals.length} deals`} />
-          <KpiCard label="Commit This Month" value={formatGBP(commitThisMonth)} icon={TrendingUp} variant="green" />
-          <KpiCard label="Best Case This Month" value={formatGBP(bestCaseThisMonth)} icon={TrendingUp} />
-          <KpiCard label="Total Open Pipeline" value={formatGBP(openDeals.reduce((s, d) => s + d.splitValue, 0))} icon={PoundSterling} />
+          <KpiCard
+            label="Open Weighted Pipeline"
+            value={formatGBP(weightedPipeline)}
+            icon={Target}
+            sub={`${openDeals.length} deals`}
+            onClick={() => openDrillDown('Open Weighted Pipeline', buildOpenDealRows())}
+          />
+          <KpiCard
+            label="Commit This Month"
+            value={formatGBP(commitThisMonth)}
+            icon={TrendingUp}
+            variant="green"
+            onClick={() => openDrillDown('Commit This Month', buildOpenDealRows(d => {
+              const p = safeParseDate(d.expected_close_date);
+              return d.forecast_category === 'Commit' && !!p && isBefore(p, thisMonthEnd) && isAfter(p, thisMonthStart);
+            }))}
+          />
+          <KpiCard
+            label="Best Case This Month"
+            value={formatGBP(bestCaseThisMonth)}
+            icon={TrendingUp}
+            onClick={() => openDrillDown('Best Case This Month', buildOpenDealRows(d => {
+              const p = safeParseDate(d.expected_close_date);
+              return (d.forecast_category === 'Commit' || d.forecast_category === 'Best Case') && !!p && isBefore(p, thisMonthEnd) && isAfter(p, thisMonthStart);
+            }))}
+          />
+          <KpiCard
+            label="Total Open Pipeline"
+            value={formatGBP(openDeals.reduce((s, d) => s + d.splitValue, 0))}
+            icon={PoundSterling}
+            onClick={() => openDrillDown('Total Open Pipeline', buildOpenDealRows())}
+          />
         </div>
       </div>
 
@@ -174,10 +300,47 @@ const DashboardPage = () => {
           <Percent size={14} /> Profitability
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <KpiCard label="Pipeline Margin" value={formatGBP(pipelineMargin)} icon={TrendingUp} variant={pipelineMargin >= 0 ? 'green' : 'red'} sub={`${openDeals.filter(d => (d.estimated_delivery_cost ?? 0) > 0).length} deals costed`} />
-          <KpiCard label="Weighted Margin" value={formatGBP(Math.round(weightedMargin))} icon={Target} sub="Confidence-adjusted" />
-          <KpiCard label="Closed Won Margin" value={formatGBP(closedWonMargin)} icon={CheckCircle2} variant="green" sub={`${closedWonDeals.filter(d => (d.estimated_delivery_cost ?? 0) > 0).length} deals`} />
-          <KpiCard label="Avg Margin %" value={`${Math.round(avgMarginPercent)}%`} icon={Percent} variant={avgMarginPercent >= 20 ? 'green' : avgMarginPercent >= 0 ? 'amber' : 'red'} sub={`${dealsWithMargin.length} deals with costs`} />
+          <KpiCard
+            label="Pipeline Margin"
+            value={formatGBP(pipelineMargin)}
+            icon={TrendingUp}
+            variant={pipelineMargin >= 0 ? 'green' : 'red'}
+            sub={`${openDeals.filter(d => (d.estimated_delivery_cost ?? 0) > 0).length} deals costed`}
+            onClick={() => openDrillDown('Pipeline Margin', buildOpenDealRows(d => (d.estimated_delivery_cost ?? 0) > 0))}
+          />
+          <KpiCard
+            label="Weighted Margin"
+            value={formatGBP(Math.round(weightedMargin))}
+            icon={Target}
+            sub="Confidence-adjusted"
+            onClick={() => openDrillDown('Weighted Margin (Pipeline)', buildOpenDealRows(d => (d.estimated_delivery_cost ?? 0) > 0))}
+          />
+          <KpiCard
+            label="Closed Won Margin"
+            value={formatGBP(closedWonMargin)}
+            icon={CheckCircle2}
+            variant="green"
+            sub={`${closedWonDeals.filter(d => (d.estimated_delivery_cost ?? 0) > 0).length} deals`}
+            onClick={() => openDrillDown('Closed Won Margin', closedWonDeals.filter(d => (d.estimated_delivery_cost ?? 0) > 0).map(d => ({
+              dealId: d.id, dealName: d.deal_name, lineItemName: 'Closed Won',
+              billingMonth: d.won_date ? format(new Date(d.won_date), 'MMM yyyy') : '',
+              revenue: d.splitValue, cost: (d.estimated_delivery_cost || 0) * d.splitFraction,
+              marginValue: d.splitMarginValue, marginPercent: d.gross_margin_percent || 0, owner: d.owner || '',
+            })))}
+          />
+          <KpiCard
+            label="Avg Margin %"
+            value={`${Math.round(avgMarginPercent)}%`}
+            icon={Percent}
+            variant={avgMarginPercent >= 20 ? 'green' : avgMarginPercent >= 0 ? 'amber' : 'red'}
+            sub={`${dealsWithMargin.length} deals with costs`}
+            onClick={() => openDrillDown('All Deals With Margins', dealsWithMargin.map(d => ({
+              dealId: d.id, dealName: d.deal_name, lineItemName: d.status === 'closed_won' ? 'Closed Won' : d.forecast_category,
+              billingMonth: (d.won_date || d.expected_close_date) ? format(new Date(d.won_date || d.expected_close_date!), 'MMM yyyy') : '',
+              revenue: d.splitValue, cost: (d.estimated_delivery_cost || 0) * d.splitFraction,
+              marginValue: d.splitMarginValue, marginPercent: d.gross_margin_percent || 0, owner: d.owner || '',
+            })))}
+          />
         </div>
         {lowMarginDeals.length > 0 && (
           <div className="mt-3 bg-card rounded-lg border border-border p-4">
@@ -288,6 +451,13 @@ const DashboardPage = () => {
           </div>
         </div>
       )}
+
+      <DrillDownPanel
+        open={drillDown.open}
+        onOpenChange={(open) => setDrillDown(prev => ({ ...prev, open }))}
+        title={drillDown.title}
+        rows={drillDown.rows}
+      />
     </div>
   );
 };
