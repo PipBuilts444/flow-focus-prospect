@@ -144,7 +144,7 @@ interface Props {
   onTotalsChange?: (totals: { revenue: number; cost: number }) => void;
 }
 
-export default function DealLineItems({ dealId, onTotalsChange }: Props) {
+export default function DealLineItems({ dealId, dealValue = 0, dealCost = 0, onTotalsChange }: Props) {
   const [items, setItems] = useState<LineItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
