@@ -9,25 +9,41 @@ import { Button } from '@/components/ui/button';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter,
 } from '@/components/ui/table';
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/components/ui/select';
 
 interface LineItem {
   id: string;
   deal_id: string;
   name: string;
-  revenue: number;
+  description: string | null;
+  revenue_value: number;
   estimated_delivery_cost: number;
   gross_margin_value: number | null;
   gross_margin_percent: number | null;
+  item_type: string | null;
   start_date: string | null;
+  end_date: string | null;
+  is_deleted: boolean;
   created_at: string;
+  updated_at: string;
 }
+
+const ITEM_TYPES = ['initial_scope', 'extension', 'phase', 'change_request'] as const;
+const ITEM_TYPE_LABELS: Record<string, string> = {
+  initial_scope: 'Initial Scope',
+  extension: 'Extension',
+  phase: 'Phase',
+  change_request: 'Change Request',
+};
 
 interface Props {
   dealId: string;
   onTotalsChange?: (totals: { revenue: number; cost: number }) => void;
 }
 
-const emptyForm = { name: '', revenue: '', cost: '', start_date: '' };
+const emptyForm = { name: '', revenue: '', cost: '', item_type: 'initial_scope', start_date: '', end_date: '' };
 
 export default function DealLineItems({ dealId, onTotalsChange }: Props) {
   const [items, setItems] = useState<LineItem[]>([]);
@@ -42,26 +58,24 @@ export default function DealLineItems({ dealId, onTotalsChange }: Props) {
       .from('deal_line_items')
       .select('*')
       .eq('deal_id', dealId)
+      .eq('is_deleted', false)
       .order('created_at');
-    if (data) {
-      setItems(data as LineItem[]);
-    }
+    if (data) setItems(data as unknown as LineItem[]);
     setLoading(false);
   }, [dealId]);
 
   useEffect(() => { fetchItems(); }, [fetchItems]);
 
-  // Notify parent of totals
   useEffect(() => {
     if (items.length > 0 && onTotalsChange) {
-      const revenue = items.reduce((s, i) => s + Number(i.revenue), 0);
+      const revenue = items.reduce((s, i) => s + Number(i.revenue_value), 0);
       const cost = items.reduce((s, i) => s + Number(i.estimated_delivery_cost), 0);
       onTotalsChange({ revenue, cost });
     }
   }, [items, onTotalsChange]);
 
   const totals = {
-    revenue: items.reduce((s, i) => s + Number(i.revenue), 0),
+    revenue: items.reduce((s, i) => s + Number(i.revenue_value), 0),
     cost: items.reduce((s, i) => s + Number(i.estimated_delivery_cost), 0),
     margin: items.reduce((s, i) => s + Number(i.gross_margin_value ?? 0), 0),
   };
@@ -71,9 +85,11 @@ export default function DealLineItems({ dealId, onTotalsChange }: Props) {
     setEditId(item.id);
     setForm({
       name: item.name,
-      revenue: String(item.revenue),
+      revenue: String(item.revenue_value),
       cost: String(item.estimated_delivery_cost),
+      item_type: item.item_type || 'initial_scope',
       start_date: item.start_date || '',
+      end_date: item.end_date || '',
     });
     setAdding(false);
   };
@@ -81,38 +97,40 @@ export default function DealLineItems({ dealId, onTotalsChange }: Props) {
   const startAdd = () => {
     setAdding(true);
     setEditId(null);
-    setForm(emptyForm);
+    setForm({ ...emptyForm, item_type: items.length === 0 ? 'initial_scope' : 'extension' });
   };
 
-  const cancel = () => {
-    setAdding(false);
-    setEditId(null);
-    setForm(emptyForm);
+  const cancel = () => { setAdding(false); setEditId(null); setForm(emptyForm); };
+
+  const validate = (): boolean => {
+    if (!form.name.trim()) { toast.error('Name is required'); return false; }
+    if (form.start_date && form.end_date && form.end_date < form.start_date) {
+      toast.error('End date cannot be before start date');
+      return false;
+    }
+    return true;
   };
 
   const save = async () => {
-    if (!form.name.trim()) { toast.error('Name is required'); return; }
-    const revenue = Number(stripFormatting(form.revenue)) || 0;
-    const cost = Number(stripFormatting(form.cost)) || 0;
+    if (!validate()) return;
+    const revenue_value = Number(stripFormatting(form.revenue)) || 0;
+    const estimated_delivery_cost = Number(stripFormatting(form.cost)) || 0;
     setSaving(true);
     try {
+      const payload = {
+        name: form.name.trim(),
+        revenue_value,
+        estimated_delivery_cost,
+        item_type: form.item_type,
+        start_date: form.start_date || null,
+        end_date: form.end_date || null,
+      };
       if (editId) {
-        const { error } = await supabase.from('deal_line_items').update({
-          name: form.name.trim(),
-          revenue,
-          estimated_delivery_cost: cost,
-          start_date: form.start_date || null,
-        }).eq('id', editId);
+        const { error } = await supabase.from('deal_line_items').update(payload).eq('id', editId);
         if (error) throw error;
         toast.success('Line item updated');
       } else {
-        const { error } = await supabase.from('deal_line_items').insert({
-          deal_id: dealId,
-          name: form.name.trim(),
-          revenue,
-          estimated_delivery_cost: cost,
-          start_date: form.start_date || null,
-        });
+        const { error } = await supabase.from('deal_line_items').insert({ ...payload, deal_id: dealId });
         if (error) throw error;
         toast.success('Line item added');
       }
@@ -125,9 +143,12 @@ export default function DealLineItems({ dealId, onTotalsChange }: Props) {
     }
   };
 
-  const remove = async (id: string) => {
+  const softDelete = async (id: string) => {
     try {
-      const { error } = await supabase.from('deal_line_items').delete().eq('id', id);
+      const { error } = await supabase.from('deal_line_items').update({
+        is_deleted: true,
+        deleted_at: new Date().toISOString(),
+      }).eq('id', id);
       if (error) throw error;
       toast.success('Line item removed');
       await fetchItems();
@@ -140,6 +161,30 @@ export default function DealLineItems({ dealId, onTotalsChange }: Props) {
     val == null ? '' : val >= 20 ? 'text-health-green' : val >= 0 ? 'text-health-amber' : 'text-health-red';
 
   if (loading) return null;
+
+  const FormRow = ({ isNew }: { isNew: boolean }) => (
+    <TableRow>
+      <TableCell><Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder={isNew ? 'e.g. Phase 2, Extension' : ''} className="h-8" /></TableCell>
+      <TableCell>
+        <Select value={form.item_type} onValueChange={v => setForm(f => ({ ...f, item_type: v }))}>
+          <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            {ITEM_TYPES.map(t => <SelectItem key={t} value={t}>{ITEM_TYPE_LABELS[t]}</SelectItem>)}
+          </SelectContent>
+        </Select>
+      </TableCell>
+      <TableCell><Input value={formatInputDisplay(form.revenue)} onChange={e => setForm(f => ({ ...f, revenue: stripFormatting(e.target.value) }))} className="h-8 text-right" /></TableCell>
+      <TableCell><Input value={formatInputDisplay(form.cost)} onChange={e => setForm(f => ({ ...f, cost: stripFormatting(e.target.value) }))} className="h-8 text-right" /></TableCell>
+      <TableCell />
+      <TableCell />
+      <TableCell>
+        <div className="flex gap-1">
+          <button onClick={save} disabled={saving} className="p-1 text-health-green hover:bg-secondary rounded"><Check size={14} /></button>
+          <button onClick={cancel} className="p-1 text-muted-foreground hover:bg-secondary rounded"><X size={14} /></button>
+        </div>
+      </TableCell>
+    </TableRow>
+  );
 
   return (
     <div className="bg-card rounded-lg border border-border p-5">
@@ -159,74 +204,45 @@ export default function DealLineItems({ dealId, onTotalsChange }: Props) {
           <TableHeader>
             <TableRow>
               <TableHead>Phase</TableHead>
+              <TableHead>Type</TableHead>
               <TableHead className="text-right">Revenue</TableHead>
               <TableHead className="text-right">Cost</TableHead>
               <TableHead className="text-right">Margin £</TableHead>
               <TableHead className="text-right">Margin %</TableHead>
-              <TableHead>Start</TableHead>
               <TableHead className="w-20" />
             </TableRow>
           </TableHeader>
           <TableBody>
-            {items.map(item => (
+            {items.map(item =>
               editId === item.id ? (
-                <TableRow key={item.id}>
-                  <TableCell><Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className="h-8" /></TableCell>
-                  <TableCell><Input value={formatInputDisplay(form.revenue)} onChange={e => setForm(f => ({ ...f, revenue: stripFormatting(e.target.value) }))} className="h-8 text-right" /></TableCell>
-                  <TableCell><Input value={formatInputDisplay(form.cost)} onChange={e => setForm(f => ({ ...f, cost: stripFormatting(e.target.value) }))} className="h-8 text-right" /></TableCell>
-                  <TableCell />
-                  <TableCell />
-                  <TableCell><Input type="date" value={form.start_date} onChange={e => setForm(f => ({ ...f, start_date: e.target.value }))} className="h-8" /></TableCell>
-                  <TableCell>
-                    <div className="flex gap-1">
-                      <button onClick={save} disabled={saving} className="p-1 text-health-green hover:bg-secondary rounded"><Check size={14} /></button>
-                      <button onClick={cancel} className="p-1 text-muted-foreground hover:bg-secondary rounded"><X size={14} /></button>
-                    </div>
-                  </TableCell>
-                </TableRow>
+                <FormRow key={item.id} isNew={false} />
               ) : (
                 <TableRow key={item.id}>
                   <TableCell className="font-medium text-card-foreground">{item.name}</TableCell>
-                  <TableCell className="text-right">{formatGBP(item.revenue)}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground">{ITEM_TYPE_LABELS[item.item_type || ''] || item.item_type}</TableCell>
+                  <TableCell className="text-right">{formatGBP(item.revenue_value)}</TableCell>
                   <TableCell className="text-right">{formatGBP(item.estimated_delivery_cost)}</TableCell>
                   <TableCell className={`text-right ${marginColor(item.gross_margin_percent)}`}>{formatGBP(item.gross_margin_value ?? 0)}</TableCell>
                   <TableCell className={`text-right ${marginColor(item.gross_margin_percent)}`}>{item.gross_margin_percent != null ? `${Math.round(item.gross_margin_percent)}%` : '—'}</TableCell>
-                  <TableCell className="text-muted-foreground text-xs">{item.start_date || '—'}</TableCell>
                   <TableCell>
                     <div className="flex gap-1">
                       <button onClick={() => startEdit(item)} className="p-1 text-muted-foreground hover:text-primary hover:bg-secondary rounded"><Pencil size={14} /></button>
-                      <button onClick={() => remove(item.id)} className="p-1 text-muted-foreground hover:text-destructive hover:bg-secondary rounded"><Trash2 size={14} /></button>
+                      <button onClick={() => softDelete(item.id)} className="p-1 text-muted-foreground hover:text-destructive hover:bg-secondary rounded"><Trash2 size={14} /></button>
                     </div>
                   </TableCell>
                 </TableRow>
               )
-            ))}
-            {adding && (
-              <TableRow>
-                <TableCell><Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="e.g. Phase 2, Extension" className="h-8" /></TableCell>
-                <TableCell><Input value={formatInputDisplay(form.revenue)} onChange={e => setForm(f => ({ ...f, revenue: stripFormatting(e.target.value) }))} placeholder="0" className="h-8 text-right" /></TableCell>
-                <TableCell><Input value={formatInputDisplay(form.cost)} onChange={e => setForm(f => ({ ...f, cost: stripFormatting(e.target.value) }))} placeholder="0" className="h-8 text-right" /></TableCell>
-                <TableCell />
-                <TableCell />
-                <TableCell><Input type="date" value={form.start_date} onChange={e => setForm(f => ({ ...f, start_date: e.target.value }))} className="h-8" /></TableCell>
-                <TableCell>
-                  <div className="flex gap-1">
-                    <button onClick={save} disabled={saving} className="p-1 text-health-green hover:bg-secondary rounded"><Check size={14} /></button>
-                    <button onClick={cancel} className="p-1 text-muted-foreground hover:bg-secondary rounded"><X size={14} /></button>
-                  </div>
-                </TableCell>
-              </TableRow>
             )}
+            {adding && <FormRow isNew />}
           </TableBody>
           {items.length > 0 && (
             <TableFooter>
               <TableRow>
-                <TableCell className="font-semibold">Total</TableCell>
+                <TableCell className="font-semibold" colSpan={2}>Total</TableCell>
                 <TableCell className="text-right font-semibold">{formatGBP(totals.revenue)}</TableCell>
                 <TableCell className="text-right font-semibold">{formatGBP(totals.cost)}</TableCell>
                 <TableCell className={`text-right font-semibold ${marginColor(marginPct)}`}>{formatGBP(totals.margin)}</TableCell>
                 <TableCell className={`text-right font-semibold ${marginColor(marginPct)}`}>{marginPct}%</TableCell>
-                <TableCell />
                 <TableCell />
               </TableRow>
             </TableFooter>
