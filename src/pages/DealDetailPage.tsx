@@ -285,7 +285,7 @@ const DealDetailPage = () => {
       )}
 
       {/* Deal Breakdown / Phases */}
-      <DealLineItems dealId={deal.id} />
+      <DealLineItems dealId={deal.id} onTotalsChange={() => refresh()} />
 
       {/* Slippage & Risks (always show if data exists) */}
       <div className="grid md:grid-cols-2 gap-6">
