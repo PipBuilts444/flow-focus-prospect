@@ -224,6 +224,7 @@ export default function DealLineItems({ dealId, dealValue = 0, dealCost = 0, onT
         item_type: form.item_type,
         start_date: form.start_date || null,
         end_date: form.end_date || null,
+        billing_month: form.billing_month ? `${form.billing_month}-01` : null,
       };
       if (editId) {
         const { error } = await supabase.from('deal_line_items').update(payload).eq('id', editId);
