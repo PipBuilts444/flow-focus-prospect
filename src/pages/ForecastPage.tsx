@@ -1,10 +1,11 @@
 import { useFilteredCrm } from '@/hooks/useFilteredCrm';
 import { useUserView } from '@/context/UserViewContext';
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { format, addMonths, startOfMonth, isSameMonth, isBefore } from 'date-fns';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { formatGBP, formatGBPCompact } from '@/lib/currency';
 import { safeParseDate } from '@/lib/dateUtils';
+import { supabase } from '@/integrations/supabase/client';
 
 const ForecastPage = () => {
   const { deals, loading } = useFilteredCrm();
