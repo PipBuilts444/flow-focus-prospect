@@ -197,6 +197,50 @@ export type Database = {
           },
         ]
       }
+      deal_line_items: {
+        Row: {
+          created_at: string
+          deal_id: string
+          estimated_delivery_cost: number
+          gross_margin_percent: number | null
+          gross_margin_value: number | null
+          id: string
+          name: string
+          revenue: number
+          start_date: string | null
+        }
+        Insert: {
+          created_at?: string
+          deal_id: string
+          estimated_delivery_cost?: number
+          gross_margin_percent?: number | null
+          gross_margin_value?: number | null
+          id?: string
+          name: string
+          revenue?: number
+          start_date?: string | null
+        }
+        Update: {
+          created_at?: string
+          deal_id?: string
+          estimated_delivery_cost?: number
+          gross_margin_percent?: number | null
+          gross_margin_value?: number | null
+          id?: string
+          name?: string
+          revenue?: number
+          start_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deal_line_items_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       deal_owners: {
         Row: {
           created_at: string
