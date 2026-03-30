@@ -197,6 +197,106 @@ export type Database = {
           },
         ]
       }
+      deal_line_items: {
+        Row: {
+          billing_month: string | null
+          created_at: string
+          deal_id: string
+          deleted_at: string | null
+          description: string | null
+          end_date: string | null
+          estimated_delivery_cost: number
+          gross_margin_percent: number | null
+          gross_margin_value: number | null
+          id: string
+          is_deleted: boolean
+          item_type: string | null
+          name: string
+          revenue_value: number
+          start_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          billing_month?: string | null
+          created_at?: string
+          deal_id: string
+          deleted_at?: string | null
+          description?: string | null
+          end_date?: string | null
+          estimated_delivery_cost?: number
+          gross_margin_percent?: number | null
+          gross_margin_value?: number | null
+          id?: string
+          is_deleted?: boolean
+          item_type?: string | null
+          name: string
+          revenue_value?: number
+          start_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          billing_month?: string | null
+          created_at?: string
+          deal_id?: string
+          deleted_at?: string | null
+          description?: string | null
+          end_date?: string | null
+          estimated_delivery_cost?: number
+          gross_margin_percent?: number | null
+          gross_margin_value?: number | null
+          id?: string
+          is_deleted?: boolean
+          item_type?: string | null
+          name?: string
+          revenue_value?: number
+          start_date?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deal_line_items_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      deal_owners: {
+        Row: {
+          created_at: string
+          deal_id: string
+          id: string
+          ownership_percent: number
+          role: string
+          user_name: string
+        }
+        Insert: {
+          created_at?: string
+          deal_id: string
+          id?: string
+          ownership_percent?: number
+          role?: string
+          user_name: string
+        }
+        Update: {
+          created_at?: string
+          deal_id?: string
+          id?: string
+          ownership_percent?: number
+          role?: string
+          user_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deal_owners_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       deal_revenue_schedule: {
         Row: {
           created_at: string
@@ -232,6 +332,8 @@ export type Database = {
       deals: {
         Row: {
           blocker_or_risk: string | null
+          commercial_notes: string | null
+          commit_confidence: string | null
           company_id: string | null
           confidence_percent: number
           created_at: string
@@ -239,14 +341,23 @@ export type Database = {
           deal_type: Database["public"]["Enums"]["deal_type"]
           deleted_at: string | null
           deleted_by: string | null
+          delivery_considerations: string | null
           delivery_duration_months: number
+          estimated_delivery_cost: number | null
           expected_close_date: string | null
           expected_start_date: string | null
+          final_commercial_assumptions: string | null
           forecast_category: Database["public"]["Enums"]["forecast_category"]
+          gross_margin_percent: number | null
+          gross_margin_value: number | null
           id: string
           is_deleted: boolean
+          key_stakeholder: string | null
           latest_close_date: string | null
+          likely_service_area: string | null
+          likely_start_month: string | null
           lost_date: string | null
+          lost_notes: string | null
           lost_reason: string | null
           next_action: string | null
           next_action_date: string | null
@@ -254,18 +365,25 @@ export type Database = {
           original_close_date: string | null
           owner: string | null
           primary_contact_id: string | null
+          problem_challenge: string | null
+          procurement_status: string | null
+          refined_problem: string | null
           revenue_profile_type: Database["public"]["Enums"]["revenue_profile"]
+          scope_hypothesis: string | null
           slip_count: number
           source: string | null
           stage: Database["public"]["Enums"]["deal_stage"]
           status: Database["public"]["Enums"]["deal_status"]
           updated_at: string
+          urgency_why_now: string | null
           value: number
           weighted_value: number | null
           won_date: string | null
         }
         Insert: {
           blocker_or_risk?: string | null
+          commercial_notes?: string | null
+          commit_confidence?: string | null
           company_id?: string | null
           confidence_percent?: number
           created_at?: string
@@ -273,14 +391,23 @@ export type Database = {
           deal_type?: Database["public"]["Enums"]["deal_type"]
           deleted_at?: string | null
           deleted_by?: string | null
+          delivery_considerations?: string | null
           delivery_duration_months?: number
+          estimated_delivery_cost?: number | null
           expected_close_date?: string | null
           expected_start_date?: string | null
+          final_commercial_assumptions?: string | null
           forecast_category?: Database["public"]["Enums"]["forecast_category"]
+          gross_margin_percent?: number | null
+          gross_margin_value?: number | null
           id?: string
           is_deleted?: boolean
+          key_stakeholder?: string | null
           latest_close_date?: string | null
+          likely_service_area?: string | null
+          likely_start_month?: string | null
           lost_date?: string | null
+          lost_notes?: string | null
           lost_reason?: string | null
           next_action?: string | null
           next_action_date?: string | null
@@ -288,18 +415,25 @@ export type Database = {
           original_close_date?: string | null
           owner?: string | null
           primary_contact_id?: string | null
+          problem_challenge?: string | null
+          procurement_status?: string | null
+          refined_problem?: string | null
           revenue_profile_type?: Database["public"]["Enums"]["revenue_profile"]
+          scope_hypothesis?: string | null
           slip_count?: number
           source?: string | null
           stage?: Database["public"]["Enums"]["deal_stage"]
           status?: Database["public"]["Enums"]["deal_status"]
           updated_at?: string
+          urgency_why_now?: string | null
           value?: number
           weighted_value?: number | null
           won_date?: string | null
         }
         Update: {
           blocker_or_risk?: string | null
+          commercial_notes?: string | null
+          commit_confidence?: string | null
           company_id?: string | null
           confidence_percent?: number
           created_at?: string
@@ -307,14 +441,23 @@ export type Database = {
           deal_type?: Database["public"]["Enums"]["deal_type"]
           deleted_at?: string | null
           deleted_by?: string | null
+          delivery_considerations?: string | null
           delivery_duration_months?: number
+          estimated_delivery_cost?: number | null
           expected_close_date?: string | null
           expected_start_date?: string | null
+          final_commercial_assumptions?: string | null
           forecast_category?: Database["public"]["Enums"]["forecast_category"]
+          gross_margin_percent?: number | null
+          gross_margin_value?: number | null
           id?: string
           is_deleted?: boolean
+          key_stakeholder?: string | null
           latest_close_date?: string | null
+          likely_service_area?: string | null
+          likely_start_month?: string | null
           lost_date?: string | null
+          lost_notes?: string | null
           lost_reason?: string | null
           next_action?: string | null
           next_action_date?: string | null
@@ -322,12 +465,17 @@ export type Database = {
           original_close_date?: string | null
           owner?: string | null
           primary_contact_id?: string | null
+          problem_challenge?: string | null
+          procurement_status?: string | null
+          refined_problem?: string | null
           revenue_profile_type?: Database["public"]["Enums"]["revenue_profile"]
+          scope_hypothesis?: string | null
           slip_count?: number
           source?: string | null
           stage?: Database["public"]["Enums"]["deal_stage"]
           status?: Database["public"]["Enums"]["deal_status"]
           updated_at?: string
+          urgency_why_now?: string | null
           value?: number
           weighted_value?: number | null
           won_date?: string | null

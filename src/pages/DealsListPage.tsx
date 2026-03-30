@@ -72,7 +72,8 @@ const DealsListPage = () => {
                 <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Company</th>
                 <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Stage</th>
                 <th className="text-right px-4 py-2.5 font-medium text-muted-foreground">Value</th>
-                <th className="text-right px-4 py-2.5 font-medium text-muted-foreground">Weighted</th>
+                <th className="text-right px-4 py-2.5 font-medium text-muted-foreground">Margin £</th>
+                <th className="text-right px-4 py-2.5 font-medium text-muted-foreground">Margin %</th>
                 <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Category</th>
                 <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Close Date</th>
                 <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Owner</th>
@@ -89,7 +90,8 @@ const DealsListPage = () => {
                     <td className="px-4 py-3 text-muted-foreground">{company?.company_name}</td>
                     <td className="px-4 py-3"><span className="text-xs px-2 py-0.5 rounded-full bg-accent text-accent-foreground">{deal.stage}</span></td>
                     <td className="px-4 py-3 text-right font-medium text-card-foreground">{formatGBP(deal.value)}</td>
-                    <td className="px-4 py-3 text-right text-muted-foreground">{formatGBP(deal.weighted_value || 0)}</td>
+                    <td className="px-4 py-3 text-right text-muted-foreground">{deal.gross_margin_value ? formatGBP(deal.gross_margin_value) : '—'}</td>
+                    <td className="px-4 py-3 text-right text-muted-foreground">{deal.gross_margin_percent != null && (deal.estimated_delivery_cost ?? 0) > 0 ? `${Math.round(deal.gross_margin_percent)}%` : '—'}</td>
                     <td className="px-4 py-3 text-muted-foreground">{deal.forecast_category}</td>
                     <td className="px-4 py-3 text-muted-foreground">{deal.expected_close_date}</td>
                     <td className="px-4 py-3 text-muted-foreground">{deal.owner}</td>
