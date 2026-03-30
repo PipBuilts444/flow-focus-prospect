@@ -134,6 +134,7 @@ const LineItemDisplayRow = memo(function LineItemDisplayRow({
       <TableCell className="font-medium text-card-foreground">{item.name}</TableCell>
       <TableCell className="text-xs text-muted-foreground">{ITEM_TYPE_LABELS[item.item_type || ''] || item.item_type}</TableCell>
       <TableCell className="text-right">{formatGBP(item.revenue_value)}</TableCell>
+      <TableCell className="text-xs text-muted-foreground">{item.billing_month || '—'}</TableCell>
       <TableCell className="text-right">{formatGBP(item.estimated_delivery_cost)}</TableCell>
       <TableCell className={`text-right ${marginColor}`}>{formatGBP(item.gross_margin_value ?? 0)}</TableCell>
       <TableCell className={`text-right ${marginColor}`}>{item.gross_margin_percent != null ? `${Math.round(item.gross_margin_percent)}%` : '—'}</TableCell>
