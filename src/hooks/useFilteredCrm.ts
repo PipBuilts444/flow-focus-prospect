@@ -22,7 +22,9 @@ export const useFilteredCrm = () => {
       : crm.deals;
 
     return base.map(d => {
-      const fraction = isFiltered ? (getOwnershipPercent(d.id, selectedView) || 1) : 1;
+      const ownershipPct = getOwnershipPercent(d.id, selectedView);
+      // If filtered user matches legacy owner but has no deal_owners record, treat as 100%
+      const fraction = isFiltered ? (ownershipPct > 0 ? ownershipPct : 1) : 1;
       return {
         ...d,
         splitFraction: fraction,
