@@ -223,6 +223,7 @@ export default function DealLineItems({ dealId, onTotalsChange }: Props) {
       }
       cancel();
       await fetchItems();
+      onTotalsChange?.({ revenue: 0, cost: 0 }); // signal parent to refresh deal data
     } catch (err: any) {
       toast.error(err.message || 'Failed to save');
     } finally {
