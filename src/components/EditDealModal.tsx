@@ -99,6 +99,7 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
       final_commercial_assumptions: deal.final_commercial_assumptions || '',
       lost_reason: deal.lost_reason || '',
       lost_notes: deal.lost_notes || '',
+      lost_date: deal.lost_date || '',
       estimated_delivery_cost: deal.estimated_delivery_cost || 0,
     });
     setValueDisplay(deal.value > 0 ? formatInputDisplay(String(deal.value)) : '');
