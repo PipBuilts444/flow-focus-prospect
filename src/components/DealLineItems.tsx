@@ -139,10 +139,12 @@ const LineItemDisplayRow = memo(function LineItemDisplayRow({
 
 interface Props {
   dealId: string;
+  dealValue?: number;
+  dealCost?: number;
   onTotalsChange?: (totals: { revenue: number; cost: number }) => void;
 }
 
-export default function DealLineItems({ dealId, onTotalsChange }: Props) {
+export default function DealLineItems({ dealId, dealValue = 0, dealCost = 0, onTotalsChange }: Props) {
   const [items, setItems] = useState<LineItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
@@ -217,6 +219,17 @@ export default function DealLineItems({ dealId, onTotalsChange }: Props) {
         if (error) throw error;
         toast.success('Line item updated');
       } else {
+        // If this is the first line item and the deal already has a value, backfill an "Initial Scope" item first
+        if (items.length === 0 && (dealValue > 0 || dealCost > 0)) {
+          const { error: backfillError } = await supabase.from('deal_line_items').insert({
+            deal_id: dealId,
+            name: 'Initial Scope',
+            revenue_value: dealValue,
+            estimated_delivery_cost: dealCost,
+            item_type: 'initial_scope',
+          });
+          if (backfillError) throw backfillError;
+        }
         const { error } = await supabase.from('deal_line_items').insert({ ...payload, deal_id: dealId });
         if (error) throw error;
         toast.success('Line item added');
@@ -229,7 +242,7 @@ export default function DealLineItems({ dealId, onTotalsChange }: Props) {
     } finally {
       setSaving(false);
     }
-  }, [editId, dealId, cancel, fetchItems]);
+  }, [editId, dealId, dealValue, dealCost, items.length, cancel, fetchItems]);
 
   const softDelete = useCallback(async (id: string) => {
     try {
