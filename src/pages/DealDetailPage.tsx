@@ -11,6 +11,7 @@ import ActivityTimeline from '@/components/ActivityTimeline';
 import ConfirmDeleteModal from '@/components/ConfirmDeleteModal';
 import StageGateModal from '@/components/StageGateModal';
 import EditDealModal from '@/components/EditDealModal';
+import DealLineItems from '@/components/DealLineItems';
 import { STAGE_FIELDS } from '@/lib/stageRequirements';
 import { toast } from 'sonner';
 import { useUserView } from '@/context/UserViewContext';
