@@ -59,13 +59,13 @@ const DashboardPage = () => {
       if (items && items.length > 0) {
         items.forEach((li: any) => {
           const billingDate = safeParseDate(li.billing_month) ?? safeParseDate(d.won_date);
-          if (billingDate && isAfter(billingDate, start) && isBefore(billingDate, end)) {
+          if (billingDate && !isBefore(billingDate, start) && !isAfter(billingDate, end)) {
             total += Number(li.revenue_value) * d.splitFraction;
           }
         });
       } else {
         const p = safeParseDate(d.won_date);
-        if (p && isAfter(p, start) && isBefore(p, end)) {
+        if (p && !isBefore(p, start) && !isAfter(p, end)) {
           total += d.splitValue;
         }
       }
