@@ -346,7 +346,8 @@ export default function DealLineItems({ dealId, dealValue = 0, dealCost = 0, onT
           {items.length > 0 && (
             <TableFooter>
               <TableRow>
-                <TableCell className="font-semibold" colSpan={2}>Total</TableCell>
+                <TableCell className="font-semibold" colSpan={3}>Total</TableCell>
+                <TableCell />
                 <TableCell className="text-right font-semibold">{formatGBP(totals.revenue)}</TableCell>
                 <TableCell className="text-right font-semibold">{formatGBP(totals.cost)}</TableCell>
                 <TableCell className={`text-right font-semibold ${getMarginColor(marginPct)}`}>{formatGBP(totals.margin)}</TableCell>
