@@ -139,6 +139,8 @@ const LineItemDisplayRow = memo(function LineItemDisplayRow({
 
 interface Props {
   dealId: string;
+  dealValue?: number;
+  dealCost?: number;
   onTotalsChange?: (totals: { revenue: number; cost: number }) => void;
 }
 
