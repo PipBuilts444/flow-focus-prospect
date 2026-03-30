@@ -223,10 +223,13 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
       await updateDeal(deal.id, updates);
 
       // 2. Update linked contact if one is selected and fields were touched
-      if (form.primary_contact_id) {
+      if (form.primary_contact_id && contactForm.first_name?.trim()) {
+        const firstName = contactForm.first_name.trim();
+        const lastName = contactForm.last_name?.trim() || '';
         await updateContact(form.primary_contact_id, {
-          first_name: contactForm.first_name?.trim() || undefined,
-          last_name: contactForm.last_name?.trim() || undefined,
+          first_name: firstName,
+          last_name: lastName,
+          full_name: `${firstName} ${lastName}`.trim(),
           email: contactForm.email?.trim() || null,
           phone: contactForm.phone?.trim() || null,
           role_or_title: contactForm.role_or_title?.trim() || null,
