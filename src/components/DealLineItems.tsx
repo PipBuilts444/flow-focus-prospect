@@ -24,6 +24,7 @@ interface LineItem {
   item_type: string | null;
   start_date: string | null;
   end_date: string | null;
+  billing_month: string | null;
   is_deleted: boolean;
   created_at: string;
   updated_at: string;
