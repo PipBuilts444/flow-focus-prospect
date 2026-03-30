@@ -284,6 +284,9 @@ const DealDetailPage = () => {
         </div>
       )}
 
+      {/* Deal Breakdown / Phases */}
+      <DealLineItems dealId={deal.id} />
+
       {/* Slippage & Risks (always show if data exists) */}
       <div className="grid md:grid-cols-2 gap-6">
         <div className="bg-card rounded-lg border border-border p-5 space-y-3">
