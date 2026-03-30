@@ -41,7 +41,8 @@ const DashboardPage = () => {
   const thisWeekEnd = endOfWeek(now, { weekStartsOn: 1 });
 
   useEffect(() => {
-    supabase.from('deal_line_items').select('*').eq('is_deleted', false).then(({ data }) => {
+    supabase.from('deal_line_items').select('*').eq('is_deleted', false).then(({ data, error }) => {
+      if (error) console.error('Failed to fetch line items:', error);
       if (data) setLineItems(data);
     });
   }, [deals]);

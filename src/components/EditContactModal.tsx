@@ -73,6 +73,7 @@ const EditContactModal = ({ open, contact, onClose }: Props) => {
       await updateContact(contact.id, {
         first_name: form.first_name.trim(),
         last_name: form.last_name.trim(),
+        full_name: `${form.first_name.trim()} ${form.last_name.trim()}`.trim(),
         email: form.email.trim() || null,
         phone: form.phone.trim() || null,
         role_or_title: form.role_or_title.trim() || null,

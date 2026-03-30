@@ -99,6 +99,7 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
       final_commercial_assumptions: deal.final_commercial_assumptions || '',
       lost_reason: deal.lost_reason || '',
       lost_notes: deal.lost_notes || '',
+      lost_date: deal.lost_date || '',
       estimated_delivery_cost: deal.estimated_delivery_cost || 0,
     });
     setValueDisplay(deal.value > 0 ? formatInputDisplay(String(deal.value)) : '');
@@ -217,14 +218,18 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
       if (!updates.expected_close_date) updates.expected_close_date = null;
       if (!updates.expected_start_date) updates.expected_start_date = null;
       if (!updates.won_date) updates.won_date = null;
+      if (!updates.lost_date) updates.lost_date = null;
       if (!updates.next_action_date) updates.next_action_date = null;
       await updateDeal(deal.id, updates);
 
       // 2. Update linked contact if one is selected and fields were touched
-      if (form.primary_contact_id) {
+      if (form.primary_contact_id && contactForm.first_name?.trim()) {
+        const firstName = contactForm.first_name.trim();
+        const lastName = contactForm.last_name?.trim() || '';
         await updateContact(form.primary_contact_id, {
-          first_name: contactForm.first_name?.trim() || undefined,
-          last_name: contactForm.last_name?.trim() || undefined,
+          first_name: firstName,
+          last_name: lastName,
+          full_name: `${firstName} ${lastName}`.trim(),
           email: contactForm.email?.trim() || null,
           phone: contactForm.phone?.trim() || null,
           role_or_title: contactForm.role_or_title?.trim() || null,
@@ -418,6 +423,11 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
             {(form.stage === 'Closed Won' || form.won_date) && (
               <FormField label="Won Date">
                 <Input type="date" value={form.won_date || ''} onChange={(e) => setField('won_date', e.target.value)} />
+              </FormField>
+            )}
+            {(form.stage === 'Closed Lost' || form.lost_reason) && (
+              <FormField label="Lost Date">
+                <Input type="date" value={form.lost_date || ''} onChange={(e) => setField('lost_date', e.target.value)} />
               </FormField>
             )}
             <FormRow>
