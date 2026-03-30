@@ -45,9 +45,10 @@ interface FormData {
   item_type: string;
   start_date: string;
   end_date: string;
+  billing_month: string;
 }
 
-const emptyForm: FormData = { name: '', revenue: '', cost: '', item_type: 'initial_scope', start_date: '', end_date: '' };
+const emptyForm: FormData = { name: '', revenue: '', cost: '', item_type: 'initial_scope', start_date: '', end_date: '', billing_month: '' };
 
 // Extracted as a stable component to prevent remounting on parent state changes
 const LineItemFormRow = memo(function LineItemFormRow({
