@@ -1,11 +1,13 @@
 import { useFilteredCrm } from '@/hooks/useFilteredCrm';
 import { useUserView } from '@/context/UserViewContext';
 import { useAllActivities } from '@/hooks/useActivities';
+import { useState, useEffect, useMemo } from 'react';
 import { format, isAfter, isBefore, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, startOfWeek, endOfWeek, subDays } from 'date-fns';
 import { TrendingUp, AlertTriangle, PoundSterling, Target, CheckCircle2, XCircle, Clock, CalendarDays, Users, TriangleAlert, BarChart3, Percent } from 'lucide-react';
 import OutstandingActions from '@/components/OutstandingActions';
 import { formatGBP } from '@/lib/currency';
 import { safeParseDate } from '@/lib/dateUtils';
+import { supabase } from '@/integrations/supabase/client';
 
 const KpiCard = ({ label, value, icon: Icon, variant = 'default', sub }: { label: string; value: string; icon: any; variant?: string; sub?: string }) => (
   <div className="bg-card rounded-lg border border-border p-5">
@@ -22,6 +24,7 @@ const DashboardPage = () => {
   const { deals, getCompany, getDealHealth, loading } = useFilteredCrm();
   const { selectedView } = useUserView();
   const { activities } = useAllActivities();
+  const [lineItems, setLineItems] = useState<any[]>([]);
   const now = new Date();
   const thisMonthStart = startOfMonth(now);
   const thisMonthEnd = endOfMonth(now);
@@ -30,18 +33,48 @@ const DashboardPage = () => {
   const thisWeekStart = startOfWeek(now, { weekStartsOn: 1 });
   const thisWeekEnd = endOfWeek(now, { weekStartsOn: 1 });
 
+  useEffect(() => {
+    supabase.from('deal_line_items').select('*').eq('is_deleted', false).then(({ data }) => {
+      if (data) setLineItems(data);
+    });
+  }, [deals]);
+
   if (loading) return <div className="p-6"><p className="text-muted-foreground">Loading…</p></div>;
 
-  // === ACTUALS (Closed Won, placed by won_date) ===
+  // Build line items map
+  const dealLineItemsMap = new Map<string, any[]>();
+  lineItems.forEach(li => {
+    const arr = dealLineItemsMap.get(li.deal_id) || [];
+    arr.push(li);
+    dealLineItemsMap.set(li.deal_id, arr);
+  });
+
+  // === ACTUALS (Closed Won, allocated by line item billing_month or deal won_date) ===
   const closedWonDeals = deals.filter(d => d.status === 'closed_won');
 
-  const actualsThisMonth = closedWonDeals
-    .filter(d => { const p = safeParseDate(d.won_date); return p && isAfter(p, thisMonthStart) && isBefore(p, thisMonthEnd); })
-    .reduce((s, d) => s + d.splitValue, 0);
+  const getActualsInRange = (start: Date, end: Date) => {
+    let total = 0;
+    closedWonDeals.forEach(d => {
+      const items = dealLineItemsMap.get(d.id);
+      if (items && items.length > 0) {
+        items.forEach((li: any) => {
+          const billingDate = safeParseDate(li.billing_month) ?? safeParseDate(d.won_date);
+          if (billingDate && isAfter(billingDate, start) && isBefore(billingDate, end)) {
+            total += Number(li.revenue_value) * d.splitFraction;
+          }
+        });
+      } else {
+        const p = safeParseDate(d.won_date);
+        if (p && isAfter(p, start) && isBefore(p, end)) {
+          total += d.splitValue;
+        }
+      }
+    });
+    return total;
+  };
 
-  const actualsThisQuarter = closedWonDeals
-    .filter(d => { const p = safeParseDate(d.won_date); return p && isAfter(p, thisQStart) && isBefore(p, thisQEnd); })
-    .reduce((s, d) => s + d.splitValue, 0);
+  const actualsThisMonth = getActualsInRange(thisMonthStart, thisMonthEnd);
+  const actualsThisQuarter = getActualsInRange(thisQStart, thisQEnd);
 
   const closedLostQ = deals
     .filter(d => { const p = safeParseDate(d.lost_date); return d.status === 'closed_lost' && p && isAfter(p, thisQStart) && isBefore(p, thisQEnd); });

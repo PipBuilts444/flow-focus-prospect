@@ -1,14 +1,22 @@
 import { useFilteredCrm } from '@/hooks/useFilteredCrm';
 import { useUserView } from '@/context/UserViewContext';
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { format, addMonths, startOfMonth, isSameMonth, isBefore } from 'date-fns';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { formatGBP, formatGBPCompact } from '@/lib/currency';
 import { safeParseDate } from '@/lib/dateUtils';
+import { supabase } from '@/integrations/supabase/client';
 
 const ForecastPage = () => {
   const { deals, loading } = useFilteredCrm();
   const { selectedView } = useUserView();
+  const [lineItems, setLineItems] = useState<any[]>([]);
+
+  useEffect(() => {
+    supabase.from('deal_line_items').select('*').eq('is_deleted', false).then(({ data }) => {
+      if (data) setLineItems(data);
+    });
+  }, [deals]);
 
   const now = useMemo(() => startOfMonth(new Date()), []);
 
@@ -17,6 +25,17 @@ const ForecastPage = () => {
     for (let i = -12; i < 12; i++) result.push(addMonths(now, i));
     return result;
   }, [now]);
+
+  // Build a map of deal_id -> line items for quick lookup
+  const dealLineItemsMap = useMemo(() => {
+    const map = new Map<string, any[]>();
+    lineItems.forEach(li => {
+      const arr = map.get(li.deal_id) || [];
+      arr.push(li);
+      map.set(li.deal_id, arr);
+    });
+    return map;
+  }, [lineItems]);
 
   const chartData = useMemo(() => {
     return months.map(month => {
@@ -29,11 +48,23 @@ const ForecastPage = () => {
         const fraction = deal.splitFraction;
 
         if (deal.status === 'closed_won') {
-          if (!deal.won_date) return;
-          const wonParsed = safeParseDate(deal.won_date);
-          if (!wonParsed) return;
-          const wonMonth = startOfMonth(wonParsed);
-          if (isSameMonth(wonMonth, month)) actuals += deal.value * fraction;
+          const items = dealLineItemsMap.get(deal.id);
+          if (items && items.length > 0) {
+            // Use per-line-item billing_month; fall back to deal won_date
+            items.forEach(li => {
+              const billingDate = safeParseDate(li.billing_month);
+              const fallback = safeParseDate(deal.won_date);
+              const targetMonth = billingDate ? startOfMonth(billingDate) : (fallback ? startOfMonth(fallback) : null);
+              if (targetMonth && isSameMonth(targetMonth, month)) {
+                actuals += Number(li.revenue_value) * fraction;
+              }
+            });
+          } else {
+            // No line items — use deal won_date as before
+            const wonParsed = safeParseDate(deal.won_date);
+            if (!wonParsed) return;
+            if (isSameMonth(startOfMonth(wonParsed), month)) actuals += deal.value * fraction;
+          }
           return;
         }
 
@@ -63,7 +94,7 @@ const ForecastPage = () => {
         Commit: Math.round(commit),
       };
     });
-  }, [deals, months, now]);
+  }, [deals, months, now, dealLineItemsMap]);
 
   if (loading) return <div className="p-6"><p className="text-muted-foreground">Loading…</p></div>;
 

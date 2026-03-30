@@ -24,6 +24,7 @@ interface LineItem {
   item_type: string | null;
   start_date: string | null;
   end_date: string | null;
+  billing_month: string | null;
   is_deleted: boolean;
   created_at: string;
   updated_at: string;
@@ -44,9 +45,10 @@ interface FormData {
   item_type: string;
   start_date: string;
   end_date: string;
+  billing_month: string;
 }
 
-const emptyForm: FormData = { name: '', revenue: '', cost: '', item_type: 'initial_scope', start_date: '', end_date: '' };
+const emptyForm: FormData = { name: '', revenue: '', cost: '', item_type: 'initial_scope', start_date: '', end_date: '', billing_month: '' };
 
 // Extracted as a stable component to prevent remounting on parent state changes
 const LineItemFormRow = memo(function LineItemFormRow({
@@ -96,6 +98,14 @@ const LineItemFormRow = memo(function LineItemFormRow({
           placeholder="0"
         />
       </TableCell>
+      <TableCell>
+        <Input
+          type="month"
+          value={local.billing_month}
+          onChange={e => setLocal(prev => ({ ...prev, billing_month: e.target.value }))}
+          className="h-8 text-xs"
+        />
+      </TableCell>
       <TableCell />
       <TableCell />
       <TableCell>
@@ -124,6 +134,7 @@ const LineItemDisplayRow = memo(function LineItemDisplayRow({
       <TableCell className="font-medium text-card-foreground">{item.name}</TableCell>
       <TableCell className="text-xs text-muted-foreground">{ITEM_TYPE_LABELS[item.item_type || ''] || item.item_type}</TableCell>
       <TableCell className="text-right">{formatGBP(item.revenue_value)}</TableCell>
+      <TableCell className="text-xs text-muted-foreground">{item.billing_month || '—'}</TableCell>
       <TableCell className="text-right">{formatGBP(item.estimated_delivery_cost)}</TableCell>
       <TableCell className={`text-right ${marginColor}`}>{formatGBP(item.gross_margin_value ?? 0)}</TableCell>
       <TableCell className={`text-right ${marginColor}`}>{item.gross_margin_percent != null ? `${Math.round(item.gross_margin_percent)}%` : '—'}</TableCell>
@@ -213,6 +224,7 @@ export default function DealLineItems({ dealId, dealValue = 0, dealCost = 0, onT
         item_type: form.item_type,
         start_date: form.start_date || null,
         end_date: form.end_date || null,
+        billing_month: form.billing_month ? `${form.billing_month}-01` : null,
       };
       if (editId) {
         const { error } = await supabase.from('deal_line_items').update(payload).eq('id', editId);
@@ -271,6 +283,7 @@ export default function DealLineItems({ dealId, dealValue = 0, dealCost = 0, onT
     item_type: item.item_type || 'initial_scope',
     start_date: item.start_date || '',
     end_date: item.end_date || '',
+    billing_month: item.billing_month ? item.billing_month.substring(0, 7) : '',
   });
 
   return (
@@ -293,6 +306,7 @@ export default function DealLineItems({ dealId, dealValue = 0, dealCost = 0, onT
               <TableHead>Phase</TableHead>
               <TableHead>Type</TableHead>
               <TableHead className="text-right">Revenue</TableHead>
+              <TableHead>Billing Month</TableHead>
               <TableHead className="text-right">Cost</TableHead>
               <TableHead className="text-right">Margin £</TableHead>
               <TableHead className="text-right">Margin %</TableHead>
@@ -332,7 +346,8 @@ export default function DealLineItems({ dealId, dealValue = 0, dealCost = 0, onT
           {items.length > 0 && (
             <TableFooter>
               <TableRow>
-                <TableCell className="font-semibold" colSpan={2}>Total</TableCell>
+                <TableCell className="font-semibold" colSpan={3}>Total</TableCell>
+                <TableCell />
                 <TableCell className="text-right font-semibold">{formatGBP(totals.revenue)}</TableCell>
                 <TableCell className="text-right font-semibold">{formatGBP(totals.cost)}</TableCell>
                 <TableCell className={`text-right font-semibold ${getMarginColor(marginPct)}`}>{formatGBP(totals.margin)}</TableCell>

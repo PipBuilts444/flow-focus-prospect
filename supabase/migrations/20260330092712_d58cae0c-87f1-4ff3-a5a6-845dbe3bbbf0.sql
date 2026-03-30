@@ -1,0 +1,1 @@
+ALTER TABLE public.deal_line_items ADD COLUMN billing_month date;
