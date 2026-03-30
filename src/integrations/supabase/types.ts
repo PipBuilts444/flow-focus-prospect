@@ -201,35 +201,53 @@ export type Database = {
         Row: {
           created_at: string
           deal_id: string
+          deleted_at: string | null
+          description: string | null
+          end_date: string | null
           estimated_delivery_cost: number
           gross_margin_percent: number | null
           gross_margin_value: number | null
           id: string
+          is_deleted: boolean
+          item_type: string | null
           name: string
-          revenue: number
+          revenue_value: number
           start_date: string | null
+          updated_at: string
         }
         Insert: {
           created_at?: string
           deal_id: string
+          deleted_at?: string | null
+          description?: string | null
+          end_date?: string | null
           estimated_delivery_cost?: number
           gross_margin_percent?: number | null
           gross_margin_value?: number | null
           id?: string
+          is_deleted?: boolean
+          item_type?: string | null
           name: string
-          revenue?: number
+          revenue_value?: number
           start_date?: string | null
+          updated_at?: string
         }
         Update: {
           created_at?: string
           deal_id?: string
+          deleted_at?: string | null
+          description?: string | null
+          end_date?: string | null
           estimated_delivery_cost?: number
           gross_margin_percent?: number | null
           gross_margin_value?: number | null
           id?: string
+          is_deleted?: boolean
+          item_type?: string | null
           name?: string
-          revenue?: number
+          revenue_value?: number
           start_date?: string | null
+          updated_at?: string
         }
         Relationships: [
           {
