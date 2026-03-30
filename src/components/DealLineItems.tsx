@@ -283,6 +283,7 @@ export default function DealLineItems({ dealId, dealValue = 0, dealCost = 0, onT
     item_type: item.item_type || 'initial_scope',
     start_date: item.start_date || '',
     end_date: item.end_date || '',
+    billing_month: item.billing_month ? item.billing_month.substring(0, 7) : '',
   });
 
   return (
