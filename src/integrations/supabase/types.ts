@@ -199,6 +199,7 @@ export type Database = {
       }
       deal_line_items: {
         Row: {
+          billing_month: string | null
           created_at: string
           deal_id: string
           deleted_at: string | null
@@ -216,6 +217,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          billing_month?: string | null
           created_at?: string
           deal_id: string
           deleted_at?: string | null
@@ -233,6 +235,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          billing_month?: string | null
           created_at?: string
           deal_id?: string
           deleted_at?: string | null
