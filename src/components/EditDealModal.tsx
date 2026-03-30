@@ -218,6 +218,7 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
       if (!updates.expected_close_date) updates.expected_close_date = null;
       if (!updates.expected_start_date) updates.expected_start_date = null;
       if (!updates.won_date) updates.won_date = null;
+      if (!updates.lost_date) updates.lost_date = null;
       if (!updates.next_action_date) updates.next_action_date = null;
       await updateDeal(deal.id, updates);
 
