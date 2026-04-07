@@ -69,7 +69,7 @@ const DashboardPage = () => {
       if (items && items.length > 0) {
         items.forEach((li: any) => {
           const billingDate = safeParseDate(li.billing_month) ?? safeParseDate(d.won_date);
-          if (billingDate && !isBefore(billingDate, start) && !isAfter(billingDate, end)) {
+          if (billingDate && isInRange(billingDate, start, end)) {
             const rev = Number(li.revenue_value) * d.splitFraction;
             const cost = Number(li.estimated_delivery_cost) * d.splitFraction;
             const margin = rev - cost;
@@ -88,7 +88,7 @@ const DashboardPage = () => {
         });
       } else {
         const p = safeParseDate(d.won_date);
-        if (p && !isBefore(p, start) && !isAfter(p, end)) {
+        if (p && isInRange(p, start, end)) {
           rows.push({
             dealId: d.id,
             dealName: d.deal_name,
