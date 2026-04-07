@@ -155,7 +155,7 @@ const DashboardPage = () => {
 
   const closedLostQ = deals.filter(d => {
     const p = safeParseDate(d.lost_date);
-    return d.status === 'closed_lost' && p && !isBefore(p, thisQStart) && !isAfter(p, thisQEnd);
+    return d.status === 'closed_lost' && p && isInRange(p, thisQStart, thisQEnd);
   });
   const closedLostQValue = closedLostQ.reduce((s, d) => s + d.splitValue, 0);
 
@@ -164,11 +164,11 @@ const DashboardPage = () => {
   const weightedPipeline = openDeals.reduce((s, d) => s + d.splitWeightedValue, 0);
 
   const commitThisMonth = openDeals
-    .filter(d => { const p = safeParseDate(d.expected_close_date); return d.forecast_category === 'Commit' && p && isBefore(p, thisMonthEnd) && isAfter(p, thisMonthStart); })
+    .filter(d => { const p = safeParseDate(d.expected_close_date); return d.forecast_category === 'Commit' && p && isInRange(p, thisMonthStart, thisMonthEnd); })
     .reduce((s, d) => s + d.splitWeightedValue, 0);
 
   const bestCaseThisMonth = openDeals
-    .filter(d => { const p = safeParseDate(d.expected_close_date); return (d.forecast_category === 'Commit' || d.forecast_category === 'Best Case') && p && isBefore(p, thisMonthEnd) && isAfter(p, thisMonthStart); })
+    .filter(d => { const p = safeParseDate(d.expected_close_date); return (d.forecast_category === 'Commit' || d.forecast_category === 'Best Case') && p && isInRange(p, thisMonthStart, thisMonthEnd); })
     .reduce((s, d) => s + d.splitWeightedValue, 0);
 
   const overdueActions = openDeals.filter(d => { const p = safeParseDate(d.next_action_date); return p && isBefore(p, now); });
