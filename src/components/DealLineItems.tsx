@@ -92,18 +92,18 @@ const LineItemFormRow = memo(function LineItemFormRow({
       </TableCell>
       <TableCell>
         <Input
-          value={local.cost}
-          onChange={e => setLocal(prev => ({ ...prev, cost: e.target.value.replace(/[^0-9.]/g, '') }))}
-          className="h-8 text-right"
-          placeholder="0"
-        />
-      </TableCell>
-      <TableCell>
-        <Input
           type="month"
           value={local.billing_month}
           onChange={e => setLocal(prev => ({ ...prev, billing_month: e.target.value }))}
           className="h-8 text-xs"
+        />
+      </TableCell>
+      <TableCell>
+        <Input
+          value={local.cost}
+          onChange={e => setLocal(prev => ({ ...prev, cost: e.target.value.replace(/[^0-9.]/g, '') }))}
+          className="h-8 text-right"
+          placeholder="0"
         />
       </TableCell>
       <TableCell />
