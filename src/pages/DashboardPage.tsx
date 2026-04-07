@@ -125,6 +125,10 @@ const DashboardPage = () => {
   // === ACTUALS ===
   const closedWonDeals = deals.filter(d => d.status === 'closed_won');
 
+  const isInRange = (date: Date, start: Date, end: Date) =>
+    (isAfter(date, start) || date.getTime() === start.getTime()) &&
+    (isBefore(date, end) || date.getTime() === end.getTime());
+
   const getActualsInRange = (start: Date, end: Date) => {
     let total = 0;
     closedWonDeals.forEach(d => {
@@ -132,13 +136,13 @@ const DashboardPage = () => {
       if (items && items.length > 0) {
         items.forEach((li: any) => {
           const billingDate = safeParseDate(li.billing_month) ?? safeParseDate(d.won_date);
-          if (billingDate && !isBefore(billingDate, start) && !isAfter(billingDate, end)) {
+          if (billingDate && isInRange(billingDate, start, end)) {
             total += Number(li.revenue_value) * d.splitFraction;
           }
         });
       } else {
         const p = safeParseDate(d.won_date);
-        if (p && !isBefore(p, start) && !isAfter(p, end)) {
+        if (p && isInRange(p, start, end)) {
           total += d.splitValue;
         }
       }
