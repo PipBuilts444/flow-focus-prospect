@@ -69,7 +69,7 @@ const DashboardPage = () => {
       if (items && items.length > 0) {
         items.forEach((li: any) => {
           const billingDate = safeParseDate(li.billing_month) ?? safeParseDate(d.won_date);
-          if (billingDate && !isBefore(billingDate, start) && !isAfter(billingDate, end)) {
+          if (billingDate && isInRange(billingDate, start, end)) {
             const rev = Number(li.revenue_value) * d.splitFraction;
             const cost = Number(li.estimated_delivery_cost) * d.splitFraction;
             const margin = rev - cost;
@@ -88,7 +88,7 @@ const DashboardPage = () => {
         });
       } else {
         const p = safeParseDate(d.won_date);
-        if (p && !isBefore(p, start) && !isAfter(p, end)) {
+        if (p && isInRange(p, start, end)) {
           rows.push({
             dealId: d.id,
             dealName: d.deal_name,
@@ -125,6 +125,10 @@ const DashboardPage = () => {
   // === ACTUALS ===
   const closedWonDeals = deals.filter(d => d.status === 'closed_won');
 
+  const isInRange = (date: Date, start: Date, end: Date) =>
+    (isAfter(date, start) || date.getTime() === start.getTime()) &&
+    (isBefore(date, end) || date.getTime() === end.getTime());
+
   const getActualsInRange = (start: Date, end: Date) => {
     let total = 0;
     closedWonDeals.forEach(d => {
@@ -132,13 +136,13 @@ const DashboardPage = () => {
       if (items && items.length > 0) {
         items.forEach((li: any) => {
           const billingDate = safeParseDate(li.billing_month) ?? safeParseDate(d.won_date);
-          if (billingDate && !isBefore(billingDate, start) && !isAfter(billingDate, end)) {
+          if (billingDate && isInRange(billingDate, start, end)) {
             total += Number(li.revenue_value) * d.splitFraction;
           }
         });
       } else {
         const p = safeParseDate(d.won_date);
-        if (p && !isBefore(p, start) && !isAfter(p, end)) {
+        if (p && isInRange(p, start, end)) {
           total += d.splitValue;
         }
       }
@@ -151,7 +155,7 @@ const DashboardPage = () => {
 
   const closedLostQ = deals.filter(d => {
     const p = safeParseDate(d.lost_date);
-    return d.status === 'closed_lost' && p && !isBefore(p, thisQStart) && !isAfter(p, thisQEnd);
+    return d.status === 'closed_lost' && p && isInRange(p, thisQStart, thisQEnd);
   });
   const closedLostQValue = closedLostQ.reduce((s, d) => s + d.splitValue, 0);
 
@@ -160,11 +164,11 @@ const DashboardPage = () => {
   const weightedPipeline = openDeals.reduce((s, d) => s + d.splitWeightedValue, 0);
 
   const commitThisMonth = openDeals
-    .filter(d => { const p = safeParseDate(d.expected_close_date); return d.forecast_category === 'Commit' && p && isBefore(p, thisMonthEnd) && isAfter(p, thisMonthStart); })
+    .filter(d => { const p = safeParseDate(d.expected_close_date); return d.forecast_category === 'Commit' && p && isInRange(p, thisMonthStart, thisMonthEnd); })
     .reduce((s, d) => s + d.splitWeightedValue, 0);
 
   const bestCaseThisMonth = openDeals
-    .filter(d => { const p = safeParseDate(d.expected_close_date); return (d.forecast_category === 'Commit' || d.forecast_category === 'Best Case') && p && isBefore(p, thisMonthEnd) && isAfter(p, thisMonthStart); })
+    .filter(d => { const p = safeParseDate(d.expected_close_date); return (d.forecast_category === 'Commit' || d.forecast_category === 'Best Case') && p && isInRange(p, thisMonthStart, thisMonthEnd); })
     .reduce((s, d) => s + d.splitWeightedValue, 0);
 
   const overdueActions = openDeals.filter(d => { const p = safeParseDate(d.next_action_date); return p && isBefore(p, now); });
