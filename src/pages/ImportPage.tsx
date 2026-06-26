@@ -424,12 +424,12 @@ const ImportPage = () => {
           className={`bg-card border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-colors ${dragging ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
         >
           <Upload size={36} className="mx-auto mb-3 text-muted-foreground" />
-          <p className="text-sm font-medium text-foreground">Drop your CSV here, or click to browse</p>
-          <p className="text-xs text-muted-foreground mt-1">Monday.com exports are auto-detected</p>
+          <p className="text-sm font-medium text-foreground">Drop a CSV or Excel file here, or click to browse</p>
+          <p className="text-xs text-muted-foreground mt-1">Monday.com exports and standard Excel files are supported</p>
           <input
             ref={fileInputRef}
             type="file"
-            accept=".csv,text/csv"
+            accept=".csv,.xlsx"
             className="hidden"
             onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
           />
