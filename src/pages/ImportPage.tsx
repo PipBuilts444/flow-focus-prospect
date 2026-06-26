@@ -52,6 +52,20 @@ const STAGE_BADGE: Record<string, string> = {
   'Closed Lost': 'bg-destructive/15 text-destructive',
 };
 
+const SECTION_LABELS = ['leads', 'active deals', 'closed won', 'closed lost', 'learn how to use', 'deals', 'try it free'];
+const DATE_RANGE_RE = /^\d{4}-\d{2}-\d{2}\s+to\s+\d{4}-\d{2}-\d{2}$/i;
+
+function isJunkFirstCell(firstCell: string): boolean {
+  if (!firstCell) return true;
+  const lc = firstCell.toLowerCase().trim();
+  if (SECTION_LABELS.some(l => lc.startsWith(l))) return true;
+  if (firstCell.includes('http')) return true;
+  if (DATE_RANGE_RE.test(firstCell.trim())) return true;
+  return false;
+}
+
+
+
 // ---------- CSV parser (handles quoted commas and escaped quotes) ----------
 function parseCSV(text: string): string[][] {
   const rows: string[][] = [];
@@ -136,8 +150,10 @@ const ImportPage = () => {
   const [rows, setRows] = useState<ParsedRow[]>([]);
   const [importing, setImporting] = useState(false);
   const [result, setResult] = useState<{ success: number; failed: number; errors: string[] } | null>(null);
+  const [rawRows, setRawRows] = useState<string[][]>([]);
 
   const mappedKeys = useMemo(() => Object.values(headerMap).filter(Boolean), [headerMap]);
+
 
   const parseRows = useCallback((grid: string[][]) => {
     if (grid.length < 2) { toast.error('File is empty or missing rows'); return; }
@@ -246,39 +262,63 @@ const ImportPage = () => {
   const handleFile = useCallback((file: File) => {
     setFileName(file.name);
     setResult(null);
+    setRawRows([]);
     const isExcel = file.name.toLowerCase().endsWith('.xlsx') || file.name.toLowerCase().endsWith('.xls');
     const reader = new FileReader();
     if (isExcel) {
       reader.onload = e => {
         const data = new Uint8Array(e.target?.result as ArrayBuffer);
         const workbook = XLSX.read(data, { type: 'array' });
-        let allRows: string[][] = [];
+
+        // Read every sheet, find all "Name" header rows, collect data rows between them.
+        let firstHeaderRow: string[] | null = null;
+        const dataRows: string[][] = [];
+        const rawCollected: string[][] = [];
+
         for (const sheetName of workbook.SheetNames) {
           const sheet = workbook.Sheets[sheetName];
-          const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' }) as unknown[][];
-          const stringRows = rows.map(r => r.map(c => String(c ?? '')));
-          if (stringRows.some(r => r.some(c => {
-            const lc = c.toLowerCase().trim();
-            return lc === 'name' || lc === 'deal_name' || lc === 'deal name';
-          }))) {
-            allRows = stringRows;
-            break;
+          const sheetRows = (XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' }) as unknown[][])
+            .map(r => r.map(c => String(c ?? '')));
+          rawCollected.push(...sheetRows);
+
+          let inSection = false;
+          let sectionHeader: string[] | null = null;
+          for (const row of sheetRows) {
+            const firstCell = (row[0] ?? '').trim();
+            const lc = firstCell.toLowerCase();
+            if (lc === 'name') {
+              inSection = true;
+              sectionHeader = row;
+              if (!firstHeaderRow) firstHeaderRow = row;
+              continue;
+            }
+            if (!inSection || !sectionHeader) continue;
+            if (isJunkFirstCell(firstCell)) {
+              // Section labels reset section context until next header
+              if (SECTION_LABELS.some(l => lc.startsWith(l))) inSection = false;
+              continue;
+            }
+            dataRows.push(row);
           }
         }
-        if (!allRows.length) {
-          for (const sheetName of workbook.SheetNames) {
-            const sheet = workbook.Sheets[sheetName];
-            const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' }) as unknown[][];
-            allRows.push(...rows.map(r => r.map(c => String(c ?? ''))));
-          }
+
+        setRawRows(rawCollected);
+
+        if (firstHeaderRow && dataRows.length > 0) {
+          parseRows([firstHeaderRow, ...dataRows]);
+        } else {
+          setRows([]);
+          setHeaderMap({});
+          toast.error('No deal rows detected. See debug panel below.');
         }
-        parseRows(allRows);
       };
       reader.readAsArrayBuffer(file);
     } else {
       reader.onload = e => {
         const text = e.target?.result as string;
-        parseRows(parseCSV(text));
+        const grid = parseCSV(text);
+        setRawRows(grid);
+        parseRows(grid);
       };
       reader.readAsText(file);
     }
@@ -352,8 +392,8 @@ const ImportPage = () => {
           owner: row.owners[0] ?? null,
           deal_originator: row.deal_originator,
           source: row.source,
-          expected_close_date: row.expected_close_date,
-          won_date: row.won_date,
+          expected_close_date: stage === 'Closed Won' ? null : row.expected_close_date,
+          won_date: stage === 'Closed Won' ? (row.won_date ?? row.expected_close_date) : null,
           lost_reason: row.lost_reason,
           notes: row.notes,
           forecast_category: row.forecast_category ?? (stage === 'Closed Won' ? 'Closed Won' : stage === 'Closed Lost' ? 'Closed Lost' : 'Pipeline'),
@@ -401,6 +441,7 @@ const ImportPage = () => {
     setRows([]);
     setHeaderMap({});
     setResult(null);
+    setRawRows([]);
   };
 
   return (
@@ -453,6 +494,26 @@ const ImportPage = () => {
           </div>
         </div>
       )}
+
+      {fileName && rows.length === 0 && rawRows.length > 0 && (
+        <div className="bg-amber-500/10 border border-amber-500/40 rounded-lg p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <AlertTriangle size={16} className="text-amber-600" />
+            <h3 className="text-sm font-semibold text-foreground">Debug: 0 deals detected</h3>
+          </div>
+          <p className="text-xs text-muted-foreground mb-2">
+            <strong>Raw rows read:</strong> {rawRows.length}
+          </p>
+          <p className="text-xs text-muted-foreground mb-1"><strong>First 5 raw rows:</strong></p>
+          <pre className="text-[11px] bg-background border border-border p-2 rounded overflow-x-auto max-h-64">
+{JSON.stringify(rawRows.slice(0, 5), null, 2)}
+          </pre>
+          <p className="text-xs text-muted-foreground mt-2">
+            The parser looks for a row whose first cell is exactly <code>Name</code>, then treats following rows as deals until the next section label.
+          </p>
+        </div>
+      )}
+
 
       {Object.keys(headerMap).length > 0 && (
         <div className="bg-card border border-border rounded-lg p-4">
