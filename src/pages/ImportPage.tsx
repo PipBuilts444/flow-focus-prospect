@@ -45,7 +45,7 @@ const STAGE_BADGE: Record<string, string> = {
   'Qualified': 'bg-primary/15 text-primary',
   'Discovery': 'bg-primary/15 text-primary',
   'Proposal': 'bg-amber-500/15 text-amber-600',
-  'Commercials': 'bg-amber-500/15 text-amber-600',
+  'Commercials / Procurement': 'bg-amber-500/15 text-amber-600',
   'Verbal Commit': 'bg-amber-500/15 text-amber-600',
   'Closed Won': 'bg-health-green/15 text-health-green',
   'Closed Lost': 'bg-destructive/15 text-destructive',
@@ -211,7 +211,7 @@ const ImportPage = () => {
 
       const fcRaw = get(fcIdx);
       const fc = fcRaw as ForecastCategory;
-      const validFc: ForecastCategory[] = ['Pipeline', 'Best Case', 'Commit', 'Closed Won', 'Closed Lost', 'Omitted'];
+      const validFc: ForecastCategory[] = ['Pipeline', 'Best Case', 'Commit', 'Closed Won', 'Closed Lost'];
       const forecast_category = validFc.includes(fc) ? fc : null;
 
       parsedRows.push({
