@@ -62,6 +62,14 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
   const [valueDisplay, setValueDisplay] = useState('');
   const [deliveryCostDisplay, setDeliveryCostDisplay] = useState('');
   const [ownershipSplit, setOwnershipSplit] = useState<OwnerEntry[]>([]);
+  const missingFieldRef = useRef<HTMLDivElement | null>(null);
+
+  const isClosedWon = deal.status === 'closed_won' || form.stage === 'Closed Won';
+  const isClosedLost = deal.status === 'closed_lost' || form.stage === 'Closed Lost';
+  const needWonDate = isClosedWon && !form.won_date;
+  const needValue = isClosedWon && (!form.value || form.value <= 0);
+  const needLostReason = isClosedLost && !form.lost_reason?.trim();
+  const amberRing = 'ring-2 ring-amber-400 focus-visible:ring-amber-500';
 
   useEffect(() => {
     if (!open) return;
