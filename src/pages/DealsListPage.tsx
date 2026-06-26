@@ -2,7 +2,7 @@ import { useFilteredCrm } from '@/hooks/useFilteredCrm';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DEAL_STAGES, FORECAST_CATEGORIES } from '@/types/crm';
-import { Search, Plus } from 'lucide-react';
+import { Search, Plus, AlertTriangle } from 'lucide-react';
 import { formatGBP } from '@/lib/currency';
 
 const healthDot: Record<string, string> = {
