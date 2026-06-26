@@ -542,8 +542,10 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
               <Textarea value={form.notes || ''} onChange={(e) => setField('notes', e.target.value)} rows={3} />
             </FormField>
             <FormRow>
-              <FormField label="Lost Reason">
-                <Input value={form.lost_reason || ''} onChange={(e) => setField('lost_reason', e.target.value)} />
+              <FormField label={needLostReason ? 'Lost Reason (required)' : 'Lost Reason'}>
+                <div ref={needLostReason ? missingFieldRef : undefined}>
+                  <Input className={needLostReason ? amberRing : ''} value={form.lost_reason || ''} onChange={(e) => setField('lost_reason', e.target.value)} />
+                </div>
               </FormField>
               <FormField label="Lost Notes">
                 <Textarea value={form.lost_notes || ''} onChange={(e) => setField('lost_notes', e.target.value)} rows={2} />
