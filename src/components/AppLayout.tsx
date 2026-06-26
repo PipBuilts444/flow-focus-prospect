@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Kanban, List, Building2, Users, TrendingUp, ChevronLeft, ChevronRight, ChevronDown, CalendarPlus, Trash2 } from 'lucide-react';
+import { LayoutDashboard, Kanban, List, Building2, Users, TrendingUp, ChevronLeft, ChevronRight, ChevronDown, CalendarPlus, Trash2, Upload } from 'lucide-react';
 import { useState } from 'react';
 import { useUserView, OWNERS, UserView } from '@/context/UserViewContext';
 import {
