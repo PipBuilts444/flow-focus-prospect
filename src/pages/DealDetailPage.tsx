@@ -127,6 +127,16 @@ const DealDetailPage = () => {
             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${hl.cls}`}>{hl.text}</span>
             <span className="text-xs px-2 py-0.5 rounded-full bg-accent text-accent-foreground">{deal.stage}</span>
           </div>
+          {(deal as any).deal_originator && (
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Originated by <span className="font-medium text-foreground">{(deal as any).deal_originator}</span>
+            </p>
+          )}
+          {deal.owner && (deal as any).deal_originator && (deal as any).deal_originator !== deal.owner && (
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Owner <span className="font-medium text-foreground">{deal.owner}</span>
+            </p>
+          )}
         </div>
         <div className="flex items-start gap-2">
           {deal.value > 0 && (

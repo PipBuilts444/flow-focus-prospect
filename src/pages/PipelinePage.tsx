@@ -51,6 +51,10 @@ const PipelinePage = () => {
                           <span className={`w-2 h-2 rounded-full shrink-0 mt-1 ${healthDot[health]}`} />
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">{company?.company_name}</p>
+                        {deal.owner && <p className="text-xs text-muted-foreground mt-0.5">{deal.owner}</p>}
+                        {(deal as any).deal_originator && (deal as any).deal_originator !== deal.owner && (
+                          <p className="text-[10px] text-muted-foreground/70 mt-0.5">Originated by {(deal as any).deal_originator}</p>
+                        )}
                         <div className="flex items-center justify-between mt-2">
                           <span className="text-sm font-semibold text-card-foreground">{formatGBP(deal.value)}</span>
                           <span className="text-xs text-muted-foreground">{deal.expected_close_date}</span>

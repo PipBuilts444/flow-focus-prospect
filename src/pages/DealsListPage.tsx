@@ -77,6 +77,7 @@ const DealsListPage = () => {
                 <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Category</th>
                 <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Close Date</th>
                 <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Owner</th>
+                <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Originator</th>
                 <th className="text-center px-4 py-2.5 font-medium text-muted-foreground">Health</th>
               </tr>
             </thead>
@@ -95,6 +96,7 @@ const DealsListPage = () => {
                     <td className="px-4 py-3 text-muted-foreground">{deal.forecast_category}</td>
                     <td className="px-4 py-3 text-muted-foreground">{deal.expected_close_date}</td>
                     <td className="px-4 py-3 text-muted-foreground">{deal.owner}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{(deal as any).deal_originator || '—'}</td>
                     <td className="px-4 py-3 text-center"><span className={`inline-block w-2.5 h-2.5 rounded-full ${healthDot[health]}`} /></td>
                   </tr>
                 );
