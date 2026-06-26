@@ -1,0 +1,1 @@
+alter table deals add column if not exists deal_originator text null;
