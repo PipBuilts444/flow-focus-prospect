@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState } from 'react';
 
-export const OWNERS = ['Pippa Bradley-Dixon', 'Craig Davies', 'Adam Solomons'] as const;
+export const OWNERS = ['Pippa Bradley-Dixon', 'Craig Davies', 'Adam Solomons', 'Henry Hickley'] as const;
+export const ORIGINATORS = ['Pippa Bradley-Dixon', 'Craig Davies', 'Adam Solomons', 'Henry Hickley'] as const;
 export type Owner = typeof OWNERS[number];
 export type UserView = 'COEX' | Owner;
 
