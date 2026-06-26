@@ -495,6 +495,26 @@ const ImportPage = () => {
         </div>
       )}
 
+      {fileName && rows.length === 0 && rawRows.length > 0 && (
+        <div className="bg-amber-500/10 border border-amber-500/40 rounded-lg p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <AlertTriangle size={16} className="text-amber-600" />
+            <h3 className="text-sm font-semibold text-foreground">Debug: 0 deals detected</h3>
+          </div>
+          <p className="text-xs text-muted-foreground mb-2">
+            <strong>Raw rows read:</strong> {rawRows.length}
+          </p>
+          <p className="text-xs text-muted-foreground mb-1"><strong>First 5 raw rows:</strong></p>
+          <pre className="text-[11px] bg-background border border-border p-2 rounded overflow-x-auto max-h-64">
+{JSON.stringify(rawRows.slice(0, 5), null, 2)}
+          </pre>
+          <p className="text-xs text-muted-foreground mt-2">
+            The parser looks for a row whose first cell is exactly <code>Name</code>, then treats following rows as deals until the next section label.
+          </p>
+        </div>
+      )}
+
+
       {Object.keys(headerMap).length > 0 && (
         <div className="bg-card border border-border rounded-lg p-4">
           <p className="text-xs font-medium text-muted-foreground mb-2">Detected column mapping</p>
