@@ -150,8 +150,10 @@ const ImportPage = () => {
   const [rows, setRows] = useState<ParsedRow[]>([]);
   const [importing, setImporting] = useState(false);
   const [result, setResult] = useState<{ success: number; failed: number; errors: string[] } | null>(null);
+  const [rawRows, setRawRows] = useState<string[][]>([]);
 
   const mappedKeys = useMemo(() => Object.values(headerMap).filter(Boolean), [headerMap]);
+
 
   const parseRows = useCallback((grid: string[][]) => {
     if (grid.length < 2) { toast.error('File is empty or missing rows'); return; }
