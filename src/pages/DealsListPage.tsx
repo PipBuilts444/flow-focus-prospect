@@ -103,7 +103,16 @@ const DealsListPage = () => {
                 const health = getDealHealth(deal);
                 return (
                   <tr key={deal.id} onClick={() => navigate(`/deals/${deal.id}`)} className="border-b border-border last:border-0 hover:bg-accent/50 cursor-pointer transition-colors">
-                    <td className="px-4 py-3 font-medium text-card-foreground">{deal.deal_name}</td>
+                    <td className="px-4 py-3 font-medium text-card-foreground">
+                      <div className="flex items-center gap-1.5">
+                        {dealNeedsAttention(deal) && (
+                          <span title="Missing info for reporting" className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-amber-100">
+                            <AlertTriangle size={10} className="text-amber-700" />
+                          </span>
+                        )}
+                        {deal.deal_name}
+                      </div>
+                    </td>
                     <td className="px-4 py-3 text-muted-foreground">{company?.company_name}</td>
                     <td className="px-4 py-3"><span className="text-xs px-2 py-0.5 rounded-full bg-accent text-accent-foreground">{deal.stage}</span></td>
                     <td className="px-4 py-3 text-right font-medium text-card-foreground">{formatGBP(deal.value)}</td>
