@@ -28,6 +28,7 @@ const NewDealPage = () => {
   const [expectedStartDate, setExpectedStartDate] = useState('');
   const [deliveryMonths, setDeliveryMonths] = useState('1');
   const [owner, setOwner] = useState('');
+  const [originator, setOriginator] = useState('');
   const [ownershipSplit, setOwnershipSplit] = useState<OwnerEntry[]>([]);
   const [source, setSource] = useState('');
   const [nextAction, setNextAction] = useState('');
@@ -118,6 +119,7 @@ const NewDealPage = () => {
         expected_start_date: expectedStartDate || null,
         delivery_duration_months: parseInt(deliveryMonths) || 1,
         owner: owner.trim() || null,
+        deal_originator: originator.trim() || null,
         source: source.trim() || null,
         next_action: nextAction.trim() || null,
         next_action_date: nextActionDate || null,
@@ -311,6 +313,18 @@ const NewDealPage = () => {
                 <option value="Pippa Bradley-Dixon">Pippa Bradley-Dixon</option>
                 <option value="Craig Davies">Craig Davies</option>
                 <option value="Adam Solomons">Adam Solomons</option>
+                <option value="Henry Hickley">Henry Hickley</option>
+              </select>
+            </div>
+
+            <div className="md:col-span-2">
+              <label className={labelClass}>Deal Originator</label>
+              <select value={originator} onChange={e => setOriginator(e.target.value)} className={selectClass}>
+                <option value="">Select originator…</option>
+                <option value="Pippa Bradley-Dixon">Pippa Bradley-Dixon</option>
+                <option value="Craig Davies">Craig Davies</option>
+                <option value="Adam Solomons">Adam Solomons</option>
+                <option value="Henry Hickley">Henry Hickley</option>
               </select>
             </div>
 
