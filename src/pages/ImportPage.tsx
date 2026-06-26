@@ -52,6 +52,20 @@ const STAGE_BADGE: Record<string, string> = {
   'Closed Lost': 'bg-destructive/15 text-destructive',
 };
 
+const SECTION_LABELS = ['leads', 'active deals', 'closed won', 'closed lost', 'learn how to use', 'deals', 'try it free'];
+const DATE_RANGE_RE = /^\d{4}-\d{2}-\d{2}\s+to\s+\d{4}-\d{2}-\d{2}$/i;
+
+function isJunkFirstCell(firstCell: string): boolean {
+  if (!firstCell) return true;
+  const lc = firstCell.toLowerCase().trim();
+  if (SECTION_LABELS.some(l => lc.startsWith(l))) return true;
+  if (firstCell.includes('http')) return true;
+  if (DATE_RANGE_RE.test(firstCell.trim())) return true;
+  return false;
+}
+
+
+
 // ---------- CSV parser (handles quoted commas and escaped quotes) ----------
 function parseCSV(text: string): string[][] {
   const rows: string[][] = [];
