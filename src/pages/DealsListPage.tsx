@@ -70,6 +70,13 @@ const DealsListPage = () => {
           <option value="closed_won">Closed Won</option>
           <option value="closed_lost">Closed Lost</option>
         </select>
+        <button
+          onClick={() => setNeedsAttention(v => !v)}
+          className={`flex items-center gap-1.5 text-sm rounded-md px-3 py-2 border transition-colors ${needsAttention ? 'bg-amber-100 border-amber-300 text-amber-800' : 'bg-card border-input text-muted-foreground hover:text-foreground'}`}
+        >
+          <AlertTriangle size={14} className="text-amber-600" />
+          Needs attention {attentionCount > 0 && <span className="ml-1 text-xs font-semibold">({attentionCount})</span>}
+        </button>
       </div>
 
       <div className="bg-card rounded-lg border border-border overflow-hidden">
