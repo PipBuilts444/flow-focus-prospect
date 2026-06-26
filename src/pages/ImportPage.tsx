@@ -441,6 +441,7 @@ const ImportPage = () => {
     setRows([]);
     setHeaderMap({});
     setResult(null);
+    setRawRows([]);
   };
 
   return (
