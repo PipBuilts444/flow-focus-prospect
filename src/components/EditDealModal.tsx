@@ -415,11 +415,11 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
               </FormField>
             </FormRow>
             <FormRow>
-              <FormField label="Value">
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">£</span>
+              <FormField label={needValue ? 'Value (required)' : 'Value'}>
+                <div className="relative" ref={needValue ? missingFieldRef : undefined}>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground z-10">£</span>
                   <Input
-                    className="pl-7"
+                    className={`pl-7 ${needValue ? amberRing : ''}`}
                     value={valueDisplay.replace('£', '')}
                     onChange={(e) => handleValueChange(e.target.value)}
                     placeholder="0"
