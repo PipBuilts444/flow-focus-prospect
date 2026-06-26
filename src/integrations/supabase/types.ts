@@ -338,6 +338,7 @@ export type Database = {
           confidence_percent: number
           created_at: string
           deal_name: string
+          deal_originator: string | null
           deal_type: Database["public"]["Enums"]["deal_type"]
           deleted_at: string | null
           deleted_by: string | null
@@ -388,6 +389,7 @@ export type Database = {
           confidence_percent?: number
           created_at?: string
           deal_name: string
+          deal_originator?: string | null
           deal_type?: Database["public"]["Enums"]["deal_type"]
           deleted_at?: string | null
           deleted_by?: string | null
@@ -438,6 +440,7 @@ export type Database = {
           confidence_percent?: number
           created_at?: string
           deal_name?: string
+          deal_originator?: string | null
           deal_type?: Database["public"]["Enums"]["deal_type"]
           deleted_at?: string | null
           deleted_by?: string | null
