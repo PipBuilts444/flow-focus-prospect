@@ -1,5 +1,6 @@
-import { useState, useRef, useMemo } from 'react';
+import { useState, useRef, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import * as XLSX from 'xlsx';
 import { supabase } from '@/integrations/supabase/client';
 import { useCrm } from '@/context/CrmContext';
 import { toast } from 'sonner';
@@ -138,13 +139,18 @@ const ImportPage = () => {
 
   const mappedKeys = useMemo(() => Object.values(headerMap).filter(Boolean), [headerMap]);
 
-  const handleFile = async (file: File) => {
-    setResult(null);
-    setFileName(file.name);
-    const text = await file.text();
-    const grid = parseCSV(text);
-    if (grid.length < 2) { toast.error('CSV is empty or missing rows'); return; }
-    const headers = grid[0].map(h => h.trim());
+  const parseRows = useCallback((grid: string[][]) => {
+    if (grid.length < 2) { toast.error('File is empty or missing rows'); return; }
+
+    // Find header row: scan first 10 rows for one containing recognizable column names
+    const HEADER_HINTS = ['deal name', 'deal_name', 'name', 'stage', 'owner', 'company', 'value', 'amount'];
+    let headerRowIdx = 0;
+    for (let i = 0; i < Math.min(grid.length, 10); i++) {
+      const row = grid[i].map(c => String(c).toLowerCase().trim());
+      if (row.some(c => HEADER_HINTS.includes(c))) { headerRowIdx = i; break; }
+    }
+
+    const headers = grid[headerRowIdx].map(h => String(h).trim());
     const lowerHeaders = headers.map(h => h.toLowerCase());
 
     // Auto-detect column mapping
@@ -176,9 +182,9 @@ const ImportPage = () => {
     const fcIdx = idx('forecast_category');
 
     const parsedRows: ParsedRow[] = [];
-    for (let r = 1; r < grid.length; r++) {
+    for (let r = headerRowIdx + 1; r < grid.length; r++) {
       const row = grid[r];
-      const get = (i: number) => (i >= 0 && i < row.length ? row[i].trim() : '');
+      const get = (i: number) => (i >= 0 && i < row.length ? String(row[i] ?? '').trim() : '');
       const warnings: string[] = [];
 
       const deal_name = get(dealNameIdx);
@@ -234,8 +240,49 @@ const ImportPage = () => {
     }
 
     setRows(parsedRows);
-    toast.success(`Parsed ${parsedRows.length} rows from ${file.name}`);
-  };
+    toast.success(`Parsed ${parsedRows.length} rows`);
+  }, []);
+
+  const handleFile = useCallback((file: File) => {
+    setFileName(file.name);
+    setResult(null);
+    const isExcel = file.name.toLowerCase().endsWith('.xlsx') || file.name.toLowerCase().endsWith('.xls');
+    const reader = new FileReader();
+    if (isExcel) {
+      reader.onload = e => {
+        const data = new Uint8Array(e.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: 'array' });
+        let allRows: string[][] = [];
+        for (const sheetName of workbook.SheetNames) {
+          const sheet = workbook.Sheets[sheetName];
+          const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' }) as unknown[][];
+          const stringRows = rows.map(r => r.map(c => String(c ?? '')));
+          if (stringRows.some(r => r.some(c => {
+            const lc = c.toLowerCase().trim();
+            return lc === 'name' || lc === 'deal_name' || lc === 'deal name';
+          }))) {
+            allRows = stringRows;
+            break;
+          }
+        }
+        if (!allRows.length) {
+          for (const sheetName of workbook.SheetNames) {
+            const sheet = workbook.Sheets[sheetName];
+            const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' }) as unknown[][];
+            allRows.push(...rows.map(r => r.map(c => String(c ?? ''))));
+          }
+        }
+        parseRows(allRows);
+      };
+      reader.readAsArrayBuffer(file);
+    } else {
+      reader.onload = e => {
+        const text = e.target?.result as string;
+        parseRows(parseCSV(text));
+      };
+      reader.readAsText(file);
+    }
+  }, [parseRows]);
 
   const onDrop = (e: React.DragEvent) => {
     e.preventDefault();
@@ -377,12 +424,12 @@ const ImportPage = () => {
           className={`bg-card border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-colors ${dragging ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
         >
           <Upload size={36} className="mx-auto mb-3 text-muted-foreground" />
-          <p className="text-sm font-medium text-foreground">Drop your CSV here, or click to browse</p>
-          <p className="text-xs text-muted-foreground mt-1">Monday.com exports are auto-detected</p>
+          <p className="text-sm font-medium text-foreground">Drop a CSV or Excel file here, or click to browse</p>
+          <p className="text-xs text-muted-foreground mt-1">Monday.com exports and standard Excel files are supported</p>
           <input
             ref={fileInputRef}
             type="file"
-            accept=".csv,text/csv"
+            accept=".csv,.xlsx"
             className="hidden"
             onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
           />
