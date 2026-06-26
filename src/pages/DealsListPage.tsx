@@ -18,8 +18,16 @@ const DealsListPage = () => {
   const [stageFilter, setStageFilter] = useState<string>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [needsAttention, setNeedsAttention] = useState(false);
 
   if (loading) return <div className="p-6"><p className="text-muted-foreground">Loading…</p></div>;
+
+  const dealNeedsAttention = (d: any) => {
+    if (d.status === 'closed_won') return !d.value || d.value <= 0 || !d.won_date;
+    if (d.status === 'closed_lost') return !d.lost_reason;
+    return false;
+  };
+  const attentionCount = deals.filter(dealNeedsAttention).length;
 
   const filtered = deals.filter(d => {
     const company = getCompany(d.company_id || '');
@@ -27,7 +35,8 @@ const DealsListPage = () => {
     const matchStage = stageFilter === 'all' || d.stage === stageFilter;
     const matchCat = categoryFilter === 'all' || d.forecast_category === categoryFilter;
     const matchStatus = statusFilter === 'all' || d.status === statusFilter;
-    return matchSearch && matchStage && matchCat && matchStatus;
+    const matchAttn = !needsAttention || dealNeedsAttention(d);
+    return matchSearch && matchStage && matchCat && matchStatus && matchAttn;
   });
 
   return (
