@@ -146,6 +146,16 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
     });
   }, [open, deal.id]);
 
+  // Scroll to the missing-required-field section when opening a closed deal with gaps
+  useEffect(() => {
+    if (!open) return;
+    if (!(needWonDate || needValue || needLostReason)) return;
+    const t = setTimeout(() => {
+      missingFieldRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 200);
+    return () => clearTimeout(t);
+  }, [open, needWonDate, needValue, needLostReason]);
+
   // When contact selection changes, reload contact fields
   const handleContactChange = useCallback((contactId: string | null) => {
     setForm((prev) => ({ ...prev, primary_contact_id: contactId || '' }));
