@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -62,6 +62,14 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
   const [valueDisplay, setValueDisplay] = useState('');
   const [deliveryCostDisplay, setDeliveryCostDisplay] = useState('');
   const [ownershipSplit, setOwnershipSplit] = useState<OwnerEntry[]>([]);
+  const missingFieldRef = useRef<HTMLDivElement | null>(null);
+
+  const isClosedWon = deal.status === 'closed_won' || form.stage === 'Closed Won';
+  const isClosedLost = deal.status === 'closed_lost' || form.stage === 'Closed Lost';
+  const needWonDate = isClosedWon && !form.won_date;
+  const needValue = isClosedWon && (!form.value || form.value <= 0);
+  const needLostReason = isClosedLost && !form.lost_reason?.trim();
+  const amberRing = 'ring-2 ring-amber-400 focus-visible:ring-amber-500';
 
   useEffect(() => {
     if (!open) return;
@@ -137,6 +145,16 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
       }
     });
   }, [open, deal.id]);
+
+  // Scroll to the missing-required-field section when opening a closed deal with gaps
+  useEffect(() => {
+    if (!open) return;
+    if (!(needWonDate || needValue || needLostReason)) return;
+    const t = setTimeout(() => {
+      missingFieldRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 200);
+    return () => clearTimeout(t);
+  }, [open, needWonDate, needValue, needLostReason]);
 
   // When contact selection changes, reload contact fields
   const handleContactChange = useCallback((contactId: string | null) => {
@@ -397,11 +415,11 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
               </FormField>
             </FormRow>
             <FormRow>
-              <FormField label="Value">
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">£</span>
+              <FormField label={needValue ? 'Value (required)' : 'Value'}>
+                <div className="relative" ref={needValue ? missingFieldRef : undefined}>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground z-10">£</span>
                   <Input
-                    className="pl-7"
+                    className={`pl-7 ${needValue ? amberRing : ''}`}
                     value={valueDisplay.replace('£', '')}
                     onChange={(e) => handleValueChange(e.target.value)}
                     placeholder="0"
@@ -421,8 +439,10 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
               </FormField>
             </FormRow>
             {(form.stage === 'Closed Won' || form.won_date) && (
-              <FormField label="Won Date">
-                <Input type="date" value={form.won_date || ''} onChange={(e) => setField('won_date', e.target.value)} />
+              <FormField label={needWonDate ? 'Won Date (required)' : 'Won Date'}>
+                <div ref={needWonDate ? missingFieldRef : undefined}>
+                  <Input type="date" className={needWonDate ? amberRing : ''} value={form.won_date || ''} onChange={(e) => setField('won_date', e.target.value)} />
+                </div>
               </FormField>
             )}
             {(form.stage === 'Closed Lost' || form.lost_reason) && (
@@ -522,8 +542,10 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
               <Textarea value={form.notes || ''} onChange={(e) => setField('notes', e.target.value)} rows={3} />
             </FormField>
             <FormRow>
-              <FormField label="Lost Reason">
-                <Input value={form.lost_reason || ''} onChange={(e) => setField('lost_reason', e.target.value)} />
+              <FormField label={needLostReason ? 'Lost Reason (required)' : 'Lost Reason'}>
+                <div ref={needLostReason ? missingFieldRef : undefined}>
+                  <Input className={needLostReason ? amberRing : ''} value={form.lost_reason || ''} onChange={(e) => setField('lost_reason', e.target.value)} />
+                </div>
               </FormField>
               <FormField label="Lost Notes">
                 <Textarea value={form.lost_notes || ''} onChange={(e) => setField('lost_notes', e.target.value)} rows={2} />

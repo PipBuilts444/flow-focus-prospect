@@ -2,7 +2,7 @@ import { useFilteredCrm } from '@/hooks/useFilteredCrm';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DEAL_STAGES, FORECAST_CATEGORIES } from '@/types/crm';
-import { Search, Plus } from 'lucide-react';
+import { Search, Plus, AlertTriangle } from 'lucide-react';
 import { formatGBP } from '@/lib/currency';
 
 const healthDot: Record<string, string> = {
@@ -18,8 +18,16 @@ const DealsListPage = () => {
   const [stageFilter, setStageFilter] = useState<string>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [needsAttention, setNeedsAttention] = useState(false);
 
   if (loading) return <div className="p-6"><p className="text-muted-foreground">Loading…</p></div>;
+
+  const dealNeedsAttention = (d: any) => {
+    if (d.status === 'closed_won') return !d.value || d.value <= 0 || !d.won_date;
+    if (d.status === 'closed_lost') return !d.lost_reason;
+    return false;
+  };
+  const attentionCount = deals.filter(dealNeedsAttention).length;
 
   const filtered = deals.filter(d => {
     const company = getCompany(d.company_id || '');
@@ -27,7 +35,8 @@ const DealsListPage = () => {
     const matchStage = stageFilter === 'all' || d.stage === stageFilter;
     const matchCat = categoryFilter === 'all' || d.forecast_category === categoryFilter;
     const matchStatus = statusFilter === 'all' || d.status === statusFilter;
-    return matchSearch && matchStage && matchCat && matchStatus;
+    const matchAttn = !needsAttention || dealNeedsAttention(d);
+    return matchSearch && matchStage && matchCat && matchStatus && matchAttn;
   });
 
   return (
@@ -61,6 +70,13 @@ const DealsListPage = () => {
           <option value="closed_won">Closed Won</option>
           <option value="closed_lost">Closed Lost</option>
         </select>
+        <button
+          onClick={() => setNeedsAttention(v => !v)}
+          className={`flex items-center gap-1.5 text-sm rounded-md px-3 py-2 border transition-colors ${needsAttention ? 'bg-amber-100 border-amber-300 text-amber-800' : 'bg-card border-input text-muted-foreground hover:text-foreground'}`}
+        >
+          <AlertTriangle size={14} className="text-amber-600" />
+          Needs attention {attentionCount > 0 && <span className="ml-1 text-xs font-semibold">({attentionCount})</span>}
+        </button>
       </div>
 
       <div className="bg-card rounded-lg border border-border overflow-hidden">
@@ -87,7 +103,16 @@ const DealsListPage = () => {
                 const health = getDealHealth(deal);
                 return (
                   <tr key={deal.id} onClick={() => navigate(`/deals/${deal.id}`)} className="border-b border-border last:border-0 hover:bg-accent/50 cursor-pointer transition-colors">
-                    <td className="px-4 py-3 font-medium text-card-foreground">{deal.deal_name}</td>
+                    <td className="px-4 py-3 font-medium text-card-foreground">
+                      <div className="flex items-center gap-1.5">
+                        {dealNeedsAttention(deal) && (
+                          <span title="Missing info for reporting" className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-amber-100">
+                            <AlertTriangle size={10} className="text-amber-700" />
+                          </span>
+                        )}
+                        {deal.deal_name}
+                      </div>
+                    </td>
                     <td className="px-4 py-3 text-muted-foreground">{company?.company_name}</td>
                     <td className="px-4 py-3"><span className="text-xs px-2 py-0.5 rounded-full bg-accent text-accent-foreground">{deal.stage}</span></td>
                     <td className="px-4 py-3 text-right font-medium text-card-foreground">{formatGBP(deal.value)}</td>

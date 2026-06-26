@@ -154,6 +154,32 @@ const DealDetailPage = () => {
         </div>
       </div>
 
+      {/* Missing-info banner for Closed Won / Closed Lost */}
+      {(() => {
+        const missing: string[] = [];
+        if (deal.status === 'closed_won') {
+          if (!deal.value || deal.value <= 0) missing.push('Deal Value');
+          if (!deal.won_date) missing.push('Won Date');
+        } else if (deal.status === 'closed_lost') {
+          if (!deal.lost_reason) missing.push('Lost Reason');
+        }
+        if (missing.length === 0) return null;
+        return (
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <AlertTriangle size={16} className="text-amber-600" />
+              <div>
+                <p className="text-sm font-medium text-amber-800">Missing information needed for reporting</p>
+                <p className="text-xs text-amber-700 mt-0.5">Required: {missing.join(', ')}</p>
+              </div>
+            </div>
+            <button onClick={() => setShowEdit(true)} className="px-3 py-1.5 text-xs font-medium rounded-md bg-amber-600 text-white hover:bg-amber-700 transition-colors">
+              Complete now
+            </button>
+          </div>
+        );
+      })()}
+
       {/* Stage Progression Bar */}
       {deal.status === 'open' && (
         <div className="bg-card rounded-lg border border-border p-4">
