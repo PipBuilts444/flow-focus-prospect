@@ -439,8 +439,10 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
               </FormField>
             </FormRow>
             {(form.stage === 'Closed Won' || form.won_date) && (
-              <FormField label="Won Date">
-                <Input type="date" value={form.won_date || ''} onChange={(e) => setField('won_date', e.target.value)} />
+              <FormField label={needWonDate ? 'Won Date (required)' : 'Won Date'}>
+                <div ref={needWonDate ? missingFieldRef : undefined}>
+                  <Input type="date" className={needWonDate ? amberRing : ''} value={form.won_date || ''} onChange={(e) => setField('won_date', e.target.value)} />
+                </div>
               </FormField>
             )}
             {(form.stage === 'Closed Lost' || form.lost_reason) && (
