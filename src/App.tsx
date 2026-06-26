@@ -18,6 +18,7 @@ import ForecastPage from "@/pages/ForecastPage";
 import NewDealPage from "@/pages/NewDealPage";
 import NewActivityPage from "@/pages/NewActivityPage";
 import DeletedItemsPage from "@/pages/DeletedItemsPage";
+import ImportPage from "@/pages/ImportPage";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
