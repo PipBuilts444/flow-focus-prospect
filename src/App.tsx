@@ -46,6 +46,7 @@ const App = () => (
                 <Route path="/forecast" element={<ForecastPage />} />
                 <Route path="/activities/new" element={<NewActivityPage />} />
                 <Route path="/deleted" element={<DeletedItemsPage />} />
+                <Route path="/import" element={<ImportPage />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </AppLayout>
