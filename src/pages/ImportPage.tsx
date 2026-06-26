@@ -262,39 +262,63 @@ const ImportPage = () => {
   const handleFile = useCallback((file: File) => {
     setFileName(file.name);
     setResult(null);
+    setRawRows([]);
     const isExcel = file.name.toLowerCase().endsWith('.xlsx') || file.name.toLowerCase().endsWith('.xls');
     const reader = new FileReader();
     if (isExcel) {
       reader.onload = e => {
         const data = new Uint8Array(e.target?.result as ArrayBuffer);
         const workbook = XLSX.read(data, { type: 'array' });
-        let allRows: string[][] = [];
+
+        // Read every sheet, find all "Name" header rows, collect data rows between them.
+        let firstHeaderRow: string[] | null = null;
+        const dataRows: string[][] = [];
+        const rawCollected: string[][] = [];
+
         for (const sheetName of workbook.SheetNames) {
           const sheet = workbook.Sheets[sheetName];
-          const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' }) as unknown[][];
-          const stringRows = rows.map(r => r.map(c => String(c ?? '')));
-          if (stringRows.some(r => r.some(c => {
-            const lc = c.toLowerCase().trim();
-            return lc === 'name' || lc === 'deal_name' || lc === 'deal name';
-          }))) {
-            allRows = stringRows;
-            break;
+          const sheetRows = (XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' }) as unknown[][])
+            .map(r => r.map(c => String(c ?? '')));
+          rawCollected.push(...sheetRows);
+
+          let inSection = false;
+          let sectionHeader: string[] | null = null;
+          for (const row of sheetRows) {
+            const firstCell = (row[0] ?? '').trim();
+            const lc = firstCell.toLowerCase();
+            if (lc === 'name') {
+              inSection = true;
+              sectionHeader = row;
+              if (!firstHeaderRow) firstHeaderRow = row;
+              continue;
+            }
+            if (!inSection || !sectionHeader) continue;
+            if (isJunkFirstCell(firstCell)) {
+              // Section labels reset section context until next header
+              if (SECTION_LABELS.some(l => lc.startsWith(l))) inSection = false;
+              continue;
+            }
+            dataRows.push(row);
           }
         }
-        if (!allRows.length) {
-          for (const sheetName of workbook.SheetNames) {
-            const sheet = workbook.Sheets[sheetName];
-            const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' }) as unknown[][];
-            allRows.push(...rows.map(r => r.map(c => String(c ?? ''))));
-          }
+
+        setRawRows(rawCollected);
+
+        if (firstHeaderRow && dataRows.length > 0) {
+          parseRows([firstHeaderRow, ...dataRows]);
+        } else {
+          setRows([]);
+          setHeaderMap({});
+          toast.error('No deal rows detected. See debug panel below.');
         }
-        parseRows(allRows);
       };
       reader.readAsArrayBuffer(file);
     } else {
       reader.onload = e => {
         const text = e.target?.result as string;
-        parseRows(parseCSV(text));
+        const grid = parseCSV(text);
+        setRawRows(grid);
+        parseRows(grid);
       };
       reader.readAsText(file);
     }
