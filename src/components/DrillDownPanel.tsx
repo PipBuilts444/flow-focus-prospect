@@ -82,7 +82,7 @@ export default function DrillDownPanel({ open, onOpenChange, title, rows, varian
     if (!isLeads) return [];
     const map = new Map<string, DrillDownRow[]>();
     rows.forEach(r => {
-      const key = r.originator || 'Not set';
+      const key = (r.originator && r.originator.trim()) ? r.originator.trim() : 'Not set';
       const arr = map.get(key) || [];
       arr.push(r);
       map.set(key, arr);
