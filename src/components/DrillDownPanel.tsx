@@ -136,6 +136,7 @@ export default function DrillDownPanel({ open, onOpenChange, title, rows, varian
                 <SortHeader label="Deal" field="dealName" />
                 {isLeads ? (
                   <>
+                    <SortHeader label="Company" field="company" />
                     <SortHeader label="Stage" field="stage" />
                     <SortHeader label="Originator" field="originator" />
                     <SortHeader label="Owner / Collaborators" field="collaborators" />
@@ -163,6 +164,7 @@ export default function DrillDownPanel({ open, onOpenChange, title, rows, varian
                   <TableCell className="font-medium text-card-foreground max-w-[160px] truncate">{row.dealName}</TableCell>
                   {isLeads ? (
                     <>
+                      <TableCell className="text-muted-foreground text-xs">{row.company || '—'}</TableCell>
                       <TableCell className="text-muted-foreground text-xs">{row.stage || '—'}</TableCell>
                       <TableCell className="text-muted-foreground text-xs">{row.originator || '—'}</TableCell>
                       <TableCell className="text-muted-foreground text-xs">{row.collaborators || row.owner || '—'}</TableCell>
@@ -181,7 +183,7 @@ export default function DrillDownPanel({ open, onOpenChange, title, rows, varian
                 </TableRow>
               ))}
               {rows.length === 0 && (
-                <TableRow><TableCell colSpan={isLeads ? 5 : 7} className="text-center text-muted-foreground py-8">No data</TableCell></TableRow>
+                <TableRow><TableCell colSpan={isLeads ? 6 : 7} className="text-center text-muted-foreground py-8">No data</TableCell></TableRow>
               )}
             </TableBody>
           </Table>

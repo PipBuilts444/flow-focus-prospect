@@ -210,6 +210,7 @@ const DashboardPage = () => {
           const raw = (d as any).lead_date || d.created_at;
           return raw ? format(new Date(raw), 'dd MMM yyyy') : '';
         })(),
+        company: getCompany(d.company_id || '')?.company_name || '—',
       };
     });
 
