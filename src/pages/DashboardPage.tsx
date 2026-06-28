@@ -506,6 +506,7 @@ const DashboardPage = () => {
         onOpenChange={(open) => setDrillDown(prev => ({ ...prev, open }))}
         title={drillDown.title}
         rows={drillDown.rows}
+        variant={drillDown.variant}
       />
     </div>
   );
