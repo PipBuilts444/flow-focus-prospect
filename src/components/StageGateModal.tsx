@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { DealStage, Deal } from '@/types/crm';
 import { getMissingFieldsForStage, STAGE_FIELDS, type StageField } from '@/lib/stageRequirements';
-import { formatInputDisplay, stripFormatting } from '@/lib/currency';
+import { stripFormatting } from '@/lib/currency';
 
 interface Props {
   open: boolean;
@@ -14,6 +14,7 @@ interface Props {
 
 const StageGateModal = ({ open, deal, targetStage, onConfirm, onCancel, loading }: Props) => {
   const [values, setValues] = useState<Record<string, any>>({});
+  const [initialPriorMissing, setInitialPriorMissing] = useState<{ stage: DealStage; fields: StageField[] }[]>([]);
 
   const missingGroups = getMissingFieldsForStage(targetStage, { ...deal, ...values });
   // Show ALL fields for the target stage (not just missing), plus missing from prior stages
@@ -22,9 +23,11 @@ const StageGateModal = ({ open, deal, targetStage, onConfirm, onCancel, loading 
 
   useEffect(() => {
     if (open) {
+      const initial = getMissingFieldsForStage(targetStage, deal).filter(g => g.stage !== targetStage);
+      setInitialPriorMissing(initial);
       // Pre-populate with existing deal values
       const init: Record<string, any> = {};
-      const allFields = [...priorMissing.flatMap(g => g.fields), ...targetFields];
+      const allFields = [...initial.flatMap(g => g.fields), ...targetFields];
       allFields.forEach(f => {
         const existing = (deal as any)[f.key];
         if (existing !== null && existing !== undefined && existing !== '') {
@@ -44,7 +47,7 @@ const StageGateModal = ({ open, deal, targetStage, onConfirm, onCancel, loading 
   const handleSubmit = () => {
     const updates: Record<string, any> = { ...values, stage: targetStage };
     // Convert currency fields back to numbers
-    targetFields.concat(priorMissing.flatMap(g => g.fields)).forEach(f => {
+    targetFields.concat(initialPriorMissing.flatMap(g => g.fields)).forEach(f => {
       if (f.type === 'currency' && updates[f.key] !== undefined) {
         updates[f.key] = parseFloat(stripFormatting(String(updates[f.key]))) || 0;
       }
@@ -74,7 +77,7 @@ const StageGateModal = ({ open, deal, targetStage, onConfirm, onCancel, loading 
       return (
         <div className="relative">
           <span className="absolute left-3 top-2 text-sm text-muted-foreground">£</span>
-          <input type="text" inputMode="numeric" value={formatInputDisplay(String(val))} onChange={e => set(field.key, stripFormatting(e.target.value))} placeholder={field.placeholder} className={inputClass + ' pl-7'} />
+          <input type="text" inputMode="numeric" value={String(val)} onChange={e => set(field.key, stripFormatting(e.target.value))} placeholder={field.placeholder} className={inputClass + ' pl-7'} />
         </div>
       );
     }
@@ -96,7 +99,7 @@ const StageGateModal = ({ open, deal, targetStage, onConfirm, onCancel, loading 
         </div>
 
         <div className="flex-1 overflow-y-auto p-5 space-y-5">
-          {priorMissing.map(group => (
+          {initialPriorMissing.map(group => (
             <div key={group.stage}>
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Missing from {group.stage}</p>
               <div className="space-y-3">
