@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { DealStage, Deal } from '@/types/crm';
 import { getMissingFieldsForStage, STAGE_FIELDS, type StageField } from '@/lib/stageRequirements';
-import { formatInputDisplay, stripFormatting } from '@/lib/currency';
+import { stripFormatting } from '@/lib/currency';
 
 interface Props {
   open: boolean;
