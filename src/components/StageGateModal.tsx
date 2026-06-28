@@ -47,7 +47,7 @@ const StageGateModal = ({ open, deal, targetStage, onConfirm, onCancel, loading 
   const handleSubmit = () => {
     const updates: Record<string, any> = { ...values, stage: targetStage };
     // Convert currency fields back to numbers
-    targetFields.concat(priorMissing.flatMap(g => g.fields)).forEach(f => {
+    targetFields.concat(initialPriorMissing.flatMap(g => g.fields)).forEach(f => {
       if (f.type === 'currency' && updates[f.key] !== undefined) {
         updates[f.key] = parseFloat(stripFormatting(String(updates[f.key]))) || 0;
       }
