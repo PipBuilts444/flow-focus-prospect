@@ -136,10 +136,11 @@ interface ParsedRow {
   lost_reason: string | null;
   notes: string | null;
   forecast_category: ForecastCategory | null;
+  lead_date: string | null;
   warnings: string[];
 }
 
-const TEMPLATE_COLUMNS = ['deal_name', 'company_name', 'stage', 'owners', 'deal_originator', 'value', 'source', 'expected_close_date', 'won_date', 'lost_reason', 'notes', 'forecast_category'];
+const TEMPLATE_COLUMNS = ['deal_name', 'company_name', 'stage', 'owners', 'deal_originator', 'value', 'source', 'lead_date', 'expected_close_date', 'won_date', 'lost_reason', 'notes', 'forecast_category'];
 
 const ImportPage = () => {
   const navigate = useNavigate();
