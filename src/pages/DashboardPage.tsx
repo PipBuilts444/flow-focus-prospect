@@ -174,6 +174,33 @@ const DashboardPage = () => {
   const overdueActions = openDeals.filter(d => { const p = safeParseDate(d.next_action_date); return p && isBefore(p, now); });
   const slippedDeals = openDeals.filter(d => d.slip_count > 0);
 
+  // === NEW BUSINESS — LEADS ===
+  const leadsThisMonth = deals.filter(d => {
+    const created = safeParseDate((d as any).created_at);
+    return d.stage === 'Lead' && created && isInRange(created, thisMonthStart, thisMonthEnd);
+  });
+
+  const buildLeadsRows = (subset: typeof deals): DrillDownRow[] =>
+    subset.map(d => {
+      const created = (d as any).created_at;
+      const originator = (d as any).deal_originator || 'Not set';
+      return {
+        dealId: d.id,
+        dealName: d.deal_name,
+        lineItemName: originator,
+        billingMonth: created ? format(new Date(created), 'dd MMM yyyy') : '',
+        revenue: d.value || 0,
+        cost: 0,
+        marginValue: 0,
+        marginPercent: 0,
+        owner: d.owner || '',
+        originator,
+        collaborators: d.owner || '',
+        stage: d.stage,
+        createdDate: created ? format(new Date(created), 'dd MMM yyyy') : '',
+      };
+    });
+
   // === MARGIN ===
   const pipelineMargin = openDeals.reduce((s, d) => s + d.splitMarginValue, 0);
   const weightedMargin = openDeals.reduce((s, d) => s + (d.splitMarginValue * (d.confidence_percent / 100)), 0);
