@@ -300,6 +300,12 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
               <Input value={form.deal_name || ''} onChange={(e) => setField('deal_name', e.target.value)} placeholder="Enter deal name" />
             </FormField>
             <FormRow>
+              <FormField label="Lead Date">
+                <Input type="date" value={form.lead_date || ''} onChange={(e) => setField('lead_date', e.target.value)} />
+              </FormField>
+              <div />
+            </FormRow>
+            <FormRow>
               <FormField label="Primary Owner">
                 <Select value={form.owner || '_none'} onValueChange={(v) => {
                   const name = v === '_none' ? '' : v;
