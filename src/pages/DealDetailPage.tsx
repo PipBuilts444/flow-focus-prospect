@@ -136,6 +136,7 @@ const DealDetailPage = () => {
             <p className="text-xs text-muted-foreground mt-0.5">
               Owner <span className="font-medium text-foreground">{deal.owner}</span>
             </p>
+          )}
           {(deal as any).lead_date && (
             <p className="text-xs text-muted-foreground mt-0.5">
               Lead Date <span className="font-medium text-foreground">{format(new Date((deal as any).lead_date), 'dd MMM yyyy')}</span>
