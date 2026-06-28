@@ -198,6 +198,8 @@ const ImportPage = () => {
     const lostIdx = idx('lost_reason');
     const notesIdx = idx('notes');
     const fcIdx = idx('forecast_category');
+    const leadDateIdx = idx('lead_date');
+
 
     const parsedRows: ParsedRow[] = [];
     for (let r = headerRowIdx + 1; r < grid.length; r++) {
