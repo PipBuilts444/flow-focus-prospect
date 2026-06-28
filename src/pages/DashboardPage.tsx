@@ -30,7 +30,7 @@ const DashboardPage = () => {
   const { selectedView } = useUserView();
   const { activities } = useAllActivities();
   const [lineItems, setLineItems] = useState<any[]>([]);
-  const [drillDown, setDrillDown] = useState<{ open: boolean; title: string; rows: DrillDownRow[] }>({ open: false, title: '', rows: [] });
+  const [drillDown, setDrillDown] = useState<{ open: boolean; title: string; rows: DrillDownRow[]; variant?: 'financial' | 'leads' }>({ open: false, title: '', rows: [], variant: 'financial' });
 
   const now = new Date();
   const thisMonthStart = startOfMonth(now);
@@ -47,8 +47,8 @@ const DashboardPage = () => {
     });
   }, [deals]);
 
-  const openDrillDown = useCallback((title: string, rows: DrillDownRow[]) => {
-    setDrillDown({ open: true, title, rows });
+  const openDrillDown = useCallback((title: string, rows: DrillDownRow[], variant: 'financial' | 'leads' = 'financial') => {
+    setDrillDown({ open: true, title, rows, variant });
   }, []);
 
   if (loading) return <div className="p-6"><p className="text-muted-foreground">Loading…</p></div>;
@@ -174,6 +174,33 @@ const DashboardPage = () => {
   const overdueActions = openDeals.filter(d => { const p = safeParseDate(d.next_action_date); return p && isBefore(p, now); });
   const slippedDeals = openDeals.filter(d => d.slip_count > 0);
 
+  // === NEW BUSINESS — LEADS ===
+  const leadsThisMonth = deals.filter(d => {
+    const created = safeParseDate((d as any).created_at);
+    return d.stage === 'Lead' && created && isInRange(created, thisMonthStart, thisMonthEnd);
+  });
+
+  const buildLeadsRows = (subset: typeof deals): DrillDownRow[] =>
+    subset.map(d => {
+      const created = (d as any).created_at;
+      const originator = (d as any).deal_originator || 'Not set';
+      return {
+        dealId: d.id,
+        dealName: d.deal_name,
+        lineItemName: originator,
+        billingMonth: created ? format(new Date(created), 'dd MMM yyyy') : '',
+        revenue: d.value || 0,
+        cost: 0,
+        marginValue: 0,
+        marginPercent: 0,
+        owner: d.owner || '',
+        originator,
+        collaborators: d.owner || '',
+        stage: d.stage,
+        createdDate: created ? format(new Date(created), 'dd MMM yyyy') : '',
+      };
+    });
+
   // === MARGIN ===
   const pipelineMargin = openDeals.reduce((s, d) => s + d.splitMarginValue, 0);
   const weightedMargin = openDeals.reduce((s, d) => s + (d.splitMarginValue * (d.confidence_percent / 100)), 0);
@@ -298,6 +325,23 @@ const DashboardPage = () => {
           />
         </div>
       </div>
+
+      {/* NEW BUSINESS — LEADS */}
+      <div>
+        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
+          <Users size={14} /> New Business — Leads
+        </h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <KpiCard
+            label="Leads This Month"
+            value={String(leadsThisMonth.length)}
+            icon={Users}
+            sub={`${[...new Set(leadsThisMonth.map(d => (d as any).deal_originator).filter(Boolean))].length} originators`}
+            onClick={() => openDrillDown('Leads This Month', buildLeadsRows(leadsThisMonth), 'leads')}
+          />
+        </div>
+      </div>
+
 
       {/* PROFITABILITY */}
       <div>
@@ -462,6 +506,7 @@ const DashboardPage = () => {
         onOpenChange={(open) => setDrillDown(prev => ({ ...prev, open }))}
         title={drillDown.title}
         rows={drillDown.rows}
+        variant={drillDown.variant}
       />
     </div>
   );
