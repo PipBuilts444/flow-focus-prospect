@@ -225,12 +225,12 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
     setSaving(true);
     try {
       // 1. Update deal with computed margin fields
-      const updates: Record<string, any> = {
-        ...form,
-        gross_margin_value: grossMarginValue,
-        gross_margin_percent: Math.round(grossMarginPercent * 100) / 100,
-      };
+      const updates: Record<string, any> = { ...form };
       delete updates.weighted_value;
+      delete updates.gross_margin_value;
+      delete updates.gross_margin_percent;
+      updates.gross_margin_value = grossMarginValue;
+      updates.gross_margin_percent = Math.round(grossMarginPercent * 100) / 100;
       if (!updates.company_id) updates.company_id = null;
       if (!updates.primary_contact_id) updates.primary_contact_id = null;
       if (!updates.expected_close_date) updates.expected_close_date = null;
@@ -273,8 +273,9 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
 
       toast.success('Deal updated');
       onClose();
-    } catch {
-      toast.error('Failed to update deal');
+    } catch (err: any) {
+      console.error('Deal update failed:', err);
+      toast.error(err?.message || 'Failed to update deal');
     } finally {
       setSaving(false);
     }
