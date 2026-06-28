@@ -76,6 +76,7 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
 
     setForm({
       deal_name: deal.deal_name,
+      lead_date: (deal as any).lead_date || '',
       company_id: deal.company_id || '',
       primary_contact_id: deal.primary_contact_id || '',
       owner: deal.owner || '',
