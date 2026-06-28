@@ -326,6 +326,23 @@ const DashboardPage = () => {
         </div>
       </div>
 
+      {/* NEW BUSINESS — LEADS */}
+      <div>
+        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
+          <Users size={14} /> New Business — Leads
+        </h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <KpiCard
+            label="Leads This Month"
+            value={String(leadsThisMonth.length)}
+            icon={Users}
+            sub={`${[...new Set(leadsThisMonth.map(d => (d as any).deal_originator).filter(Boolean))].length} originators`}
+            onClick={() => openDrillDown('Leads This Month', buildLeadsRows(leadsThisMonth), 'leads')}
+          />
+        </div>
+      </div>
+
+
       {/* PROFITABILITY */}
       <div>
         <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
