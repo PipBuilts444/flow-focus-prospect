@@ -12,6 +12,7 @@ export interface StageField {
 export const STAGE_FIELDS: Record<DealStage, StageField[]> = {
   'Lead': [
     { key: 'deal_name', label: 'Deal Name', type: 'text', required: true, placeholder: 'Enter deal name' },
+    { key: 'lead_date', label: 'Lead Date', type: 'date', required: false, placeholder: '' },
     { key: 'owner', label: 'Owner', type: 'select', required: true, options: ['Pippa Bradley-Dixon', 'Craig Davies', 'Adam Solomons', 'Henry Hickley'] },
     { key: 'deal_originator', label: 'Deal Originator', type: 'select', required: false, options: ['Pippa Bradley-Dixon', 'Craig Davies', 'Adam Solomons', 'Henry Hickley'] },
     { key: 'source', label: 'Source', type: 'text', required: true, placeholder: 'Referral, Inbound, Event…' },

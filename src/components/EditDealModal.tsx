@@ -76,6 +76,7 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
 
     setForm({
       deal_name: deal.deal_name,
+      lead_date: (deal as any).lead_date || '',
       company_id: deal.company_id || '',
       primary_contact_id: deal.primary_contact_id || '',
       owner: deal.owner || '',
@@ -239,6 +240,7 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
       if (!updates.won_date) updates.won_date = null;
       if (!updates.lost_date) updates.lost_date = null;
       if (!updates.next_action_date) updates.next_action_date = null;
+      if (!updates.lead_date) updates.lead_date = null;
       await updateDeal(deal.id, updates);
 
       // 2. Update linked contact if one is selected and fields were touched
@@ -297,6 +299,12 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
             <FormField label="Deal Name">
               <Input value={form.deal_name || ''} onChange={(e) => setField('deal_name', e.target.value)} placeholder="Enter deal name" />
             </FormField>
+            <FormRow>
+              <FormField label="Lead Date">
+                <Input type="date" value={form.lead_date || ''} onChange={(e) => setField('lead_date', e.target.value)} />
+              </FormField>
+              <div />
+            </FormRow>
             <FormRow>
               <FormField label="Primary Owner">
                 <Select value={form.owner || '_none'} onValueChange={(v) => {

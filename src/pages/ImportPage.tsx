@@ -23,6 +23,7 @@ const COLUMN_ALIASES: Record<string, string[]> = {
   lost_reason: ['lost_reason', 'reason lost', 'loss reason'],
   notes: ['notes', 'comments', 'description'],
   forecast_category: ['forecast_category', 'forecast', 'category'],
+  lead_date: ['lead_date', 'lead date', 'date taken', 'date live'],
 };
 
 const STAGE_MAP: Record<string, DealStage> = {
@@ -135,10 +136,11 @@ interface ParsedRow {
   lost_reason: string | null;
   notes: string | null;
   forecast_category: ForecastCategory | null;
+  lead_date: string | null;
   warnings: string[];
 }
 
-const TEMPLATE_COLUMNS = ['deal_name', 'company_name', 'stage', 'owners', 'deal_originator', 'value', 'source', 'expected_close_date', 'won_date', 'lost_reason', 'notes', 'forecast_category'];
+const TEMPLATE_COLUMNS = ['deal_name', 'company_name', 'stage', 'owners', 'deal_originator', 'value', 'source', 'lead_date', 'expected_close_date', 'won_date', 'lost_reason', 'notes', 'forecast_category'];
 
 const ImportPage = () => {
   const navigate = useNavigate();
@@ -196,6 +198,8 @@ const ImportPage = () => {
     const lostIdx = idx('lost_reason');
     const notesIdx = idx('notes');
     const fcIdx = idx('forecast_category');
+    const leadDateIdx = idx('lead_date');
+
 
     const parsedRows: ParsedRow[] = [];
     for (let r = headerRowIdx + 1; r < grid.length; r++) {
@@ -251,6 +255,7 @@ const ImportPage = () => {
         lost_reason: get(lostIdx) || null,
         notes: get(notesIdx) || null,
         forecast_category,
+        lead_date: parseDate(get(leadDateIdx)),
         warnings,
       });
     }
@@ -397,6 +402,7 @@ const ImportPage = () => {
           lost_reason: row.lost_reason,
           notes: row.notes,
           forecast_category: row.forecast_category ?? (stage === 'Closed Won' ? 'Closed Won' : stage === 'Closed Lost' ? 'Closed Lost' : 'Pipeline'),
+          lead_date: row.lead_date ?? null,
         };
 
         const { data: newDeal, error: dealErr } = await supabase

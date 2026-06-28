@@ -355,6 +355,7 @@ export type Database = {
           is_deleted: boolean
           key_stakeholder: string | null
           latest_close_date: string | null
+          lead_date: string | null
           likely_service_area: string | null
           likely_start_month: string | null
           lost_date: string | null
@@ -406,6 +407,7 @@ export type Database = {
           is_deleted?: boolean
           key_stakeholder?: string | null
           latest_close_date?: string | null
+          lead_date?: string | null
           likely_service_area?: string | null
           likely_start_month?: string | null
           lost_date?: string | null
@@ -457,6 +459,7 @@ export type Database = {
           is_deleted?: boolean
           key_stakeholder?: string | null
           latest_close_date?: string | null
+          lead_date?: string | null
           likely_service_area?: string | null
           likely_start_month?: string | null
           lost_date?: string | null

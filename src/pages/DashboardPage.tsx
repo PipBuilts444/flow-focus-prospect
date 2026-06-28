@@ -176,8 +176,10 @@ const DashboardPage = () => {
 
   // === NEW BUSINESS — LEADS ===
   const leadsThisMonth = deals.filter(d => {
-    const created = safeParseDate((d as any).created_at);
-    return d.stage === 'Lead' && created && isInRange(created, thisMonthStart, thisMonthEnd);
+    const dateToUse = (d as any).lead_date
+      ? safeParseDate((d as any).lead_date)
+      : safeParseDate(d.created_at);
+    return d.stage === 'Lead' && dateToUse && isInRange(dateToUse, thisMonthStart, thisMonthEnd);
   });
 
   const normalizeOriginator = (d: any): string => {
@@ -204,7 +206,10 @@ const DashboardPage = () => {
         originator,
         collaborators,
         stage: d.stage,
-        createdDate: created ? format(new Date(created), 'dd MMM yyyy') : '',
+        createdDate: (() => {
+          const raw = (d as any).lead_date || d.created_at;
+          return raw ? format(new Date(raw), 'dd MMM yyyy') : '';
+        })(),
       };
     });
 
