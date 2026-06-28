@@ -19,6 +19,7 @@ export interface DrillDownRow {
   collaborators?: string;
   stage?: string;
   createdDate?: string;
+  company?: string;
 }
 
 interface Props {
@@ -30,7 +31,7 @@ interface Props {
 }
 
 type FinancialSortKey = 'dealName' | 'lineItemName' | 'billingMonth' | 'revenue' | 'cost' | 'marginValue' | 'marginPercent';
-type LeadsSortKey = 'dealName' | 'stage' | 'originator' | 'collaborators' | 'createdDate';
+type LeadsSortKey = 'dealName' | 'company' | 'stage' | 'originator' | 'collaborators' | 'createdDate';
 type SortKey = FinancialSortKey | LeadsSortKey;
 
 export default function DrillDownPanel({ open, onOpenChange, title, rows, variant = 'financial' }: Props) {
@@ -43,7 +44,7 @@ export default function DrillDownPanel({ open, onOpenChange, title, rows, varian
     if (sortKey === key) setSortAsc(!sortAsc);
     else {
       setSortKey(key);
-      setSortAsc(key === 'dealName' || key === 'lineItemName' || key === 'stage' || key === 'originator' || key === 'collaborators');
+      setSortAsc(key === 'dealName' || key === 'lineItemName' || key === 'company' || key === 'stage' || key === 'originator' || key === 'collaborators');
     }
   };
 
