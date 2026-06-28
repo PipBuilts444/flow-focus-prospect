@@ -227,6 +227,7 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
       // 1. Update deal with computed margin fields
       const updates: Record<string, any> = { ...form };
       delete updates.weighted_value;
+      delete updates.full_name;
       delete updates.gross_margin_value;
       delete updates.gross_margin_percent;
       updates.gross_margin_value = grossMarginValue;
