@@ -19,6 +19,7 @@ export interface DrillDownRow {
   collaborators?: string;
   stage?: string;
   createdDate?: string;
+  company?: string;
 }
 
 interface Props {
@@ -30,7 +31,7 @@ interface Props {
 }
 
 type FinancialSortKey = 'dealName' | 'lineItemName' | 'billingMonth' | 'revenue' | 'cost' | 'marginValue' | 'marginPercent';
-type LeadsSortKey = 'dealName' | 'stage' | 'originator' | 'collaborators' | 'createdDate';
+type LeadsSortKey = 'dealName' | 'company' | 'stage' | 'originator' | 'collaborators' | 'createdDate';
 type SortKey = FinancialSortKey | LeadsSortKey;
 
 export default function DrillDownPanel({ open, onOpenChange, title, rows, variant = 'financial' }: Props) {
@@ -43,7 +44,7 @@ export default function DrillDownPanel({ open, onOpenChange, title, rows, varian
     if (sortKey === key) setSortAsc(!sortAsc);
     else {
       setSortKey(key);
-      setSortAsc(key === 'dealName' || key === 'lineItemName' || key === 'stage' || key === 'originator' || key === 'collaborators');
+      setSortAsc(key === 'dealName' || key === 'lineItemName' || key === 'company' || key === 'stage' || key === 'originator' || key === 'collaborators');
     }
   };
 
@@ -135,6 +136,7 @@ export default function DrillDownPanel({ open, onOpenChange, title, rows, varian
                 <SortHeader label="Deal" field="dealName" />
                 {isLeads ? (
                   <>
+                    <SortHeader label="Company" field="company" />
                     <SortHeader label="Stage" field="stage" />
                     <SortHeader label="Originator" field="originator" />
                     <SortHeader label="Owner / Collaborators" field="collaborators" />
@@ -162,6 +164,7 @@ export default function DrillDownPanel({ open, onOpenChange, title, rows, varian
                   <TableCell className="font-medium text-card-foreground max-w-[160px] truncate">{row.dealName}</TableCell>
                   {isLeads ? (
                     <>
+                      <TableCell className="text-muted-foreground text-xs">{row.company || '—'}</TableCell>
                       <TableCell className="text-muted-foreground text-xs">{row.stage || '—'}</TableCell>
                       <TableCell className="text-muted-foreground text-xs">{row.originator || '—'}</TableCell>
                       <TableCell className="text-muted-foreground text-xs">{row.collaborators || row.owner || '—'}</TableCell>
@@ -180,7 +183,7 @@ export default function DrillDownPanel({ open, onOpenChange, title, rows, varian
                 </TableRow>
               ))}
               {rows.length === 0 && (
-                <TableRow><TableCell colSpan={isLeads ? 5 : 7} className="text-center text-muted-foreground py-8">No data</TableCell></TableRow>
+                <TableRow><TableCell colSpan={isLeads ? 6 : 7} className="text-center text-muted-foreground py-8">No data</TableCell></TableRow>
               )}
             </TableBody>
           </Table>
