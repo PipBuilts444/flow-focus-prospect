@@ -255,7 +255,7 @@ const ImportPage = () => {
         lost_reason: get(lostIdx) || null,
         notes: get(notesIdx) || null,
         forecast_category,
-        lead_date: parseDate(get(leadDateIdx)) || (get(leadDateIdx) || null),
+        lead_date: parseDate(get(leadDateIdx)),
         warnings,
       });
     }
