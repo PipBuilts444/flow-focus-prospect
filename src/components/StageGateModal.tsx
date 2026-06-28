@@ -23,9 +23,11 @@ const StageGateModal = ({ open, deal, targetStage, onConfirm, onCancel, loading 
 
   useEffect(() => {
     if (open) {
+      const initial = getMissingFieldsForStage(targetStage, deal).filter(g => g.stage !== targetStage);
+      setInitialPriorMissing(initial);
       // Pre-populate with existing deal values
       const init: Record<string, any> = {};
-      const allFields = [...priorMissing.flatMap(g => g.fields), ...targetFields];
+      const allFields = [...initial.flatMap(g => g.fields), ...targetFields];
       allFields.forEach(f => {
         const existing = (deal as any)[f.key];
         if (existing !== null && existing !== undefined && existing !== '') {
