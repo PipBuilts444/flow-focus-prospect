@@ -99,7 +99,7 @@ const StageGateModal = ({ open, deal, targetStage, onConfirm, onCancel, loading 
         </div>
 
         <div className="flex-1 overflow-y-auto p-5 space-y-5">
-          {priorMissing.map(group => (
+          {initialPriorMissing.map(group => (
             <div key={group.stage}>
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Missing from {group.stage}</p>
               <div className="space-y-3">
