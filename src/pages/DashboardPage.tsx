@@ -343,7 +343,7 @@ const DashboardPage = () => {
             label="Leads This Month"
             value={String(leadsThisMonth.length)}
             icon={Users}
-            sub={`${[...new Set(leadsThisMonth.map(d => (d as any).deal_originator).filter(Boolean))].length} originators`}
+            sub={`${new Set(leadsThisMonth.map(d => normalizeOriginator(d)).filter(o => o !== 'Not set')).size} originators`}
             onClick={() => openDrillDown('Leads This Month', buildLeadsRows(leadsThisMonth), 'leads')}
           />
         </div>
