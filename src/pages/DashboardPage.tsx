@@ -206,7 +206,10 @@ const DashboardPage = () => {
         originator,
         collaborators,
         stage: d.stage,
-        createdDate: created ? format(new Date(created), 'dd MMM yyyy') : '',
+        createdDate: (() => {
+          const raw = (d as any).lead_date || d.created_at;
+          return raw ? format(new Date(raw), 'dd MMM yyyy') : '';
+        })(),
       };
     });
 
