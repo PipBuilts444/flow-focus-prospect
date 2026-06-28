@@ -240,6 +240,7 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
       if (!updates.won_date) updates.won_date = null;
       if (!updates.lost_date) updates.lost_date = null;
       if (!updates.next_action_date) updates.next_action_date = null;
+      if (!updates.lead_date) updates.lead_date = null;
       await updateDeal(deal.id, updates);
 
       // 2. Update linked contact if one is selected and fields were touched
