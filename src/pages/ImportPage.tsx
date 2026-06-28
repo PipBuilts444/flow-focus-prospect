@@ -23,6 +23,7 @@ const COLUMN_ALIASES: Record<string, string[]> = {
   lost_reason: ['lost_reason', 'reason lost', 'loss reason'],
   notes: ['notes', 'comments', 'description'],
   forecast_category: ['forecast_category', 'forecast', 'category'],
+  lead_date: ['lead_date', 'lead date', 'date taken', 'date live'],
 };
 
 const STAGE_MAP: Record<string, DealStage> = {
