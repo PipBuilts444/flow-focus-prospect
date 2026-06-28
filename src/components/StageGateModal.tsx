@@ -14,6 +14,7 @@ interface Props {
 
 const StageGateModal = ({ open, deal, targetStage, onConfirm, onCancel, loading }: Props) => {
   const [values, setValues] = useState<Record<string, any>>({});
+  const [initialPriorMissing, setInitialPriorMissing] = useState<{ stage: DealStage; fields: StageField[] }[]>([]);
 
   const missingGroups = getMissingFieldsForStage(targetStage, { ...deal, ...values });
   // Show ALL fields for the target stage (not just missing), plus missing from prior stages
