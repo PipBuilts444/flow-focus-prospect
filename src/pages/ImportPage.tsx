@@ -402,6 +402,7 @@ const ImportPage = () => {
           lost_reason: row.lost_reason,
           notes: row.notes,
           forecast_category: row.forecast_category ?? (stage === 'Closed Won' ? 'Closed Won' : stage === 'Closed Lost' ? 'Closed Lost' : 'Pipeline'),
+          lead_date: row.lead_date ?? null,
         };
 
         const { data: newDeal, error: dealErr } = await supabase
