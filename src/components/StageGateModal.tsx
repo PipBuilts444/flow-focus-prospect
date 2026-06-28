@@ -77,7 +77,7 @@ const StageGateModal = ({ open, deal, targetStage, onConfirm, onCancel, loading 
       return (
         <div className="relative">
           <span className="absolute left-3 top-2 text-sm text-muted-foreground">£</span>
-          <input type="text" inputMode="numeric" value={formatInputDisplay(String(val))} onChange={e => set(field.key, stripFormatting(e.target.value))} placeholder={field.placeholder} className={inputClass + ' pl-7'} />
+          <input type="text" inputMode="numeric" value={String(val)} onChange={e => set(field.key, stripFormatting(e.target.value))} placeholder={field.placeholder} className={inputClass + ' pl-7'} />
         </div>
       );
     }
