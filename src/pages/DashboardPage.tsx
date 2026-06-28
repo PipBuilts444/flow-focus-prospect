@@ -180,10 +180,17 @@ const DashboardPage = () => {
     return d.stage === 'Lead' && created && isInRange(created, thisMonthStart, thisMonthEnd);
   });
 
+  const normalizeOriginator = (d: any): string => {
+    const raw = typeof d?.deal_originator === 'string' ? d.deal_originator.trim() : '';
+    return raw.length > 0 ? raw : 'Not set';
+  };
+
   const buildLeadsRows = (subset: typeof deals): DrillDownRow[] =>
     subset.map(d => {
       const created = (d as any).created_at;
-      const originator = (d as any).deal_originator || 'Not set';
+      const originator = normalizeOriginator(d);
+      const owner = (d.owner || '').trim();
+      const collaborators = owner || 'Unassigned';
       return {
         dealId: d.id,
         dealName: d.deal_name,
@@ -193,9 +200,9 @@ const DashboardPage = () => {
         cost: 0,
         marginValue: 0,
         marginPercent: 0,
-        owner: d.owner || '',
+        owner,
         originator,
-        collaborators: d.owner || '',
+        collaborators,
         stage: d.stage,
         createdDate: created ? format(new Date(created), 'dd MMM yyyy') : '',
       };
