@@ -161,6 +161,7 @@ const DashboardPage = () => {
 
   // === PIPELINE ===
   const openDeals = deals.filter(d => d.status === 'open');
+  const openDealsWithValue = openDeals.filter(d => (d.value || 0) > 0);
   const liveProposals = openDeals.filter(d => d.stage === 'Proposal');
   const liveCommercials = openDeals.filter(d => d.stage === 'Commercials / Procurement');
   const liveVerbalCommit = openDeals.filter(d => d.stage === 'Verbal Commit');
@@ -348,9 +349,10 @@ const DashboardPage = () => {
           />
           <KpiCard
             label="Total Open Pipeline"
-            value={formatGBP(openDeals.reduce((s, d) => s + d.splitValue, 0))}
+            value={formatGBP(openDealsWithValue.reduce((s, d) => s + d.splitValue, 0))}
             icon={PoundSterling}
-            onClick={() => openDrillDown('Total Open Pipeline', buildOpenDealRows())}
+            sub={`${openDealsWithValue.length} deals with value`}
+            onClick={() => openDrillDown('Total Open Pipeline', buildOpenDealRows(d => (d.value || 0) > 0))}
           />
         </div>
       </div>
