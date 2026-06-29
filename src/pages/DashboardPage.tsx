@@ -183,6 +183,15 @@ const DashboardPage = () => {
       && d.status !== 'closed_lost';
   });
 
+  const FUNNEL_STAGES = ['Lead', 'Qualified', 'Discovery', 'Proposal', 'Commercials / Procurement', 'Verbal Commit', 'Closed Won'];
+
+  const funnelBreakdown = FUNNEL_STAGES.map(stage => ({
+    stage,
+    count: leadsThisMonth.filter(d =>
+      stage === 'Closed Won' ? d.status === 'closed_won' : d.stage === stage
+    ).length,
+  })).filter(f => f.count > 0);
+
   const normalizeOriginator = (d: any): string => {
     const raw = typeof d?.deal_originator === 'string' ? d.deal_originator.trim() : '';
     return raw.length > 0 ? raw : 'Not set';
