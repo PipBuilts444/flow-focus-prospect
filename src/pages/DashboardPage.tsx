@@ -179,7 +179,8 @@ const DashboardPage = () => {
     const dateToUse = (d as any).lead_date
       ? safeParseDate((d as any).lead_date)
       : safeParseDate(d.created_at);
-    return d.stage === 'Lead' && dateToUse && isInRange(dateToUse, thisMonthStart, thisMonthEnd);
+    return dateToUse && isInRange(dateToUse, thisMonthStart, thisMonthEnd)
+      && d.status !== 'closed_lost';
   });
 
   const normalizeOriginator = (d: any): string => {
@@ -205,7 +206,7 @@ const DashboardPage = () => {
         owner,
         originator,
         collaborators,
-        stage: d.stage,
+        stage: d.status === 'closed_won' ? 'Closed Won' : d.status === 'closed_lost' ? 'Closed Lost' : d.stage,
         createdDate: (() => {
           const raw = (d as any).lead_date || d.created_at;
           return raw ? format(new Date(raw), 'dd MMM yyyy') : '';
