@@ -347,7 +347,33 @@ const DashboardPage = () => {
             onClick={() => openDrillDown('Total Open Pipeline', buildOpenDealRows())}
           />
         </div>
-      </div>
+        </div>
+
+        {funnelBreakdown.length > 0 && (
+          <div className="bg-card rounded-lg border border-border p-4 mt-3">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+              Funnel — {leadsThisMonth.length} leads entered this month
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {funnelBreakdown.map(f => (
+                <button
+                  key={f.stage}
+                  onClick={() => openDrillDown(
+                    `${f.stage} — leads entered this month`,
+                    buildLeadsRows(leadsThisMonth.filter(d =>
+                      f.stage === 'Closed Won' ? d.status === 'closed_won' : d.stage === f.stage
+                    )),
+                    'leads'
+                  )}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-background hover:border-primary/40 hover:bg-accent transition-colors text-sm cursor-pointer"
+                >
+                  <span className="font-semibold text-card-foreground">{f.count}</span>
+                  <span className="text-muted-foreground">{f.stage}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
       {/* NEW BUSINESS — LEADS */}
       <div>
