@@ -8,6 +8,7 @@ import { safeParseDate } from '@/lib/dateUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 
 const ForecastPage = () => {
   const { deals, getCompany, loading } = useFilteredCrm();
