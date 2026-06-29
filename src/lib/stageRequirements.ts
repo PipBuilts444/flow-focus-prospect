@@ -18,6 +18,7 @@ export const STAGE_FIELDS: Record<DealStage, StageField[]> = {
     { key: 'source', label: 'Source', type: 'text', required: true, placeholder: 'Referral, Inbound, Event…' },
   ],
   'Qualified': [
+    { key: 'deal_originator', label: 'Deal Originator', type: 'select', required: false, options: ['Pippa Bradley-Dixon', 'Craig Davies', 'Adam Solomons', 'Henry Hickley'] },
     { key: 'problem_challenge', label: 'Problem / Challenge', type: 'textarea', required: true, placeholder: 'What problem is the client facing?' },
     { key: 'urgency_why_now', label: 'Urgency / Why Now', type: 'textarea', required: true, placeholder: 'Why is this important now?' },
     { key: 'key_stakeholder', label: 'Key Stakeholder', type: 'text', required: true, placeholder: 'Decision maker or sponsor' },
@@ -25,6 +26,7 @@ export const STAGE_FIELDS: Record<DealStage, StageField[]> = {
     { key: 'next_action_date', label: 'Next Action Date', type: 'date', required: true },
   ],
   'Discovery': [
+    { key: 'deal_originator', label: 'Deal Originator', type: 'select', required: false, options: ['Pippa Bradley-Dixon', 'Craig Davies', 'Adam Solomons', 'Henry Hickley'] },
     { key: 'refined_problem', label: 'Refined Problem Statement', type: 'textarea', required: true, placeholder: 'Refined understanding of the problem' },
     { key: 'scope_hypothesis', label: 'Scope Hypothesis', type: 'textarea', required: true, placeholder: 'Initial view of what the engagement could look like' },
     { key: 'deal_type', label: 'Deal Type', type: 'select', required: true, options: ['Discovery', 'PoC', 'MVP', 'Implementation', 'Retainer', 'Managed Service'] },
@@ -33,6 +35,7 @@ export const STAGE_FIELDS: Record<DealStage, StageField[]> = {
     { key: 'notes', label: 'Notes', type: 'textarea', placeholder: 'Any additional context…' },
   ],
   'Proposal': [
+    { key: 'deal_originator', label: 'Deal Originator', type: 'select', required: false, options: ['Pippa Bradley-Dixon', 'Craig Davies', 'Adam Solomons', 'Henry Hickley'] },
     { key: 'value', label: 'Proposal Value', type: 'currency', required: true, placeholder: '0' },
     { key: 'expected_close_date', label: 'Expected Close Date', type: 'date', required: true },
     { key: 'expected_start_date', label: 'Expected Start Date', type: 'date', required: true },
@@ -40,22 +43,26 @@ export const STAGE_FIELDS: Record<DealStage, StageField[]> = {
     { key: 'forecast_category', label: 'Forecast Category', type: 'select', required: true, options: ['Pipeline', 'Best Case', 'Commit'] },
   ],
   'Commercials / Procurement': [
+    { key: 'deal_originator', label: 'Deal Originator', type: 'select', required: false, options: ['Pippa Bradley-Dixon', 'Craig Davies', 'Adam Solomons', 'Henry Hickley'] },
     { key: 'procurement_status', label: 'Procurement Status', type: 'text', required: true, placeholder: 'e.g. PO raised, Legal review' },
     { key: 'blocker_or_risk', label: 'Blocker / Risk', type: 'textarea', required: true, placeholder: 'What could stop this deal?' },
     { key: 'commercial_notes', label: 'Commercial Notes', type: 'textarea', placeholder: 'Rate card, terms, special conditions' },
     { key: 'confidence_percent', label: 'Confidence (%)', type: 'number', required: true, placeholder: '75' },
   ],
   'Verbal Commit': [
+    { key: 'deal_originator', label: 'Deal Originator', type: 'select', required: false, options: ['Pippa Bradley-Dixon', 'Craig Davies', 'Adam Solomons', 'Henry Hickley'] },
     { key: 'commit_confidence', label: 'Commit Confidence', type: 'text', required: true, placeholder: 'e.g. Strong verbal, awaiting sign-off' },
     { key: 'likely_start_month', label: 'Likely Start Month', type: 'text', required: true, placeholder: 'e.g. March 2026' },
     { key: 'final_commercial_assumptions', label: 'Final Commercial Assumptions', type: 'textarea', required: true, placeholder: 'Agreed rate, scope, and terms' },
   ],
   'Closed Won': [
+    { key: 'deal_originator', label: 'Deal Originator', type: 'select', required: false, options: ['Pippa Bradley-Dixon', 'Craig Davies', 'Adam Solomons', 'Henry Hickley'] },
     { key: 'won_date', label: 'Won Date', type: 'date', required: true },
     { key: 'value', label: 'Final Value', type: 'currency', required: true },
     { key: 'expected_start_date', label: 'Delivery Start Date', type: 'date', required: true },
   ],
   'Closed Lost': [
+    { key: 'deal_originator', label: 'Deal Originator', type: 'select', required: false, options: ['Pippa Bradley-Dixon', 'Craig Davies', 'Adam Solomons', 'Henry Hickley'] },
     { key: 'lost_reason', label: 'Lost Reason', type: 'text', required: true, placeholder: 'Why was this deal lost?' },
     { key: 'lost_notes', label: 'Lost Notes', type: 'textarea', placeholder: 'Additional context on the loss' },
   ],
