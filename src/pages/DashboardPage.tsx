@@ -404,6 +404,13 @@ const DashboardPage = () => {
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <KpiCard
+            label="Qualified — Live"
+            value={String(liveQualified.length)}
+            icon={Users}
+            sub={formatGBP(liveQualified.reduce((s, d) => s + (d.value || 0), 0))}
+            onClick={() => openDrillDown('Live Qualified Leads', buildLeadsRows(liveQualified, 'close'), 'leads', 'Close Date')}
+          />
+          <KpiCard
             label="Proposals — Live"
             value={String(liveProposals.length)}
             icon={PoundSterling}
