@@ -262,6 +262,16 @@ const ForecastPage = () => {
           </tbody>
         </table>
       </div>
+
+      <div className="space-y-3">
+        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Deal Breakdown</h2>
+        <div className="bg-card rounded-lg border border-border overflow-hidden divide-y divide-border">
+          {renderSection('Commit', commitDeals, totals.commit, showCommit, setShowCommit)}
+          {renderSection('Best Case', bestCaseDeals, totals.bestCase, showBestCase, setShowBestCase)}
+          {renderSection('Pipeline', pipelineDeals, totals.pipeline, showPipeline, setShowPipeline)}
+          {renderSection('Actuals (Closed Won)', actualsDeals, totals.actuals, showActuals, setShowActuals, 'actuals')}
+        </div>
+      </div>
     </div>
   );
 };
