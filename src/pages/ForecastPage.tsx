@@ -6,10 +6,18 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { formatGBP, formatGBPCompact } from '@/lib/currency';
 import { safeParseDate } from '@/lib/dateUtils';
 import { supabase } from '@/integrations/supabase/client';
+import { ChevronDown } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const ForecastPage = () => {
-  const { deals, loading } = useFilteredCrm();
+  const { deals, getCompany, loading } = useFilteredCrm();
   const { selectedView } = useUserView();
+  const navigate = useNavigate();
+  const [lineItems, setLineItems] = useState<any[]>([]);
+  const [showCommit, setShowCommit] = useState(true);
+  const [showBestCase, setShowBestCase] = useState(true);
+  const [showPipeline, setShowPipeline] = useState(false);
+  const [showActuals, setShowActuals] = useState(false);
   const [lineItems, setLineItems] = useState<any[]>([]);
 
   useEffect(() => {
