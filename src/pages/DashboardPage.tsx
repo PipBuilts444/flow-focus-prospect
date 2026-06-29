@@ -197,17 +197,22 @@ const DashboardPage = () => {
     return raw.length > 0 ? raw : 'Not set';
   };
 
-  const buildLeadsRows = (subset: typeof deals): DrillDownRow[] =>
+  const buildLeadsRows = (subset: typeof deals, dateField: 'lead' | 'close' = 'lead'): DrillDownRow[] =>
     subset.map(d => {
-      const created = (d as any).created_at;
       const originator = normalizeOriginator(d);
       const owner = (d.owner || '').trim();
       const collaborators = owner || 'Unassigned';
+      const createdDate = dateField === 'close'
+        ? (d.expected_close_date ? format(new Date(d.expected_close_date), 'dd MMM yyyy') : '—')
+        : (() => {
+            const raw = (d as any).lead_date || d.created_at;
+            return raw ? format(new Date(raw), 'dd MMM yyyy') : '';
+          })();
       return {
         dealId: d.id,
         dealName: d.deal_name,
         lineItemName: originator,
-        billingMonth: created ? format(new Date(created), 'dd MMM yyyy') : '',
+        billingMonth: d.created_at ? format(new Date(d.created_at), 'dd MMM yyyy') : '',
         revenue: d.value || 0,
         cost: 0,
         marginValue: 0,
@@ -216,10 +221,7 @@ const DashboardPage = () => {
         originator,
         collaborators,
         stage: d.status === 'closed_won' ? 'Closed Won' : d.status === 'closed_lost' ? 'Closed Lost' : d.stage,
-        createdDate: (() => {
-          const raw = (d as any).lead_date || d.created_at;
-          return raw ? format(new Date(raw), 'dd MMM yyyy') : '';
-        })(),
+        createdDate,
         company: getCompany(d.company_id || '')?.company_name || '—',
       };
     });
