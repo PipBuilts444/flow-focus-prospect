@@ -304,6 +304,17 @@ const DealDetailPage = () => {
         </div>
       </div>
 
+      {/* Deal Info */}
+      <div className="bg-card rounded-lg border border-border p-5">
+        <h2 className="text-sm font-semibold text-card-foreground mb-3">Deal Info</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Field label="Owner" value={deal.owner} />
+          <Field label="Originator" value={(deal as any).deal_originator} />
+          <Field label="Source" value={deal.source} />
+          <Field label="Stage" value={deal.stage} />
+        </div>
+      </div>
+
       {/* Commercials & Margin */}
       {((deal.estimated_delivery_cost ?? 0) > 0 || deal.value > 0) && (
         <div className="bg-card rounded-lg border border-border p-5">

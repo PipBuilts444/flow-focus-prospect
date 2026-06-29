@@ -80,6 +80,7 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
       company_id: deal.company_id || '',
       primary_contact_id: deal.primary_contact_id || '',
       owner: deal.owner || '',
+      deal_originator: (deal as any).deal_originator || '',
       stage: deal.stage,
       forecast_category: deal.forecast_category,
       deal_type: deal.deal_type,
@@ -321,9 +322,23 @@ const EditDealModal = ({ open, deal, onClose }: Props) => {
                   </SelectContent>
                 </Select>
               </FormField>
+              <FormField label="Deal Originator">
+                <Select value={form.deal_originator || '_none'} onValueChange={(v) => setField('deal_originator', v === '_none' ? '' : v)}>
+                  <SelectTrigger><SelectValue placeholder="Select originator" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="_none">Not set</SelectItem>
+                    {['Pippa Bradley-Dixon', 'Craig Davies', 'Adam Solomons', 'Henry Hickley'].map((o) => (
+                      <SelectItem key={o} value={o}>{o}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FormField>
+            </FormRow>
+            <FormRow>
               <FormField label="Source">
                 <Input value={form.source || ''} onChange={(e) => setField('source', e.target.value)} placeholder="Referral, Inbound…" />
               </FormField>
+              <div />
             </FormRow>
             {ownershipSplit.length > 0 && (
               <FormField label="Ownership Split">
