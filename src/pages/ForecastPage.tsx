@@ -310,7 +310,14 @@ const ForecastPage = () => {
               const total = row.Actuals + row.Commit + row['Best Case'] + row.Pipeline;
               if (total === 0) return null;
               return (
-                <tr key={row.month} className={`border-b border-border last:border-0 ${row.isPast ? 'bg-secondary/20' : ''}`}>
+                <tr
+                  key={row.month}
+                  className={`border-b border-border last:border-0 cursor-pointer hover:bg-accent/30 transition-colors ${row.isPast ? 'bg-secondary/20' : ''}`}
+                  onClick={() => {
+                    const monthDate = months.find(m => format(m, 'MMM yy') === row.month);
+                    if (monthDate) setDrillMonth({ open: true, label: row.month, deals: getDealsForMonth(monthDate) });
+                  }}
+                >
                   <td className="px-4 py-2.5 text-card-foreground font-medium">
                     {row.month}
                     {row.isPast && <span className="ml-1.5 text-[10px] text-muted-foreground">(actual)</span>}
