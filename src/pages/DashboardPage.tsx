@@ -558,6 +558,7 @@ const DashboardPage = () => {
         title={drillDown.title}
         rows={drillDown.rows}
         variant={drillDown.variant}
+        dateColumnLabel={drillDown.dateColumnLabel}
       />
     </div>
   );
