@@ -166,7 +166,7 @@ const DashboardPage = () => {
   const liveCommercials = openDeals.filter(d => d.stage === 'Commercials / Procurement');
   const liveVerbalCommit = openDeals.filter(d => d.stage === 'Verbal Commit');
   const liveQualified = openDeals.filter(d => d.stage === 'Qualified');
-  const weightedPipeline = openDeals.reduce((s, d) => s + d.splitWeightedValue, 0);
+  const weightedPipeline = openDeals.filter(d => (d.value || 0) > 0).reduce((s, d) => s + d.splitWeightedValue, 0);
 
   const commitThisMonth = openDeals
     .filter(d => { const p = safeParseDate(d.expected_close_date); return d.forecast_category === 'Commit' && p && isInRange(p, thisMonthStart, thisMonthEnd); })
