@@ -30,7 +30,7 @@ const DashboardPage = () => {
   const { selectedView } = useUserView();
   const { activities } = useAllActivities();
   const [lineItems, setLineItems] = useState<any[]>([]);
-  const [drillDown, setDrillDown] = useState<{ open: boolean; title: string; rows: DrillDownRow[]; variant?: 'financial' | 'leads' }>({ open: false, title: '', rows: [], variant: 'financial' });
+  const [drillDown, setDrillDown] = useState<{ open: boolean; title: string; rows: DrillDownRow[]; variant?: 'financial' | 'leads'; dateColumnLabel?: string }>({ open: false, title: '', rows: [], variant: 'financial' });
 
   const now = new Date();
   const thisMonthStart = startOfMonth(now);
@@ -47,8 +47,8 @@ const DashboardPage = () => {
     });
   }, [deals]);
 
-  const openDrillDown = useCallback((title: string, rows: DrillDownRow[], variant: 'financial' | 'leads' = 'financial') => {
-    setDrillDown({ open: true, title, rows, variant });
+  const openDrillDown = useCallback((title: string, rows: DrillDownRow[], variant: 'financial' | 'leads' = 'financial', dateColumnLabel?: string) => {
+    setDrillDown({ open: true, title, rows, variant, dateColumnLabel });
   }, []);
 
   if (loading) return <div className="p-6"><p className="text-muted-foreground">Loading…</p></div>;
@@ -161,6 +161,9 @@ const DashboardPage = () => {
 
   // === PIPELINE ===
   const openDeals = deals.filter(d => d.status === 'open');
+  const liveProposals = openDeals.filter(d => d.stage === 'Proposal');
+  const liveCommercials = openDeals.filter(d => d.stage === 'Commercials / Procurement');
+  const liveVerbalCommit = openDeals.filter(d => d.stage === 'Verbal Commit');
   const weightedPipeline = openDeals.reduce((s, d) => s + d.splitWeightedValue, 0);
 
   const commitThisMonth = openDeals
@@ -197,17 +200,22 @@ const DashboardPage = () => {
     return raw.length > 0 ? raw : 'Not set';
   };
 
-  const buildLeadsRows = (subset: typeof deals): DrillDownRow[] =>
+  const buildLeadsRows = (subset: typeof deals, dateField: 'lead' | 'close' = 'lead'): DrillDownRow[] =>
     subset.map(d => {
-      const created = (d as any).created_at;
       const originator = normalizeOriginator(d);
       const owner = (d.owner || '').trim();
       const collaborators = owner || 'Unassigned';
+      const createdDate = dateField === 'close'
+        ? (d.expected_close_date ? format(new Date(d.expected_close_date), 'dd MMM yyyy') : '—')
+        : (() => {
+            const raw = (d as any).lead_date || d.created_at;
+            return raw ? format(new Date(raw), 'dd MMM yyyy') : '';
+          })();
       return {
         dealId: d.id,
         dealName: d.deal_name,
         lineItemName: originator,
-        billingMonth: created ? format(new Date(created), 'dd MMM yyyy') : '',
+        billingMonth: d.created_at ? format(new Date(d.created_at), 'dd MMM yyyy') : '',
         revenue: d.value || 0,
         cost: 0,
         marginValue: 0,
@@ -216,10 +224,7 @@ const DashboardPage = () => {
         originator,
         collaborators,
         stage: d.status === 'closed_won' ? 'Closed Won' : d.status === 'closed_lost' ? 'Closed Lost' : d.stage,
-        createdDate: (() => {
-          const raw = (d as any).lead_date || d.created_at;
-          return raw ? format(new Date(raw), 'dd MMM yyyy') : '';
-        })(),
+        createdDate,
         company: getCompany(d.company_id || '')?.company_name || '—',
       };
     });
@@ -391,6 +396,39 @@ const DashboardPage = () => {
         )}
       </div>
 
+      {/* LIVE PIPELINE BY STAGE */}
+      <div>
+        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
+          <TrendingUp size={14} /> Live Pipeline — Active Stages
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <KpiCard
+            label="Proposals — Live"
+            value={String(liveProposals.length)}
+            icon={PoundSterling}
+            sub={formatGBP(liveProposals.reduce((s, d) => s + (d.value || 0), 0))}
+            onClick={() => openDrillDown('Live Proposals', buildLeadsRows(liveProposals, 'close'), 'leads', 'Close Date')}
+          />
+          <KpiCard
+            label="Commercials / Procurement — Live"
+            value={String(liveCommercials.length)}
+            icon={Target}
+            sub={formatGBP(liveCommercials.reduce((s, d) => s + (d.value || 0), 0))}
+            onClick={() => openDrillDown('Live Commercials / Procurement', buildLeadsRows(liveCommercials, 'close'), 'leads', 'Close Date')}
+          />
+          <KpiCard
+            label="Verbal Commit — Live"
+            value={String(liveVerbalCommit.length)}
+            icon={CheckCircle2}
+            variant="green"
+            sub={formatGBP(liveVerbalCommit.reduce((s, d) => s + (d.value || 0), 0))}
+            onClick={() => openDrillDown('Live Verbal Commits', buildLeadsRows(liveVerbalCommit, 'close'), 'leads', 'Close Date')}
+          />
+        </div>
+      </div>
+
+
+
 
       {/* PROFITABILITY */}
       <div>
@@ -556,6 +594,7 @@ const DashboardPage = () => {
         title={drillDown.title}
         rows={drillDown.rows}
         variant={drillDown.variant}
+        dateColumnLabel={drillDown.dateColumnLabel}
       />
     </div>
   );

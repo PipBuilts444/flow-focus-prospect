@@ -28,13 +28,14 @@ interface Props {
   title: string;
   rows: DrillDownRow[];
   variant?: 'financial' | 'leads';
+  dateColumnLabel?: string;
 }
 
 type FinancialSortKey = 'dealName' | 'lineItemName' | 'billingMonth' | 'revenue' | 'cost' | 'marginValue' | 'marginPercent';
 type LeadsSortKey = 'dealName' | 'company' | 'stage' | 'originator' | 'collaborators' | 'createdDate';
 type SortKey = FinancialSortKey | LeadsSortKey;
 
-export default function DrillDownPanel({ open, onOpenChange, title, rows, variant = 'financial' }: Props) {
+export default function DrillDownPanel({ open, onOpenChange, title, rows, variant = 'financial', dateColumnLabel = 'Created' }: Props) {
   const navigate = useNavigate();
   const isLeads = variant === 'leads';
   const [sortKey, setSortKey] = useState<SortKey>(isLeads ? 'createdDate' : 'revenue');
@@ -140,7 +141,7 @@ export default function DrillDownPanel({ open, onOpenChange, title, rows, varian
                     <SortHeader label="Stage" field="stage" />
                     <SortHeader label="Originator" field="originator" />
                     <SortHeader label="Owner / Collaborators" field="collaborators" />
-                    <SortHeader label="Created" field="createdDate" />
+                    <SortHeader label={dateColumnLabel} field="createdDate" />
                   </>
                 ) : (
                   <>
