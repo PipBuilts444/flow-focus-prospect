@@ -14,10 +14,10 @@ import {
 const navItems = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/pipeline', icon: Kanban, label: 'Pipeline' },
+  { to: '/forecast', icon: TrendingUp, label: 'Forecast' },
   { to: '/deals', icon: List, label: 'Deals' },
   { to: '/companies', icon: Building2, label: 'Companies' },
   { to: '/contacts', icon: Users, label: 'Contacts' },
-  { to: '/forecast', icon: TrendingUp, label: 'Forecast' },
   { to: '/import', icon: Upload, label: 'Import Deals' },
   { to: '/deleted', icon: Trash2, label: 'Deleted Items' },
 ];
