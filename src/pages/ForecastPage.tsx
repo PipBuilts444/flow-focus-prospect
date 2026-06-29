@@ -6,10 +6,17 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { formatGBP, formatGBPCompact } from '@/lib/currency';
 import { safeParseDate } from '@/lib/dateUtils';
 import { supabase } from '@/integrations/supabase/client';
+import { ChevronDown } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const ForecastPage = () => {
-  const { deals, loading } = useFilteredCrm();
+  const { deals, getCompany, loading } = useFilteredCrm();
   const { selectedView } = useUserView();
+  const navigate = useNavigate();
+  const [showCommit, setShowCommit] = useState(true);
+  const [showBestCase, setShowBestCase] = useState(true);
+  const [showPipeline, setShowPipeline] = useState(false);
+  const [showActuals, setShowActuals] = useState(false);
   const [lineItems, setLineItems] = useState<any[]>([]);
 
   useEffect(() => {
@@ -108,6 +115,78 @@ const ForecastPage = () => {
     commit: openDeals.filter(d => d.forecast_category === 'Commit').reduce((s, d) => s + d.splitValue, 0),
   };
 
+  const commitDeals = openDeals.filter(d => d.forecast_category === 'Commit').sort((a, b) => b.splitValue - a.splitValue);
+  const bestCaseDeals = openDeals.filter(d => d.forecast_category === 'Best Case').sort((a, b) => b.splitValue - a.splitValue);
+  const pipelineDeals = openDeals.filter(d => d.forecast_category === 'Pipeline').sort((a, b) => b.splitValue - a.splitValue);
+  const actualsDeals = [...closedWonDeals].sort((a, b) => b.splitValue - a.splitValue);
+
+  const renderSection = (
+    label: string,
+    list: typeof openDeals,
+    total: number,
+    open: boolean,
+    setOpen: (v: boolean) => void,
+    variant: 'open' | 'actuals' = 'open',
+  ) => (
+    <div>
+      <div
+        className="flex items-center justify-between px-5 py-3 cursor-pointer hover:bg-accent/30 transition-colors"
+        onClick={() => setOpen(!open)}
+      >
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-semibold text-card-foreground">{label}</span>
+          <span className="text-xs text-muted-foreground">{list.length} deals</span>
+        </div>
+        <div className="flex items-center gap-4">
+          <span className="text-sm font-semibold">{formatGBP(total)}</span>
+          <ChevronDown size={16} className={`text-muted-foreground transition-transform ${open ? 'rotate-180' : ''}`} />
+        </div>
+      </div>
+      {open && (
+        <div className="overflow-x-auto border-t border-border">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border bg-secondary/30">
+                <th className="text-left px-4 py-2 font-medium text-muted-foreground">Deal</th>
+                <th className="text-left px-4 py-2 font-medium text-muted-foreground">Company</th>
+                <th className="text-left px-4 py-2 font-medium text-muted-foreground">Owner</th>
+                <th className="text-left px-4 py-2 font-medium text-muted-foreground">Stage</th>
+                <th className="text-left px-4 py-2 font-medium text-muted-foreground">{variant === 'actuals' ? 'Won Date' : 'Expected Close'}</th>
+                <th className="text-right px-4 py-2 font-medium text-muted-foreground">Value</th>
+                <th className="text-right px-4 py-2 font-medium text-muted-foreground">Weighted Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              {list.length === 0 ? (
+                <tr><td colSpan={7} className="px-4 py-4 text-center text-muted-foreground">No deals</td></tr>
+              ) : list.map(d => {
+                const company = getCompany(d.company_id || '')?.company_name || '—';
+                const dateRaw = variant === 'actuals' ? d.won_date : d.expected_close_date;
+                const dateParsed = safeParseDate(dateRaw);
+                return (
+                  <tr
+                    key={d.id}
+                    className="border-b border-border last:border-0 cursor-pointer hover:bg-accent/30 transition-colors"
+                    onClick={() => navigate(`/deals/${d.id}`)}
+                  >
+                    <td className="px-4 py-2 text-card-foreground font-medium">{d.deal_name}</td>
+                    <td className="px-4 py-2 text-muted-foreground">{company}</td>
+                    <td className="px-4 py-2 text-muted-foreground">{d.owner || '—'}</td>
+                    <td className="px-4 py-2 text-muted-foreground">{d.stage}</td>
+                    <td className="px-4 py-2 text-muted-foreground">{dateParsed ? format(dateParsed, 'dd MMM yyyy') : '—'}</td>
+                    <td className="px-4 py-2 text-right text-card-foreground">{formatGBP(d.splitValue)}</td>
+                    <td className="px-4 py-2 text-right text-muted-foreground">{variant === 'actuals' ? '—' : formatGBP(d.splitWeightedValue)}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+
+
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       <div>
@@ -182,6 +261,16 @@ const ForecastPage = () => {
             })}
           </tbody>
         </table>
+      </div>
+
+      <div className="space-y-3">
+        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Deal Breakdown</h2>
+        <div className="bg-card rounded-lg border border-border overflow-hidden divide-y divide-border">
+          {renderSection('Commit', commitDeals, totals.commit, showCommit, setShowCommit)}
+          {renderSection('Best Case', bestCaseDeals, totals.bestCase, showBestCase, setShowBestCase)}
+          {renderSection('Pipeline', pipelineDeals, totals.pipeline, showPipeline, setShowPipeline)}
+          {renderSection('Actuals (Closed Won)', actualsDeals, totals.actuals, showActuals, setShowActuals, 'actuals')}
+        </div>
       </div>
     </div>
   );
