@@ -109,8 +109,8 @@ export const CrmProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const updateDeal = useCallback(async (id: string, updates: Partial<Deal>) => {
     try {
-      delete (updates as any).full_name;
-      const { data, error } = await supabase.from('deals').update(updates).eq('id', id).select().single();
+      const { full_name, ...safeUpdates } = updates as any;
+      const { data, error } = await supabase.from('deals').update(safeUpdates).eq('id', id).select().single();
       if (error) throw error;
       if (data) setRawDeals(prev => prev.map(x => x.id === id ? data : x));
     } catch (err: any) {
