@@ -28,6 +28,7 @@ interface Props {
   title: string;
   rows: DrillDownRow[];
   variant?: 'financial' | 'leads';
+  dateColumnLabel?: string;
 }
 
 type FinancialSortKey = 'dealName' | 'lineItemName' | 'billingMonth' | 'revenue' | 'cost' | 'marginValue' | 'marginPercent';
