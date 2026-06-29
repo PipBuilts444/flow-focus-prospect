@@ -179,6 +179,9 @@ const ForecastPage = () => {
     commit: openDeals.filter(d => d.forecast_category === 'Commit').reduce((s, d) => s + d.splitValue, 0),
   };
 
+  const closedWonMargin = closedWonDeals.reduce((s, d) => s + d.splitMarginValue, 0);
+  const closedWonMarginPct = totals.actuals > 0 ? Math.round((closedWonMargin / totals.actuals) * 100) : 0;
+
   const commitDeals = openDeals.filter(d => d.forecast_category === 'Commit').sort((a, b) => b.splitValue - a.splitValue);
   const bestCaseDeals = openDeals.filter(d => d.forecast_category === 'Best Case').sort((a, b) => b.splitValue - a.splitValue);
   const pipelineDeals = openDeals.filter(d => d.forecast_category === 'Pipeline').sort((a, b) => b.splitValue - a.splitValue);
@@ -258,10 +261,15 @@ const ForecastPage = () => {
         <p className="text-sm text-muted-foreground">{selectedView === 'COEX' ? 'All users' : selectedView} · Actuals + Pipeline forecast</p>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <div className="bg-card rounded-lg border border-border p-4">
           <p className="text-xs text-muted-foreground">Actuals (Closed Won)</p>
           <p className="text-xl font-bold text-health-green">{formatGBP(totals.actuals)}</p>
+        </div>
+        <div className="bg-card rounded-lg border border-border p-4">
+          <p className="text-xs text-muted-foreground">Closed Won Margin</p>
+          <p className="text-xl font-bold text-health-green">{formatGBP(closedWonMargin)}</p>
+          <p className="text-xs text-muted-foreground mt-1">{closedWonMarginPct}% margin</p>
         </div>
         <div className="bg-card rounded-lg border border-border p-4">
           <p className="text-xs text-muted-foreground">Commit (Open)</p>
