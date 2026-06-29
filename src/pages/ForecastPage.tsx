@@ -8,6 +8,7 @@ import { safeParseDate } from '@/lib/dateUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 
 const ForecastPage = () => {
   const { deals, getCompany, loading } = useFilteredCrm();
@@ -18,6 +19,7 @@ const ForecastPage = () => {
   const [showPipeline, setShowPipeline] = useState(false);
   const [showActuals, setShowActuals] = useState(false);
   const [lineItems, setLineItems] = useState<any[]>([]);
+  const [drillMonth, setDrillMonth] = useState<{ open: boolean; label: string; deals: any[] }>({ open: false, label: '', deals: [] });
 
   useEffect(() => {
     supabase.from('deal_line_items').select('*').eq('is_deleted', false).then(({ data, error }) => {
@@ -44,6 +46,68 @@ const ForecastPage = () => {
     });
     return map;
   }, [lineItems]);
+
+  const getDealsForMonth = (month: Date) => {
+    const rows: any[] = [];
+    deals.forEach(deal => {
+      if (deal.status === 'closed_lost') return;
+      const fraction = deal.splitFraction;
+
+      if (deal.status === 'closed_won') {
+        const items = dealLineItemsMap.get(deal.id);
+        if (items && items.length > 0) {
+          items.forEach((li: any) => {
+            const billingDate = safeParseDate(li.billing_month);
+            const fallback = safeParseDate(deal.won_date);
+            const targetMonth = billingDate ? startOfMonth(billingDate) : (fallback ? startOfMonth(fallback) : null);
+            if (targetMonth && isSameMonth(targetMonth, month)) {
+              rows.push({
+                id: deal.id,
+                dealName: deal.deal_name,
+                category: 'Actuals',
+                value: Number(li.revenue_value) * fraction,
+                owner: deal.owner || '',
+                date: li.billing_month || deal.won_date,
+              });
+            }
+          });
+        } else {
+          const wonParsed = safeParseDate(deal.won_date);
+          if (wonParsed && isSameMonth(startOfMonth(wonParsed), month)) {
+            rows.push({
+              id: deal.id,
+              dealName: deal.deal_name,
+              category: 'Actuals',
+              value: deal.value * fraction,
+              owner: deal.owner || '',
+              date: deal.won_date,
+            });
+          }
+        }
+        return;
+      }
+
+      if (deal.status !== 'open') return;
+      const rawStart = safeParseDate(deal.expected_start_date) ?? safeParseDate(deal.expected_close_date);
+      const startDate = rawStart ? startOfMonth(rawStart) : null;
+      if (!startDate || deal.delivery_duration_months <= 0) return;
+      const monthlyAmt = (deal.value * fraction) / deal.delivery_duration_months;
+      for (let i = 0; i < deal.delivery_duration_months; i++) {
+        if (isSameMonth(addMonths(startDate, i), month)) {
+          rows.push({
+            id: deal.id,
+            dealName: deal.deal_name,
+            category: deal.forecast_category,
+            value: monthlyAmt,
+            owner: deal.owner || '',
+            date: deal.expected_close_date,
+          });
+          break;
+        }
+      }
+    });
+    return rows.sort((a, b) => b.value - a.value);
+  };
 
   const chartData = useMemo(() => {
     return months.map(month => {
@@ -246,7 +310,14 @@ const ForecastPage = () => {
               const total = row.Actuals + row.Commit + row['Best Case'] + row.Pipeline;
               if (total === 0) return null;
               return (
-                <tr key={row.month} className={`border-b border-border last:border-0 ${row.isPast ? 'bg-secondary/20' : ''}`}>
+                <tr
+                  key={row.month}
+                  className={`border-b border-border last:border-0 cursor-pointer hover:bg-accent/30 transition-colors ${row.isPast ? 'bg-secondary/20' : ''}`}
+                  onClick={() => {
+                    const monthDate = months.find(m => format(m, 'MMM yy') === row.month);
+                    if (monthDate) setDrillMonth({ open: true, label: row.month, deals: getDealsForMonth(monthDate) });
+                  }}
+                >
                   <td className="px-4 py-2.5 text-card-foreground font-medium">
                     {row.month}
                     {row.isPast && <span className="ml-1.5 text-[10px] text-muted-foreground">(actual)</span>}
@@ -272,6 +343,45 @@ const ForecastPage = () => {
           {renderSection('Actuals (Closed Won)', actualsDeals, totals.actuals, showActuals, setShowActuals, 'actuals')}
         </div>
       </div>
+
+      <Sheet open={drillMonth.open} onOpenChange={(open) => setDrillMonth(prev => ({ ...prev, open }))}>
+        <SheetContent className="w-full sm:max-w-2xl overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>{drillMonth.label} — Deal Breakdown</SheetTitle>
+            <p className="text-xs text-muted-foreground">
+              {drillMonth.deals.length} deal{drillMonth.deals.length !== 1 ? 's' : ''} · Total {formatGBP(drillMonth.deals.reduce((s, r) => s + r.value, 0))}
+            </p>
+          </SheetHeader>
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border bg-secondary/30">
+                  <th className="text-left px-3 py-2 font-medium text-muted-foreground">Deal</th>
+                  <th className="text-left px-3 py-2 font-medium text-muted-foreground">Category</th>
+                  <th className="text-left px-3 py-2 font-medium text-muted-foreground">Owner</th>
+                  <th className="text-right px-3 py-2 font-medium text-muted-foreground">Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                {drillMonth.deals.length === 0 ? (
+                  <tr><td colSpan={4} className="px-3 py-4 text-center text-muted-foreground">No deals</td></tr>
+                ) : drillMonth.deals.map((r, i) => (
+                  <tr
+                    key={`${r.id}-${i}`}
+                    className="border-b border-border last:border-0 cursor-pointer hover:bg-accent/30 transition-colors"
+                    onClick={() => { setDrillMonth(prev => ({ ...prev, open: false })); navigate(`/deals/${r.id}`); }}
+                  >
+                    <td className="px-3 py-2 text-card-foreground font-medium">{r.dealName}</td>
+                    <td className="px-3 py-2 text-muted-foreground">{r.category}</td>
+                    <td className="px-3 py-2 text-muted-foreground">{r.owner}</td>
+                    <td className="px-3 py-2 text-right text-card-foreground">{formatGBP(r.value)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };
