@@ -325,8 +325,8 @@ const DashboardPage = () => {
             label="Open Weighted Pipeline"
             value={formatGBP(weightedPipeline)}
             icon={Target}
-            sub={`${openDeals.length} deals`}
-            onClick={() => openDrillDown('Open Weighted Pipeline', buildOpenDealRows())}
+            sub={`${openDeals.filter(d => (d.value || 0) > 0).length} deals`}
+            onClick={() => openDrillDown('Open Weighted Pipeline', buildOpenDealRows(d => (d.value || 0) > 0))}
           />
           <KpiCard
             label="Commit This Month"
