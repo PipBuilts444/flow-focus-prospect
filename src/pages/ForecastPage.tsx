@@ -47,6 +47,68 @@ const ForecastPage = () => {
     return map;
   }, [lineItems]);
 
+  const getDealsForMonth = (month: Date) => {
+    const rows: any[] = [];
+    deals.forEach(deal => {
+      if (deal.status === 'closed_lost') return;
+      const fraction = deal.splitFraction;
+
+      if (deal.status === 'closed_won') {
+        const items = dealLineItemsMap.get(deal.id);
+        if (items && items.length > 0) {
+          items.forEach((li: any) => {
+            const billingDate = safeParseDate(li.billing_month);
+            const fallback = safeParseDate(deal.won_date);
+            const targetMonth = billingDate ? startOfMonth(billingDate) : (fallback ? startOfMonth(fallback) : null);
+            if (targetMonth && isSameMonth(targetMonth, month)) {
+              rows.push({
+                id: deal.id,
+                dealName: deal.deal_name,
+                category: 'Actuals',
+                value: Number(li.revenue_value) * fraction,
+                owner: deal.owner || '',
+                date: li.billing_month || deal.won_date,
+              });
+            }
+          });
+        } else {
+          const wonParsed = safeParseDate(deal.won_date);
+          if (wonParsed && isSameMonth(startOfMonth(wonParsed), month)) {
+            rows.push({
+              id: deal.id,
+              dealName: deal.deal_name,
+              category: 'Actuals',
+              value: deal.value * fraction,
+              owner: deal.owner || '',
+              date: deal.won_date,
+            });
+          }
+        }
+        return;
+      }
+
+      if (deal.status !== 'open') return;
+      const rawStart = safeParseDate(deal.expected_start_date) ?? safeParseDate(deal.expected_close_date);
+      const startDate = rawStart ? startOfMonth(rawStart) : null;
+      if (!startDate || deal.delivery_duration_months <= 0) return;
+      const monthlyAmt = (deal.value * fraction) / deal.delivery_duration_months;
+      for (let i = 0; i < deal.delivery_duration_months; i++) {
+        if (isSameMonth(addMonths(startDate, i), month)) {
+          rows.push({
+            id: deal.id,
+            dealName: deal.deal_name,
+            category: deal.forecast_category,
+            value: monthlyAmt,
+            owner: deal.owner || '',
+            date: deal.expected_close_date,
+          });
+          break;
+        }
+      }
+    });
+    return rows.sort((a, b) => b.value - a.value);
+  };
+
   const chartData = useMemo(() => {
     return months.map(month => {
       const label = format(month, 'MMM yy');
