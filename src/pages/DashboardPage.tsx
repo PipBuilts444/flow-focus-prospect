@@ -164,6 +164,7 @@ const DashboardPage = () => {
   const liveProposals = openDeals.filter(d => d.stage === 'Proposal');
   const liveCommercials = openDeals.filter(d => d.stage === 'Commercials / Procurement');
   const liveVerbalCommit = openDeals.filter(d => d.stage === 'Verbal Commit');
+  const liveQualified = openDeals.filter(d => d.stage === 'Qualified');
   const weightedPipeline = openDeals.reduce((s, d) => s + d.splitWeightedValue, 0);
 
   const commitThisMonth = openDeals
@@ -401,7 +402,14 @@ const DashboardPage = () => {
         <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
           <TrendingUp size={14} /> Live Pipeline — Active Stages
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <KpiCard
+            label="Qualified — Live"
+            value={String(liveQualified.length)}
+            icon={Users}
+            sub={formatGBP(liveQualified.reduce((s, d) => s + (d.value || 0), 0))}
+            onClick={() => openDrillDown('Live Qualified Leads', buildLeadsRows(liveQualified, 'close'), 'leads', 'Close Date')}
+          />
           <KpiCard
             label="Proposals — Live"
             value={String(liveProposals.length)}
