@@ -141,7 +141,7 @@ export default function DrillDownPanel({ open, onOpenChange, title, rows, varian
                     <SortHeader label="Stage" field="stage" />
                     <SortHeader label="Originator" field="originator" />
                     <SortHeader label="Owner / Collaborators" field="collaborators" />
-                    <SortHeader label="Created" field="createdDate" />
+                    <SortHeader label={dateColumnLabel} field="createdDate" />
                   </>
                 ) : (
                   <>
