@@ -30,7 +30,7 @@ const DashboardPage = () => {
   const { selectedView } = useUserView();
   const { activities } = useAllActivities();
   const [lineItems, setLineItems] = useState<any[]>([]);
-  const [drillDown, setDrillDown] = useState<{ open: boolean; title: string; rows: DrillDownRow[]; variant?: 'financial' | 'leads' }>({ open: false, title: '', rows: [], variant: 'financial' });
+  const [drillDown, setDrillDown] = useState<{ open: boolean; title: string; rows: DrillDownRow[]; variant?: 'financial' | 'leads'; dateColumnLabel?: string }>({ open: false, title: '', rows: [], variant: 'financial' });
 
   const now = new Date();
   const thisMonthStart = startOfMonth(now);
