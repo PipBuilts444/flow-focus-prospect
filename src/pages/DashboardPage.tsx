@@ -164,6 +164,7 @@ const DashboardPage = () => {
   const liveProposals = openDeals.filter(d => d.stage === 'Proposal');
   const liveCommercials = openDeals.filter(d => d.stage === 'Commercials / Procurement');
   const liveVerbalCommit = openDeals.filter(d => d.stage === 'Verbal Commit');
+  const liveQualified = openDeals.filter(d => d.stage === 'Qualified');
   const weightedPipeline = openDeals.reduce((s, d) => s + d.splitWeightedValue, 0);
 
   const commitThisMonth = openDeals
