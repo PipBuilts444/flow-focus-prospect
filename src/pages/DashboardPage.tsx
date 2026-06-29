@@ -161,6 +161,9 @@ const DashboardPage = () => {
 
   // === PIPELINE ===
   const openDeals = deals.filter(d => d.status === 'open');
+  const liveProposals = openDeals.filter(d => d.stage === 'Proposal');
+  const liveCommercials = openDeals.filter(d => d.stage === 'Commercials / Procurement');
+  const liveVerbalCommit = openDeals.filter(d => d.stage === 'Verbal Commit');
   const weightedPipeline = openDeals.reduce((s, d) => s + d.splitWeightedValue, 0);
 
   const commitThisMonth = openDeals
