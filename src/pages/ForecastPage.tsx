@@ -19,6 +19,7 @@ const ForecastPage = () => {
   const [showPipeline, setShowPipeline] = useState(false);
   const [showActuals, setShowActuals] = useState(false);
   const [lineItems, setLineItems] = useState<any[]>([]);
+  const [drillMonth, setDrillMonth] = useState<{ open: boolean; label: string; deals: any[] }>({ open: false, label: '', deals: [] });
 
   useEffect(() => {
     supabase.from('deal_line_items').select('*').eq('is_deleted', false).then(({ data, error }) => {
