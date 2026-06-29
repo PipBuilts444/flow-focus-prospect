@@ -402,7 +402,7 @@ const DashboardPage = () => {
         <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
           <TrendingUp size={14} /> Live Pipeline — Active Stages
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <KpiCard
             label="Proposals — Live"
             value={String(liveProposals.length)}
