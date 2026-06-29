@@ -13,7 +13,6 @@ const ForecastPage = () => {
   const { deals, getCompany, loading } = useFilteredCrm();
   const { selectedView } = useUserView();
   const navigate = useNavigate();
-  const [lineItems, setLineItems] = useState<any[]>([]);
   const [showCommit, setShowCommit] = useState(true);
   const [showBestCase, setShowBestCase] = useState(true);
   const [showPipeline, setShowPipeline] = useState(false);
