@@ -393,6 +393,39 @@ const DashboardPage = () => {
         )}
       </div>
 
+      {/* LIVE PIPELINE BY STAGE */}
+      <div>
+        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
+          <TrendingUp size={14} /> Live Pipeline — Active Stages
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <KpiCard
+            label="Proposals — Live"
+            value={String(liveProposals.length)}
+            icon={PoundSterling}
+            sub={formatGBP(liveProposals.reduce((s, d) => s + (d.value || 0), 0))}
+            onClick={() => openDrillDown('Live Proposals', buildLeadsRows(liveProposals, 'close'), 'leads', 'Close Date')}
+          />
+          <KpiCard
+            label="Commercials / Procurement — Live"
+            value={String(liveCommercials.length)}
+            icon={Target}
+            sub={formatGBP(liveCommercials.reduce((s, d) => s + (d.value || 0), 0))}
+            onClick={() => openDrillDown('Live Commercials / Procurement', buildLeadsRows(liveCommercials, 'close'), 'leads', 'Close Date')}
+          />
+          <KpiCard
+            label="Verbal Commit — Live"
+            value={String(liveVerbalCommit.length)}
+            icon={CheckCircle2}
+            variant="green"
+            sub={formatGBP(liveVerbalCommit.reduce((s, d) => s + (d.value || 0), 0))}
+            onClick={() => openDrillDown('Live Verbal Commits', buildLeadsRows(liveVerbalCommit, 'close'), 'leads', 'Close Date')}
+          />
+        </div>
+      </div>
+
+
+
 
       {/* PROFITABILITY */}
       <div>
