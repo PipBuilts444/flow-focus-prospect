@@ -47,8 +47,8 @@ const DashboardPage = () => {
     });
   }, [deals]);
 
-  const openDrillDown = useCallback((title: string, rows: DrillDownRow[], variant: 'financial' | 'leads' = 'financial') => {
-    setDrillDown({ open: true, title, rows, variant });
+  const openDrillDown = useCallback((title: string, rows: DrillDownRow[], variant: 'financial' | 'leads' = 'financial', dateColumnLabel?: string) => {
+    setDrillDown({ open: true, title, rows, variant, dateColumnLabel });
   }, []);
 
   if (loading) return <div className="p-6"><p className="text-muted-foreground">Loading…</p></div>;
