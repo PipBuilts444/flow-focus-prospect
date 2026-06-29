@@ -343,6 +343,45 @@ const ForecastPage = () => {
           {renderSection('Actuals (Closed Won)', actualsDeals, totals.actuals, showActuals, setShowActuals, 'actuals')}
         </div>
       </div>
+
+      <Sheet open={drillMonth.open} onOpenChange={(open) => setDrillMonth(prev => ({ ...prev, open }))}>
+        <SheetContent className="w-full sm:max-w-2xl overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>{drillMonth.label} — Deal Breakdown</SheetTitle>
+            <p className="text-xs text-muted-foreground">
+              {drillMonth.deals.length} deal{drillMonth.deals.length !== 1 ? 's' : ''} · Total {formatGBP(drillMonth.deals.reduce((s, r) => s + r.value, 0))}
+            </p>
+          </SheetHeader>
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border bg-secondary/30">
+                  <th className="text-left px-3 py-2 font-medium text-muted-foreground">Deal</th>
+                  <th className="text-left px-3 py-2 font-medium text-muted-foreground">Category</th>
+                  <th className="text-left px-3 py-2 font-medium text-muted-foreground">Owner</th>
+                  <th className="text-right px-3 py-2 font-medium text-muted-foreground">Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                {drillMonth.deals.length === 0 ? (
+                  <tr><td colSpan={4} className="px-3 py-4 text-center text-muted-foreground">No deals</td></tr>
+                ) : drillMonth.deals.map((r, i) => (
+                  <tr
+                    key={`${r.id}-${i}`}
+                    className="border-b border-border last:border-0 cursor-pointer hover:bg-accent/30 transition-colors"
+                    onClick={() => { setDrillMonth(prev => ({ ...prev, open: false })); navigate(`/deals/${r.id}`); }}
+                  >
+                    <td className="px-3 py-2 text-card-foreground font-medium">{r.dealName}</td>
+                    <td className="px-3 py-2 text-muted-foreground">{r.category}</td>
+                    <td className="px-3 py-2 text-muted-foreground">{r.owner}</td>
+                    <td className="px-3 py-2 text-right text-card-foreground">{formatGBP(r.value)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };
