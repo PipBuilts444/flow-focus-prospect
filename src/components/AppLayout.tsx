@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Kanban, List, Building2, Users, TrendingUp, ChevronLeft, ChevronRight, ChevronDown, CalendarPlus, Trash2, Upload } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useUserView, OWNERS, UserView } from '@/context/UserViewContext';
 import {
   DropdownMenu,
@@ -28,7 +28,12 @@ const VIEW_OPTIONS: { value: UserView; label: string; subtitle?: string }[] = [
 ];
 
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => localStorage.getItem('sidebar-collapsed') === 'true');
+
+  useEffect(() => {
+    localStorage.setItem('sidebar-collapsed', String(collapsed));
+  }, [collapsed]);
+
   const location = useLocation();
   const { selectedView, setSelectedView } = useUserView();
 
@@ -47,6 +52,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           )}
           <button
             onClick={() => setCollapsed(!collapsed)}
+            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             className="ml-auto text-sidebar-foreground hover:text-sidebar-active transition-colors p-1"
           >
             {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
@@ -59,7 +65,8 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               <NavLink
                 key={item.to}
                 to={item.to}
-                className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                title={item.label}
+                className={`flex items-center ${collapsed ? 'justify-center px-2' : 'gap-3 px-3'} py-2 rounded-md text-sm font-medium transition-colors ${
                   isActive
                     ? 'bg-sidebar-hover text-sidebar-active'
                     : 'text-sidebar-foreground hover:bg-sidebar-hover hover:text-sidebar-active'
