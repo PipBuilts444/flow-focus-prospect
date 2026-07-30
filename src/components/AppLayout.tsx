@@ -52,6 +52,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           )}
           <button
             onClick={() => setCollapsed(!collapsed)}
+            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             className="ml-auto text-sidebar-foreground hover:text-sidebar-active transition-colors p-1"
           >
             {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
