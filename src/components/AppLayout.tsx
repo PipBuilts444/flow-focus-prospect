@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Kanban, List, Building2, Users, TrendingUp, ChevronLeft, ChevronRight, ChevronDown, CalendarPlus, Trash2, Upload } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useUserView, OWNERS, UserView } from '@/context/UserViewContext';
 import {
   DropdownMenu,
@@ -28,7 +28,12 @@ const VIEW_OPTIONS: { value: UserView; label: string; subtitle?: string }[] = [
 ];
 
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => localStorage.getItem('sidebar-collapsed') === 'true');
+
+  useEffect(() => {
+    localStorage.setItem('sidebar-collapsed', String(collapsed));
+  }, [collapsed]);
+
   const location = useLocation();
   const { selectedView, setSelectedView } = useUserView();
 
