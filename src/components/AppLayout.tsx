@@ -64,7 +64,8 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               <NavLink
                 key={item.to}
                 to={item.to}
-                className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                title={item.label}
+                className={`flex items-center ${collapsed ? 'justify-center px-2' : 'gap-3 px-3'} py-2 rounded-md text-sm font-medium transition-colors ${
                   isActive
                     ? 'bg-sidebar-hover text-sidebar-active'
                     : 'text-sidebar-foreground hover:bg-sidebar-hover hover:text-sidebar-active'
