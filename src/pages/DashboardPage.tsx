@@ -310,7 +310,7 @@ const DashboardPage = () => {
         <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
           <CheckCircle2 size={14} /> Actuals — Closed Revenue
         </h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <KpiCard
             label="Actuals This Month"
             value={formatGBP(actualsThisMonth)}
