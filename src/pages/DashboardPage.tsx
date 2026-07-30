@@ -13,14 +13,14 @@ import { Link } from 'react-router-dom';
 
 const KpiCard = ({ label, value, icon: Icon, variant = 'default', sub, onClick }: { label: string; value: string; icon: any; variant?: string; sub?: string; onClick?: () => void }) => (
   <div
-    className={`bg-card rounded-lg border border-border p-5 ${onClick ? 'cursor-pointer hover:border-primary/40 hover:shadow-sm transition-all' : ''}`}
+    className={`bg-card rounded-lg border border-border p-4 ${onClick ? 'cursor-pointer hover:border-primary/40 hover:shadow-sm transition-all' : ''}`}
     onClick={onClick}
   >
     <div className="flex items-center justify-between mb-2">
-      <span className="text-sm font-medium text-muted-foreground">{label}</span>
+      <span className="text-xs font-medium text-muted-foreground">{label}</span>
       <Icon size={18} className={variant === 'green' ? 'text-health-green' : variant === 'red' ? 'text-health-red' : variant === 'amber' ? 'text-health-amber' : 'text-primary'} />
     </div>
-    <p className="text-2xl font-bold text-card-foreground">{value}</p>
+    <p className="text-xl font-bold text-card-foreground">{value}</p>
     {sub && <p className="text-xs text-muted-foreground mt-1">{sub}</p>}
     {onClick && <p className="text-[10px] text-primary/60 mt-1">Click to drill down</p>}
   </div>
@@ -154,6 +154,33 @@ const DashboardPage = () => {
   const actualsThisMonth = getActualsInRange(thisMonthStart, thisMonthEnd);
   const actualsThisQuarter = getActualsInRange(thisQStart, thisQEnd);
 
+  const getActualMarginInRange = (start: Date, end: Date) => {
+    let total = 0;
+    closedWonDeals.forEach(d => {
+      const items = dealLineItemsMap.get(d.id);
+      if (items && items.length > 0) {
+        items.forEach((li: any) => {
+          const billingDate = safeParseDate(li.billing_month) ?? safeParseDate(d.won_date);
+          if (billingDate && isInRange(billingDate, start, end)) {
+            const rev = Number(li.revenue_value) * d.splitFraction;
+            const cost = Number(li.estimated_delivery_cost ?? 0) * d.splitFraction;
+            total += rev - cost;
+          }
+        });
+      } else {
+        const p = safeParseDate(d.won_date);
+        if (p && isInRange(p, start, end)) {
+          total += d.splitMarginValue;
+        }
+      }
+    });
+    return total;
+  };
+
+  const actualMarginThisMonth = getActualMarginInRange(thisMonthStart, thisMonthEnd);
+  const actualMarginThisQuarter = getActualMarginInRange(thisQStart, thisQEnd);
+
+
   const closedLostQ = deals.filter(d => {
     const p = safeParseDate(d.lost_date);
     return d.status === 'closed_lost' && p && isInRange(p, thisQStart, thisQEnd);
@@ -283,7 +310,7 @@ const DashboardPage = () => {
         <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
           <CheckCircle2 size={14} /> Actuals — Closed Revenue
         </h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <KpiCard
             label="Actuals This Month"
             value={formatGBP(actualsThisMonth)}
@@ -299,6 +326,20 @@ const DashboardPage = () => {
             variant="green"
             sub={`${closedWonDeals.filter(d => d.won_date && !isBefore(new Date(d.won_date), thisQStart) && !isAfter(new Date(d.won_date), thisQEnd)).length} deals`}
             onClick={() => openDrillDown('Actuals This Quarter', buildActualRows(thisQStart, thisQEnd))}
+          />
+          <KpiCard
+            label="Margin This Month"
+            value={formatGBP(actualMarginThisMonth)}
+            icon={Percent}
+            variant={actualMarginThisMonth >= 0 ? 'green' : 'red'}
+            sub={actualsThisMonth > 0 ? `${Math.round((actualMarginThisMonth / actualsThisMonth) * 100)}%` : '—'}
+          />
+          <KpiCard
+            label="Margin This Quarter"
+            value={formatGBP(actualMarginThisQuarter)}
+            icon={Percent}
+            variant={actualMarginThisQuarter >= 0 ? 'green' : 'red'}
+            sub={actualsThisQuarter > 0 ? `${Math.round((actualMarginThisQuarter / actualsThisQuarter) * 100)}%` : '—'}
           />
           <KpiCard
             label="Closed Lost (Quarter)"
