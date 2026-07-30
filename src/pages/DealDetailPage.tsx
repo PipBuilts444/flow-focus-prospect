@@ -77,6 +77,22 @@ const DealDetailPage = () => {
     }
   };
 
+  const saveAction = async () => {
+    setSavingAction(true);
+    try {
+      await updateDeal(deal.id, {
+        next_action: actionForm.next_action || null,
+        next_action_date: actionForm.next_action_date || null,
+      });
+      toast.success('Action updated');
+    } catch {
+      toast.error('Failed to update action');
+    } finally {
+      setSavingAction(false);
+    }
+  };
+
+
   const handleStageConfirm = async (updates: Record<string, any>) => {
     setStageLoading(true);
     try {
