@@ -37,10 +37,17 @@ const DealDetailPage = () => {
   const [stageTarget, setStageTarget] = useState<DealStage | null>(null);
   const [stageLoading, setStageLoading] = useState(false);
   const [dealOwners, setDealOwners] = useState<DealOwner[]>([]);
-  const [actionForm, setActionForm] = useState({ next_action: deal.next_action || '', next_action_date: deal.next_action_date || '' });
-  const [savingAction, setSavingAction] = useState(false);
 
   const deal = getDeal(id || '');
+
+  const [actionForm, setActionForm] = useState({ next_action: deal?.next_action || '', next_action_date: deal?.next_action_date || '' });
+  const [savingAction, setSavingAction] = useState(false);
+
+  useEffect(() => {
+    if (deal) setActionForm({ next_action: deal.next_action || '', next_action_date: deal.next_action_date || '' });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deal]);
+
 
   useEffect(() => {
     if (!id) return;
