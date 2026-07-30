@@ -13,14 +13,14 @@ import { Link } from 'react-router-dom';
 
 const KpiCard = ({ label, value, icon: Icon, variant = 'default', sub, onClick }: { label: string; value: string; icon: any; variant?: string; sub?: string; onClick?: () => void }) => (
   <div
-    className={`bg-card rounded-lg border border-border p-5 ${onClick ? 'cursor-pointer hover:border-primary/40 hover:shadow-sm transition-all' : ''}`}
+    className={`bg-card rounded-lg border border-border p-4 ${onClick ? 'cursor-pointer hover:border-primary/40 hover:shadow-sm transition-all' : ''}`}
     onClick={onClick}
   >
     <div className="flex items-center justify-between mb-2">
-      <span className="text-sm font-medium text-muted-foreground">{label}</span>
+      <span className="text-xs font-medium text-muted-foreground">{label}</span>
       <Icon size={18} className={variant === 'green' ? 'text-health-green' : variant === 'red' ? 'text-health-red' : variant === 'amber' ? 'text-health-amber' : 'text-primary'} />
     </div>
-    <p className="text-2xl font-bold text-card-foreground">{value}</p>
+    <p className="text-xl font-bold text-card-foreground">{value}</p>
     {sub && <p className="text-xs text-muted-foreground mt-1">{sub}</p>}
     {onClick && <p className="text-[10px] text-primary/60 mt-1">Click to drill down</p>}
   </div>
