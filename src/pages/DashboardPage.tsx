@@ -328,6 +328,20 @@ const DashboardPage = () => {
             onClick={() => openDrillDown('Actuals This Quarter', buildActualRows(thisQStart, thisQEnd))}
           />
           <KpiCard
+            label="Margin This Month"
+            value={formatGBP(actualMarginThisMonth)}
+            icon={Percent}
+            variant={actualMarginThisMonth >= 0 ? 'green' : 'red'}
+            sub={actualsThisMonth > 0 ? `${Math.round((actualMarginThisMonth / actualsThisMonth) * 100)}%` : '—'}
+          />
+          <KpiCard
+            label="Margin This Quarter"
+            value={formatGBP(actualMarginThisQuarter)}
+            icon={Percent}
+            variant={actualMarginThisQuarter >= 0 ? 'green' : 'red'}
+            sub={actualsThisQuarter > 0 ? `${Math.round((actualMarginThisQuarter / actualsThisQuarter) * 100)}%` : '—'}
+          />
+          <KpiCard
             label="Closed Lost (Quarter)"
             value={formatGBP(closedLostQValue)}
             icon={XCircle}
