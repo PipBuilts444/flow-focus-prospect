@@ -40,6 +40,15 @@ const DealDetailPage = () => {
 
   const deal = getDeal(id || '');
 
+  const [actionForm, setActionForm] = useState({ next_action: deal?.next_action || '', next_action_date: deal?.next_action_date || '' });
+  const [savingAction, setSavingAction] = useState(false);
+
+  useEffect(() => {
+    if (deal) setActionForm({ next_action: deal.next_action || '', next_action_date: deal.next_action_date || '' });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deal]);
+
+
   useEffect(() => {
     if (!id) return;
     supabase.from('deal_owners').select('*').eq('deal_id', id).order('role').then(({ data }) => {
@@ -67,6 +76,22 @@ const DealDetailPage = () => {
       setShowDelete(false);
     }
   };
+
+  const saveAction = async () => {
+    setSavingAction(true);
+    try {
+      await updateDeal(deal.id, {
+        next_action: actionForm.next_action || null,
+        next_action_date: actionForm.next_action_date || null,
+      });
+      toast.success('Action updated');
+    } catch {
+      toast.error('Failed to update action');
+    } finally {
+      setSavingAction(false);
+    }
+  };
+
 
   const handleStageConfirm = async (updates: Record<string, any>) => {
     setStageLoading(true);
@@ -354,8 +379,32 @@ const DealDetailPage = () => {
 
         <div className="bg-card rounded-lg border border-border p-5 space-y-3">
           <h2 className="text-sm font-semibold text-card-foreground flex items-center gap-1.5"><AlertTriangle size={14} /> Actions & Risks</h2>
-          <Field label="Next Action" value={deal.next_action} />
-          <Field label="Next Action Date" value={deal.next_action_date} />
+          <div className="space-y-2">
+            <label className="text-xs text-muted-foreground">Next Action</label>
+            <input
+              type="text"
+              value={actionForm.next_action}
+              onChange={e => setActionForm(prev => ({ ...prev, next_action: e.target.value }))}
+              placeholder="What needs to happen next?"
+              className="w-full px-3 py-2 text-sm rounded-md border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-xs text-muted-foreground">Next Action Date</label>
+            <input
+              type="date"
+              value={actionForm.next_action_date}
+              onChange={e => setActionForm(prev => ({ ...prev, next_action_date: e.target.value }))}
+              className="w-full px-3 py-2 text-sm rounded-md border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+          </div>
+          <button
+            onClick={saveAction}
+            disabled={savingAction}
+            className="px-3 py-1.5 text-xs rounded-md bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
+          >
+            {savingAction ? 'Saving…' : 'Update Action'}
+          </button>
           <Field label="Blocker / Risk" value={deal.blocker_or_risk} />
         </div>
       </div>

@@ -9,6 +9,7 @@ import { formatGBP } from '@/lib/currency';
 import { safeParseDate } from '@/lib/dateUtils';
 import { supabase } from '@/integrations/supabase/client';
 import DrillDownPanel, { type DrillDownRow } from '@/components/DrillDownPanel';
+import { Link } from 'react-router-dom';
 
 const KpiCard = ({ label, value, icon: Icon, variant = 'default', sub, onClick }: { label: string; value: string; icon: any; variant?: string; sub?: string; onClick?: () => void }) => (
   <div
@@ -496,12 +497,12 @@ const DashboardPage = () => {
             </h3>
             <div className="space-y-1.5">
               {lowMarginDeals.slice(0, 8).map(d => (
-                <a key={d.id} href={`/deals/${d.id}`} className="flex items-center justify-between p-2 rounded-md hover:bg-accent transition-colors text-sm">
+                <Link key={d.id} to={`/deals/${d.id}`} className="flex items-center justify-between p-2 rounded-md hover:bg-accent transition-colors text-sm">
                   <span className="font-medium text-card-foreground">{d.deal_name}</span>
                   <span className={`text-xs font-medium ${(d.gross_margin_percent ?? 0) < 0 ? 'text-health-red' : 'text-health-amber'}`}>
                     {Math.round(d.gross_margin_percent ?? 0)}% · {formatGBP(d.gross_margin_value || 0)}
                   </span>
-                </a>
+                </Link>
               ))}
             </div>
           </div>
@@ -527,13 +528,13 @@ const DashboardPage = () => {
           ) : (
             <div className="space-y-2">
               {overdueActions.map(d => (
-                <a key={d.id} href={`/deals/${d.id}`} className="flex items-center justify-between p-2 rounded-md hover:bg-accent transition-colors text-sm">
+                <Link key={d.id} to={`/deals/${d.id}`} className="flex items-center justify-between p-2 rounded-md hover:bg-accent transition-colors text-sm">
                   <div>
                     <span className="font-medium text-card-foreground">{d.deal_name}</span>
                     <span className="text-muted-foreground ml-2">{getCompany(d.company_id || '')?.company_name}</span>
                   </div>
                   <span className="text-health-red text-xs">{d.next_action_date}</span>
-                </a>
+                </Link>
               ))}
             </div>
           )}
@@ -546,13 +547,13 @@ const DashboardPage = () => {
           ) : (
             <div className="space-y-2">
               {slippedDeals.map(d => (
-                <a key={d.id} href={`/deals/${d.id}`} className="flex items-center justify-between p-2 rounded-md hover:bg-accent transition-colors text-sm">
+                <Link key={d.id} to={`/deals/${d.id}`} className="flex items-center justify-between p-2 rounded-md hover:bg-accent transition-colors text-sm">
                   <div>
                     <span className="font-medium text-card-foreground">{d.deal_name}</span>
                     <span className="text-muted-foreground ml-2">slipped {d.slip_count}x</span>
                   </div>
                   <span className="text-health-amber text-xs">{d.expected_close_date}</span>
-                </a>
+                </Link>
               ))}
             </div>
           )}
@@ -566,7 +567,7 @@ const DashboardPage = () => {
             {dealsNoRecentActivity.slice(0, 10).map(d => {
               const lastAct = dealActivityMap.get(d.id);
               return (
-                <a key={d.id} href={`/deals/${d.id}`} className="flex items-center justify-between p-2 rounded-md hover:bg-accent transition-colors text-sm">
+                <Link key={d.id} to={`/deals/${d.id}`} className="flex items-center justify-between p-2 rounded-md hover:bg-accent transition-colors text-sm">
                   <div>
                     <span className="font-medium text-card-foreground">{d.deal_name}</span>
                     <span className="text-muted-foreground ml-2">{getCompany(d.company_id || '')?.company_name}</span>
@@ -574,7 +575,7 @@ const DashboardPage = () => {
                   <span className="text-muted-foreground text-xs">
                     {lastAct ? `Last: ${format(lastAct, 'dd MMM')}` : 'No activity'}
                   </span>
-                </a>
+                </Link>
               );
             })}
           </div>
