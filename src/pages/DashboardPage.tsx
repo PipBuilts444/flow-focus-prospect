@@ -154,6 +154,33 @@ const DashboardPage = () => {
   const actualsThisMonth = getActualsInRange(thisMonthStart, thisMonthEnd);
   const actualsThisQuarter = getActualsInRange(thisQStart, thisQEnd);
 
+  const getActualMarginInRange = (start: Date, end: Date) => {
+    let total = 0;
+    closedWonDeals.forEach(d => {
+      const items = dealLineItemsMap.get(d.id);
+      if (items && items.length > 0) {
+        items.forEach((li: any) => {
+          const billingDate = safeParseDate(li.billing_month) ?? safeParseDate(d.won_date);
+          if (billingDate && isInRange(billingDate, start, end)) {
+            const rev = Number(li.revenue_value) * d.splitFraction;
+            const cost = Number(li.estimated_delivery_cost ?? 0) * d.splitFraction;
+            total += rev - cost;
+          }
+        });
+      } else {
+        const p = safeParseDate(d.won_date);
+        if (p && isInRange(p, start, end)) {
+          total += d.splitMarginValue;
+        }
+      }
+    });
+    return total;
+  };
+
+  const actualMarginThisMonth = getActualMarginInRange(thisMonthStart, thisMonthEnd);
+  const actualMarginThisQuarter = getActualMarginInRange(thisQStart, thisQEnd);
+
+
   const closedLostQ = deals.filter(d => {
     const p = safeParseDate(d.lost_date);
     return d.status === 'closed_lost' && p && isInRange(p, thisQStart, thisQEnd);
