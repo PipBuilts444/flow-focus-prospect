@@ -62,9 +62,22 @@ const PipelinePage = () => {
 
   return (
     <div className="p-6 h-full flex flex-col">
-      <div className="mb-4">
-        <h1 className="text-2xl font-bold text-foreground">Pipeline</h1>
-        <p className="text-sm text-muted-foreground">Kanban view of active deals — drag a card to change stage</p>
+      <div className="mb-4 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Pipeline</h1>
+          <p className="text-sm text-muted-foreground">Kanban view of active deals — drag a card to change stage</p>
+        </div>
+        <button
+          onClick={() => setShowProspects(!showProspects)}
+          className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md border transition-colors ${
+            showProspects
+              ? 'border-primary bg-primary/10 text-primary'
+              : 'border-border bg-card text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          <Eye size={13} />
+          {showProspects ? 'Hide prospects' : 'Show prospects'}
+        </button>
       </div>
       <div className="flex-1 overflow-x-auto">
         <div className="flex gap-3 min-w-max h-full pb-4">
