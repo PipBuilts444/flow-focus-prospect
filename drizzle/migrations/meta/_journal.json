@@ -8,6 +8,13 @@
       "when": 1789566586160,
       "tag": "0000_create_stage_history",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789568228266,
+      "tag": "0001_add_prospect_stage",
+      "breakpoints": true
     }
   ]
 }
