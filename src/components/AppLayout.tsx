@@ -1,11 +1,8 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Kanban, List, Building2, Users, TrendingUp, ChevronLeft, ChevronRight, ChevronDown, CalendarPlus, Trash2, Upload, BarChart3, LogOut, KeyRound } from 'lucide-react';
-import ChangePasswordDialog from '@/components/ChangePasswordDialog';
+import { LayoutDashboard, Kanban, List, Building2, Users, TrendingUp, ChevronLeft, ChevronRight, ChevronDown, CalendarPlus, Trash2, Upload, BarChart3 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useUserView, OWNERS, UserView } from '@/context/UserViewContext';
-import { supabase } from '@/integrations/supabase/client';
-import { EMAIL_TO_OWNER } from '@/lib/userMap';
 import {
   DropdownMenu,
   DropdownMenuContent,
