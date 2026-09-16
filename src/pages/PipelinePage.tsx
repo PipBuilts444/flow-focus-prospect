@@ -19,12 +19,20 @@ const PipelinePage = () => {
   const { deals, getCompany, getDealHealth, loading } = useFilteredCrm();
   const { updateDeal } = useCrm();
   const navigate = useNavigate();
-  const openStages = DEAL_STAGES.filter(s => s !== 'Closed Won' && s !== 'Closed Lost');
-
+  const [showProspects, setShowProspects] = useState(
+    () => localStorage.getItem('pipeline-show-prospects') === 'true'
+  );
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dragOverStage, setDragOverStage] = useState<DealStage | null>(null);
   const [gate, setGate] = useState<{ deal: Deal; target: DealStage } | null>(null);
   const [gateLoading, setGateLoading] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem('pipeline-show-prospects', String(showProspects));
+  }, [showProspects]);
+
+  const openStages = DEAL_STAGES.filter(s => s !== 'Closed Won' && s !== 'Closed Lost')
+    .filter(s => s !== 'Prospect' || showProspects);
 
   const handleDrop = (stage: DealStage) => {
     setDragOverStage(null);
