@@ -37,13 +37,10 @@ const App = () => (
         <UserViewProvider>
           <BrowserRouter>
             <Routes>
-              <Route path="/auth" element={<AuthPage />} />
-              <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route
                 path="*"
                 element={
-                  <RequireAuth>
-                    <AppLayout>
+                  <AppLayout>
                       <Routes>
                         <Route path="/" element={<DashboardPage />} />
                         <Route path="/dashboard" element={<DashboardPage />} />

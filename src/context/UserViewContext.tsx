@@ -1,6 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { EMAIL_TO_OWNER } from '@/lib/userMap';
+import React, { createContext, useContext, useState } from 'react';
 
 export const OWNERS = ['Pippa Bradley-Dixon', 'Craig Davies', 'Adam Solomons', 'Henry Hickley'] as const;
 export const ORIGINATORS = ['Pippa Bradley-Dixon', 'Craig Davies', 'Adam Solomons', 'Henry Hickley'] as const;
