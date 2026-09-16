@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { DealStage, Deal } from '@/types/crm';
 import { getMissingFieldsForStage, STAGE_FIELDS, type StageField } from '@/lib/stageRequirements';
 import { stripFormatting } from '@/lib/currency';
+import { useCrm } from '@/context/CrmContext';
 
 interface Props {
   open: boolean;
@@ -13,6 +14,7 @@ interface Props {
 }
 
 const StageGateModal = ({ open, deal, targetStage, onConfirm, onCancel, loading }: Props) => {
+  const { companies } = useCrm();
   const [values, setValues] = useState<Record<string, any>>({});
   const [initialPriorMissing, setInitialPriorMissing] = useState<{ stage: DealStage; fields: StageField[] }[]>([]);
 
@@ -67,6 +69,14 @@ const StageGateModal = ({ open, deal, targetStage, onConfirm, onCancel, loading 
         <select value={val} onChange={e => set(field.key, e.target.value)} className={inputClass + ' appearance-none'}>
           <option value="">Select…</option>
           {field.options?.map(o => <option key={o} value={o}>{o}</option>)}
+        </select>
+      );
+    }
+    if (field.type === 'company') {
+      return (
+        <select value={val || ''} onChange={e => set(field.key, e.target.value || null)} className={inputClass + ' appearance-none'}>
+          <option value="">Select company…</option>
+          {companies.map(c => <option key={c.id} value={c.id}>{c.company_name}</option>)}
         </select>
       );
     }

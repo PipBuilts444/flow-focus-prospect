@@ -77,7 +77,7 @@ export const STAGE_FIELDS: Record<DealStage, StageField[]> = {
 
 // Get all fields required up to and including a target stage
 const STAGE_ORDER: DealStage[] = [
-  'Lead', 'Qualified', 'Discovery', 'Proposal',
+  'Prospect', 'Lead', 'Qualified', 'Discovery', 'Proposal',
   'Commercials / Procurement', 'Verbal Commit', 'Closed Won', 'Closed Lost',
 ];
 
