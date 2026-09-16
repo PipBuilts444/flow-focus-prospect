@@ -3,6 +3,8 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Kanban, List, Building2, Users, TrendingUp, ChevronLeft, ChevronRight, ChevronDown, CalendarPlus, Trash2, Upload, BarChart3 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useUserView, OWNERS, UserView } from '@/context/UserViewContext';
+import { supabase } from '@/integrations/supabase/client';
+import { EMAIL_TO_OWNER } from '@/lib/userMap';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,13 +32,21 @@ const VIEW_OPTIONS: { value: UserView; label: string; subtitle?: string }[] = [
 
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem('sidebar-collapsed') === 'true');
+  const [userEmail, setUserEmail] = useState('');
 
   useEffect(() => {
     localStorage.setItem('sidebar-collapsed', String(collapsed));
   }, [collapsed]);
 
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setUserEmail(data.session?.user?.email || '');
+    });
+  }, []);
+
   const location = useLocation();
   const { selectedView, setSelectedView } = useUserView();
+  const displayName = EMAIL_TO_OWNER[userEmail] || userEmail;
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -80,7 +90,12 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           })}
         </nav>
         {!collapsed && (
-          <div className="px-4 py-3 border-t border-sidebar-border">
+          <div className="px-4 py-3 border-t border-sidebar-border space-y-1">
+            {displayName && (
+              <p className="text-xs font-semibold text-sidebar-active truncate" title={userEmail}>
+                {displayName}
+              </p>
+            )}
             <p className="text-xs text-sidebar-foreground/60">COEX Commercial Platform</p>
           </div>
         )}
