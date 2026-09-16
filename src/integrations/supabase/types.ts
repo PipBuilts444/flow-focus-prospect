@@ -550,6 +550,7 @@ export type Database = {
       activity_type: "Meeting" | "Call" | "Email" | "Note"
       company_status: "active" | "inactive" | "prospect"
       deal_stage:
+        | "Prospect"
         | "Lead"
         | "Qualified"
         | "Discovery"
@@ -711,6 +712,7 @@ export const Constants = {
       activity_type: ["Meeting", "Call", "Email", "Note"],
       company_status: ["active", "inactive", "prospect"],
       deal_stage: [
+        "Prospect",
         "Lead",
         "Qualified",
         "Discovery",

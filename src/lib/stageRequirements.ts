@@ -3,13 +3,20 @@ import type { DealStage } from '@/types/crm';
 export interface StageField {
   key: string;
   label: string;
-  type: 'text' | 'textarea' | 'date' | 'number' | 'select' | 'currency';
+  type: 'text' | 'textarea' | 'date' | 'number' | 'select' | 'currency' | 'company';
   required?: boolean;
   placeholder?: string;
   options?: string[];
 }
 
 export const STAGE_FIELDS: Record<DealStage, StageField[]> = {
+  'Prospect': [
+    { key: 'deal_name', label: 'Name / Description', type: 'text', required: true, placeholder: 'e.g. ACME Corp — AI training interest' },
+    { key: 'company_id', label: 'Company', type: 'company', required: false },
+    { key: 'deal_originator', label: 'Originator', type: 'select', required: false, options: ['Pippa Bradley-Dixon', 'Craig Davies', 'Adam Solomons', 'Henry Hickley'] },
+    { key: 'source', label: 'Source / Notes', type: 'textarea', required: false, placeholder: 'Where did this come from? Any context.' },
+    { key: 'lead_date', label: 'Date noted', type: 'date', required: false },
+  ],
   'Lead': [
     { key: 'deal_name', label: 'Deal Name', type: 'text', required: true, placeholder: 'Enter deal name' },
     { key: 'lead_date', label: 'Lead Date', type: 'date', required: false, placeholder: '' },
@@ -70,7 +77,7 @@ export const STAGE_FIELDS: Record<DealStage, StageField[]> = {
 
 // Get all fields required up to and including a target stage
 const STAGE_ORDER: DealStage[] = [
-  'Lead', 'Qualified', 'Discovery', 'Proposal',
+  'Prospect', 'Lead', 'Qualified', 'Discovery', 'Proposal',
   'Commercials / Procurement', 'Verbal Commit', 'Closed Won', 'Closed Lost',
 ];
 
