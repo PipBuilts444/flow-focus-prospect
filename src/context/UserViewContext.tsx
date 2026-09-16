@@ -1,4 +1,6 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { EMAIL_TO_OWNER } from '@/lib/userMap';
 
 export const OWNERS = ['Pippa Bradley-Dixon', 'Craig Davies', 'Adam Solomons', 'Henry Hickley'] as const;
 export const ORIGINATORS = ['Pippa Bradley-Dixon', 'Craig Davies', 'Adam Solomons', 'Henry Hickley'] as const;
@@ -20,7 +22,20 @@ export const useUserView = () => {
 };
 
 export const UserViewProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [selectedView, setSelectedView] = useState<UserView>('COEX');
+  const [selectedView, setSelectedView] = useState<UserView>(() => {
+    // Overridden by the auth check below once the session resolves.
+    return (localStorage.getItem('selectedView') as UserView) || 'COEX';
+  });
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      const email = data.session?.user?.email;
+      if (email && EMAIL_TO_OWNER[email]) {
+        setSelectedView(EMAIL_TO_OWNER[email] as Owner);
+        localStorage.setItem('selectedView', EMAIL_TO_OWNER[email]);
+      }
+    });
+  }, []);
 
   return (
     <UserViewContext.Provider value={{
