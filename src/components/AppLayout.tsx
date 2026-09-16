@@ -96,28 +96,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             );
           })}
         </nav>
-        <div className={`${collapsed ? 'px-2' : 'px-4'} py-3 border-t border-sidebar-border space-y-2`}>
-          {!collapsed && displayName && (
-            <p className="text-xs font-semibold text-sidebar-active truncate" title={userEmail}>
-              {displayName}
-            </p>
-          )}
-          <button
-            onClick={() => setPwOpen(true)}
-            title="Change password"
-            className={`flex items-center ${collapsed ? 'justify-center' : 'gap-2'} w-full text-xs text-sidebar-foreground hover:text-sidebar-active transition-colors`}
-          >
-            <KeyRound size={14} />
-            {!collapsed && <span>Change password</span>}
-          </button>
-          <button
-            onClick={handleSignOut}
-            title="Sign out"
-            className={`flex items-center ${collapsed ? 'justify-center' : 'gap-2'} w-full text-xs text-sidebar-foreground hover:text-sidebar-active transition-colors`}
-          >
-            <LogOut size={14} />
-            {!collapsed && <span>Sign out</span>}
-          </button>
+        <div className={`${collapsed ? 'px-2' : 'px-4'} py-3 border-t border-sidebar-border`}>
           {!collapsed && <p className="text-xs text-sidebar-foreground/60">COEX Commercial Platform</p>}
         </div>
       </aside>

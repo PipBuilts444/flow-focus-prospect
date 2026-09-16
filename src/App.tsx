@@ -59,8 +59,7 @@ const App = () => (
                         <Route path="/import" element={<ImportPage />} />
                         <Route path="*" element={<NotFound />} />
                       </Routes>
-                    </AppLayout>
-                  </RequireAuth>
+                  </AppLayout>
                 }
               />
             </Routes>
