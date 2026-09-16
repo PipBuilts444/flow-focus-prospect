@@ -34,7 +34,6 @@ const ChangePasswordDialog: React.FC<Props> = ({ open, onOpenChange }) => {
     setLoading(true);
     const { error } = await supabase.auth.updateUser({
       password: next,
-      // @ts-expect-error current_password is supported by Lovable Cloud auth
       current_password: current,
     });
     setLoading(false);
