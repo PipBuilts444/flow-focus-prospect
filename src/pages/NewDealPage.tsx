@@ -19,7 +19,7 @@ const NewDealPage = () => {
 
   // Deal fields
   const [dealName, setDealName] = useState('');
-  const [stage, setStage] = useState<DealStage>('Lead');
+  const [stage, setStage] = useState<DealStage>('Prospect');
   const [forecastCategory, setForecastCategory] = useState<ForecastCategory>('Pipeline');
   const [dealType, setDealType] = useState<DealType>('Discovery');
   const [value, setValue] = useState('');

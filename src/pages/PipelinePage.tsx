@@ -68,11 +68,11 @@ const PipelinePage = () => {
                 onDragOver={e => { e.preventDefault(); setDragOverStage(stage); }}
                 onDragLeave={() => setDragOverStage(prev => (prev === stage ? null : prev))}
                 onDrop={e => { e.preventDefault(); handleDrop(stage); }}
-                className={`w-72 flex flex-col rounded-lg transition-colors ${dragOverStage === stage ? 'bg-primary/10 ring-2 ring-primary/40' : 'bg-secondary/50'}`}
+                className={`w-72 flex flex-col rounded-lg transition-colors ${dragOverStage === stage ? 'bg-primary/10 ring-2 ring-primary/40' : stage === 'Prospect' ? 'bg-muted/60 border border-dashed border-border' : 'bg-secondary/50'}`}
               >
-                <div className="px-3 py-2.5 border-b border-border">
+                <div className={`px-3 py-2.5 border-b border-border ${stage === 'Prospect' ? 'bg-muted rounded-t-lg' : ''}`}>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-foreground uppercase tracking-wide">{stage}</span>
+                    <span className={`text-xs font-semibold uppercase tracking-wide ${stage === 'Prospect' ? 'text-muted-foreground' : 'text-foreground'}`}>{stage}</span>
                     <span className="text-xs text-muted-foreground">{stageDeals.length}</span>
                   </div>
                   <p className="text-xs text-muted-foreground mt-0.5">{formatGBPCompact(total)}</p>
