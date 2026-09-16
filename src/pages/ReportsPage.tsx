@@ -1,9 +1,14 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   format, isAfter, isBefore, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter,
-  startOfYear, endOfYear, subMonths, subQuarters,
+  startOfYear, endOfYear, subMonths, subQuarters, subWeeks,
 } from 'date-fns';
-import { PoundSterling, Percent, CheckCircle2, Target, TrendingUp, BarChart3 } from 'lucide-react';
+import type { DateRange } from 'react-day-picker';
+import { PoundSterling, Percent, CheckCircle2, Target, TrendingUp, BarChart3, CalendarIcon } from 'lucide-react';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { useFilteredCrm } from '@/hooks/useFilteredCrm';
 import { supabase } from '@/integrations/supabase/client';
 import { formatGBP } from '@/lib/currency';
@@ -16,7 +21,13 @@ const PRESETS = [
   { key: 'this_quarter', label: 'This Quarter' },
   { key: 'last_quarter', label: 'Last Quarter' },
   { key: 'this_year', label: 'This Year' },
-  { key: 'custom', label: 'Custom' },
+];
+
+const QUICK_PICKS = [
+  { label: 'Last 4 weeks', from: (now: Date) => subWeeks(now, 4) },
+  { label: 'Last 3 months', from: (now: Date) => subMonths(now, 3) },
+  { label: 'Last 6 months', from: (now: Date) => subMonths(now, 6) },
+  { label: 'Last 12 months', from: (now: Date) => subMonths(now, 12) },
 ];
 
 const FUNNEL_STAGES = [
@@ -48,8 +59,8 @@ export default function ReportsPage() {
   const [lineItems, setLineItems] = useState<any[]>([]);
   const [stageHistory, setStageHistory] = useState<any[]>([]);
   const [preset, setPreset] = useState<string>('this_month');
-  const [customFrom, setCustomFrom] = useState('');
-  const [customTo, setCustomTo] = useState('');
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  const [calendarOpen, setCalendarOpen] = useState(false);
   const [drillDown, setDrillDown] = useState<{ open: boolean; title: string; rows: DrillDownRow[]; variant: 'financial' | 'leads'; dateColumnLabel?: string }>({ open: false, title: '', rows: [], variant: 'financial' });
 
   useEffect(() => {
@@ -66,12 +77,29 @@ export default function ReportsPage() {
       case 'last_quarter': return { rangeStart: startOfQuarter(subQuarters(now, 1)), rangeEnd: endOfQuarter(subQuarters(now, 1)) };
       case 'this_year': return { rangeStart: startOfYear(now), rangeEnd: endOfYear(now) };
       case 'custom': return {
-        rangeStart: customFrom ? new Date(customFrom) : startOfMonth(now),
-        rangeEnd: customTo ? new Date(`${customTo}T23:59:59`) : endOfMonth(now),
+        rangeStart: dateRange?.from ?? startOfMonth(now),
+        rangeEnd: dateRange?.to ?? endOfMonth(now),
       };
       default: return { rangeStart: startOfMonth(now), rangeEnd: endOfMonth(now) };
     }
-  }, [preset, customFrom, customTo]);
+  }, [preset, dateRange]);
+
+  const selectPreset = (key: string) => {
+    const now = new Date();
+    setPreset(key);
+    switch (key) {
+      case 'this_month': setDateRange({ from: startOfMonth(now), to: endOfMonth(now) }); break;
+      case 'last_month': setDateRange({ from: startOfMonth(subMonths(now, 1)), to: endOfMonth(subMonths(now, 1)) }); break;
+      case 'this_quarter': setDateRange({ from: startOfQuarter(now), to: endOfQuarter(now) }); break;
+      case 'last_quarter': setDateRange({ from: startOfQuarter(subQuarters(now, 1)), to: endOfQuarter(subQuarters(now, 1)) }); break;
+      case 'this_year': setDateRange({ from: startOfYear(now), to: endOfYear(now) }); break;
+    }
+  };
+
+  const applyQuickPick = (from: Date, to: Date) => {
+    setDateRange({ from, to });
+    setPreset('custom');
+  };
 
   const dealLineItemsMap = useMemo(() => {
     const map = new Map<string, any[]>();
@@ -237,25 +265,69 @@ export default function ReportsPage() {
       </div>
 
       {/* Date range selector */}
-      <div className="bg-card rounded-lg border border-border p-4 flex flex-wrap items-center gap-2">
-        {PRESETS.map(p => (
-          <button
-            key={p.key}
-            onClick={() => setPreset(p.key)}
-            className={`px-3 py-1.5 rounded-md text-sm font-medium border transition-colors ${
-              preset === p.key ? 'bg-primary text-primary-foreground border-primary' : 'border-input bg-background text-foreground hover:bg-accent'
-            }`}
-          >
-            {p.label}
-          </button>
-        ))}
-        {preset === 'custom' && (
-          <div className="flex items-center gap-2 ml-2">
-            <input type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)} className="px-2 py-1.5 rounded-md border border-input bg-background text-sm" />
-            <span className="text-muted-foreground text-sm">to</span>
-            <input type="date" value={customTo} onChange={e => setCustomTo(e.target.value)} className="px-2 py-1.5 rounded-md border border-input bg-background text-sm" />
-          </div>
-        )}
+      <div className="bg-card rounded-lg border border-border p-4 space-y-3">
+        <div className="flex flex-wrap items-center gap-2">
+          {PRESETS.map(p => (
+            <button
+              key={p.key}
+              onClick={() => selectPreset(p.key)}
+              className={`px-3 py-1.5 rounded-md text-sm font-medium border transition-colors ${
+                preset === p.key ? 'bg-primary text-primary-foreground border-primary' : 'border-input bg-background text-foreground hover:bg-accent'
+              }`}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          {QUICK_PICKS.map(qp => (
+            <button
+              key={qp.label}
+              onClick={() => applyQuickPick(qp.from(new Date()), new Date())}
+              className={`px-3 py-1.5 rounded-md text-sm font-medium border transition-colors ${
+                preset === 'custom' && dateRange?.from && dateRange?.to &&
+                format(dateRange.from, 'yyyy-MM-dd') === format(qp.from(new Date()), 'yyyy-MM-dd') &&
+                format(dateRange.to, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd')
+                  ? 'bg-primary text-primary-foreground border-primary' : 'border-input bg-background text-foreground hover:bg-accent'
+              }`}
+            >
+              {qp.label}
+            </button>
+          ))}
+          <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  'w-[280px] justify-start text-left font-normal',
+                  !dateRange?.from && 'text-muted-foreground'
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {dateRange?.from && dateRange?.to
+                  ? `${format(dateRange.from, 'dd MMM yyyy')} – ${format(dateRange.to, 'dd MMM yyyy')}`
+                  : 'Pick a date range'}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="range"
+                selected={dateRange}
+                onSelect={(range) => {
+                  setDateRange(range);
+                  setPreset('custom');
+                  if (range?.from && range?.to) setCalendarOpen(false);
+                }}
+                numberOfMonths={2}
+                initialFocus
+                className="p-3 pointer-events-auto"
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Showing: <span className="font-medium text-foreground">{format(rangeStart, 'dd MMM yyyy')} – {format(rangeEnd, 'dd MMM yyyy')}</span>
+        </p>
       </div>
 
       {/* Revenue & Margin */}
