@@ -1,9 +1,14 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   format, isAfter, isBefore, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter,
-  startOfYear, endOfYear, subMonths, subQuarters,
+  startOfYear, endOfYear, subMonths, subQuarters, subWeeks,
 } from 'date-fns';
-import { PoundSterling, Percent, CheckCircle2, Target, TrendingUp, BarChart3 } from 'lucide-react';
+import type { DateRange } from 'react-day-picker';
+import { PoundSterling, Percent, CheckCircle2, Target, TrendingUp, BarChart3, CalendarIcon } from 'lucide-react';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { useFilteredCrm } from '@/hooks/useFilteredCrm';
 import { supabase } from '@/integrations/supabase/client';
 import { formatGBP } from '@/lib/currency';
@@ -16,7 +21,13 @@ const PRESETS = [
   { key: 'this_quarter', label: 'This Quarter' },
   { key: 'last_quarter', label: 'Last Quarter' },
   { key: 'this_year', label: 'This Year' },
-  { key: 'custom', label: 'Custom' },
+];
+
+const QUICK_PICKS = [
+  { label: 'Last 4 weeks', from: (now: Date) => subWeeks(now, 4) },
+  { label: 'Last 3 months', from: (now: Date) => subMonths(now, 3) },
+  { label: 'Last 6 months', from: (now: Date) => subMonths(now, 6) },
+  { label: 'Last 12 months', from: (now: Date) => subMonths(now, 12) },
 ];
 
 const FUNNEL_STAGES = [
