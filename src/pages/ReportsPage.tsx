@@ -59,8 +59,8 @@ export default function ReportsPage() {
   const [lineItems, setLineItems] = useState<any[]>([]);
   const [stageHistory, setStageHistory] = useState<any[]>([]);
   const [preset, setPreset] = useState<string>('this_month');
-  const [customFrom, setCustomFrom] = useState('');
-  const [customTo, setCustomTo] = useState('');
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  const [calendarOpen, setCalendarOpen] = useState(false);
   const [drillDown, setDrillDown] = useState<{ open: boolean; title: string; rows: DrillDownRow[]; variant: 'financial' | 'leads'; dateColumnLabel?: string }>({ open: false, title: '', rows: [], variant: 'financial' });
 
   useEffect(() => {
@@ -77,12 +77,29 @@ export default function ReportsPage() {
       case 'last_quarter': return { rangeStart: startOfQuarter(subQuarters(now, 1)), rangeEnd: endOfQuarter(subQuarters(now, 1)) };
       case 'this_year': return { rangeStart: startOfYear(now), rangeEnd: endOfYear(now) };
       case 'custom': return {
-        rangeStart: customFrom ? new Date(customFrom) : startOfMonth(now),
-        rangeEnd: customTo ? new Date(`${customTo}T23:59:59`) : endOfMonth(now),
+        rangeStart: dateRange?.from ?? startOfMonth(now),
+        rangeEnd: dateRange?.to ?? endOfMonth(now),
       };
       default: return { rangeStart: startOfMonth(now), rangeEnd: endOfMonth(now) };
     }
-  }, [preset, customFrom, customTo]);
+  }, [preset, dateRange]);
+
+  const selectPreset = (key: string) => {
+    const now = new Date();
+    setPreset(key);
+    switch (key) {
+      case 'this_month': setDateRange({ from: startOfMonth(now), to: endOfMonth(now) }); break;
+      case 'last_month': setDateRange({ from: startOfMonth(subMonths(now, 1)), to: endOfMonth(subMonths(now, 1)) }); break;
+      case 'this_quarter': setDateRange({ from: startOfQuarter(now), to: endOfQuarter(now) }); break;
+      case 'last_quarter': setDateRange({ from: startOfQuarter(subQuarters(now, 1)), to: endOfQuarter(subQuarters(now, 1)) }); break;
+      case 'this_year': setDateRange({ from: startOfYear(now), to: endOfYear(now) }); break;
+    }
+  };
+
+  const applyQuickPick = (from: Date, to: Date) => {
+    setDateRange({ from, to });
+    setPreset('custom');
+  };
 
   const dealLineItemsMap = useMemo(() => {
     const map = new Map<string, any[]>();
