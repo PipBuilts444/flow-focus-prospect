@@ -265,25 +265,69 @@ export default function ReportsPage() {
       </div>
 
       {/* Date range selector */}
-      <div className="bg-card rounded-lg border border-border p-4 flex flex-wrap items-center gap-2">
-        {PRESETS.map(p => (
-          <button
-            key={p.key}
-            onClick={() => setPreset(p.key)}
-            className={`px-3 py-1.5 rounded-md text-sm font-medium border transition-colors ${
-              preset === p.key ? 'bg-primary text-primary-foreground border-primary' : 'border-input bg-background text-foreground hover:bg-accent'
-            }`}
-          >
-            {p.label}
-          </button>
-        ))}
-        {preset === 'custom' && (
-          <div className="flex items-center gap-2 ml-2">
-            <input type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)} className="px-2 py-1.5 rounded-md border border-input bg-background text-sm" />
-            <span className="text-muted-foreground text-sm">to</span>
-            <input type="date" value={customTo} onChange={e => setCustomTo(e.target.value)} className="px-2 py-1.5 rounded-md border border-input bg-background text-sm" />
-          </div>
-        )}
+      <div className="bg-card rounded-lg border border-border p-4 space-y-3">
+        <div className="flex flex-wrap items-center gap-2">
+          {PRESETS.map(p => (
+            <button
+              key={p.key}
+              onClick={() => selectPreset(p.key)}
+              className={`px-3 py-1.5 rounded-md text-sm font-medium border transition-colors ${
+                preset === p.key ? 'bg-primary text-primary-foreground border-primary' : 'border-input bg-background text-foreground hover:bg-accent'
+              }`}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          {QUICK_PICKS.map(qp => (
+            <button
+              key={qp.label}
+              onClick={() => applyQuickPick(qp.from(new Date()), new Date())}
+              className={`px-3 py-1.5 rounded-md text-sm font-medium border transition-colors ${
+                preset === 'custom' && dateRange?.from && dateRange?.to &&
+                format(dateRange.from, 'yyyy-MM-dd') === format(qp.from(new Date()), 'yyyy-MM-dd') &&
+                format(dateRange.to, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd')
+                  ? 'bg-primary text-primary-foreground border-primary' : 'border-input bg-background text-foreground hover:bg-accent'
+              }`}
+            >
+              {qp.label}
+            </button>
+          ))}
+          <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  'w-[280px] justify-start text-left font-normal',
+                  !dateRange?.from && 'text-muted-foreground'
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {dateRange?.from && dateRange?.to
+                  ? `${format(dateRange.from, 'dd MMM yyyy')} – ${format(dateRange.to, 'dd MMM yyyy')}`
+                  : 'Pick a date range'}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="range"
+                selected={dateRange}
+                onSelect={(range) => {
+                  setDateRange(range);
+                  setPreset('custom');
+                  if (range?.from && range?.to) setCalendarOpen(false);
+                }}
+                numberOfMonths={2}
+                initialFocus
+                className="p-3 pointer-events-auto"
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Showing: <span className="font-medium text-foreground">{format(rangeStart, 'dd MMM yyyy')} – {format(rangeEnd, 'dd MMM yyyy')}</span>
+        </p>
       </div>
 
       {/* Revenue & Margin */}
