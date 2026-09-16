@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Kanban, List, Building2, Users, TrendingUp, ChevronLeft, ChevronRight, ChevronDown, CalendarPlus, Trash2, Upload } from 'lucide-react';
+import { LayoutDashboard, Kanban, List, Building2, Users, TrendingUp, ChevronLeft, ChevronRight, ChevronDown, CalendarPlus, Trash2, Upload, BarChart3 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useUserView, OWNERS, UserView } from '@/context/UserViewContext';
 import {
@@ -15,6 +15,7 @@ const navItems = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/pipeline', icon: Kanban, label: 'Pipeline' },
   { to: '/forecast', icon: TrendingUp, label: 'Forecast' },
+  { to: '/reports', icon: BarChart3, label: 'Reports' },
   { to: '/deals', icon: List, label: 'Deals' },
   { to: '/companies', icon: Building2, label: 'Companies' },
   { to: '/contacts', icon: Users, label: 'Contacts' },

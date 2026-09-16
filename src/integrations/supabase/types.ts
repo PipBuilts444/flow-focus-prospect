@@ -503,6 +503,41 @@ export type Database = {
           },
         ]
       }
+      stage_history: {
+        Row: {
+          created_at: string
+          deal_id: string
+          from_stage: Database["public"]["Enums"]["deal_stage"] | null
+          id: string
+          to_stage: Database["public"]["Enums"]["deal_stage"]
+          transitioned_at: string
+        }
+        Insert: {
+          created_at?: string
+          deal_id: string
+          from_stage?: Database["public"]["Enums"]["deal_stage"] | null
+          id?: string
+          to_stage: Database["public"]["Enums"]["deal_stage"]
+          transitioned_at?: string
+        }
+        Update: {
+          created_at?: string
+          deal_id?: string
+          from_stage?: Database["public"]["Enums"]["deal_stage"] | null
+          id?: string
+          to_stage?: Database["public"]["Enums"]["deal_stage"]
+          transitioned_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stage_history_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
