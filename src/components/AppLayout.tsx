@@ -34,6 +34,12 @@ const VIEW_OPTIONS: { value: UserView; label: string; subtitle?: string }[] = [
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem('sidebar-collapsed') === 'true');
   const [userEmail, setUserEmail] = useState('');
+  const [pwOpen, setPwOpen] = useState(false);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    window.location.href = '/auth';
+  };
 
   useEffect(() => {
     localStorage.setItem('sidebar-collapsed', String(collapsed));
