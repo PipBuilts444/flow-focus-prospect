@@ -1,6 +1,9 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { format, isBefore, isAfter, startOfWeek, endOfWeek, differenceInDays, subDays } from 'date-fns';
-import { AlertTriangle, Clock, PhoneCall, ArrowRight } from 'lucide-react';
+import { AlertTriangle, Clock, PhoneCall, ArrowRight, Check, CalendarClock } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useCrm } from '@/context/CrmContext';
+import { toast } from 'sonner';
 import { useFilteredCrm } from '@/hooks/useFilteredCrm';
 import { useUserView } from '@/context/UserViewContext';
 import { useAllActivities } from '@/hooks/useActivities';
