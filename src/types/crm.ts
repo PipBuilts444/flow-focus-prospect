@@ -15,6 +15,7 @@ export type CompanyStatus = Enums<'company_status'>;
 export type HealthStatus = 'green' | 'amber' | 'red';
 
 export const STAGE_CONFIDENCE: Record<DealStage, number> = {
+  'Prospect': 5,
   'Lead': 10,
   'Qualified': 25,
   'Discovery': 40,
@@ -26,7 +27,7 @@ export const STAGE_CONFIDENCE: Record<DealStage, number> = {
 };
 
 export const DEAL_STAGES: DealStage[] = [
-  'Lead', 'Qualified', 'Discovery', 'Proposal',
+  'Prospect', 'Lead', 'Qualified', 'Discovery', 'Proposal',
   'Commercials / Procurement', 'Verbal Commit', 'Closed Won', 'Closed Lost',
 ];
 
