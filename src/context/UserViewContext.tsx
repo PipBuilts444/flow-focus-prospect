@@ -30,9 +30,10 @@ export const UserViewProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       const email = data.session?.user?.email;
-      if (email && EMAIL_TO_OWNER[email]) {
-        setSelectedView(EMAIL_TO_OWNER[email] as Owner);
-        localStorage.setItem('selectedView', EMAIL_TO_OWNER[email]);
+      const mapped = email ? EMAIL_TO_OWNER[email] : undefined;
+      if (mapped) {
+        setSelectedView(mapped as UserView);
+        localStorage.setItem('selectedView', mapped);
       }
     });
   }, []);
