@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { Eye } from 'lucide-react';
 import { useFilteredCrm } from '@/hooks/useFilteredCrm';
 import { useCrm } from '@/context/CrmContext';
 import { DEAL_STAGES } from '@/types/crm';
