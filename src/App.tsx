@@ -20,9 +20,10 @@ import NewActivityPage from "@/pages/NewActivityPage";
 import DeletedItemsPage from "@/pages/DeletedItemsPage";
 import ImportPage from "@/pages/ImportPage";
 import ReportsPage from "@/pages/ReportsPage";
-import AuthPage from "@/pages/AuthPage";
-import ResetPasswordPage from "@/pages/ResetPasswordPage";
-import RequireAuth from "@/components/RequireAuth";
+// Auth screens kept for later use, disconnected from routing for now.
+// import AuthPage from "@/pages/AuthPage";
+// import ResetPasswordPage from "@/pages/ResetPasswordPage";
+// import RequireAuth from "@/components/RequireAuth";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
