@@ -14,7 +14,7 @@ interface Props {
 }
 
 const StageGateModal = ({ open, deal, targetStage, onConfirm, onCancel, loading }: Props) => {
-  const { companies } = useCrm();
+  const { companies, contacts } = useCrm();
   const [values, setValues] = useState<Record<string, any>>({});
   const [initialPriorMissing, setInitialPriorMissing] = useState<{ stage: DealStage; fields: StageField[] }[]>([]);
 
@@ -78,6 +78,25 @@ const StageGateModal = ({ open, deal, targetStage, onConfirm, onCancel, loading 
           <option value="">Select company…</option>
           {companies.map(c => <option key={c.id} value={c.id}>{c.company_name}</option>)}
         </select>
+      );
+    }
+    if (field.type === 'contact') {
+      const companyId = values['company_id'] ?? (deal as any).company_id ?? '';
+      const list = companyId ? contacts.filter(c => c.company_id === companyId) : contacts;
+      const selected = contacts.find(c => c.id === val);
+      const details = [selected?.email, selected?.phone].filter(Boolean).join(' · ');
+      return (
+        <div>
+          <select value={val || ''} onChange={e => set(field.key, e.target.value || null)} className={inputClass + ' appearance-none'}>
+            <option value="">Select contact…</option>
+            {list.map(c => <option key={c.id} value={c.id}>{c.full_name}</option>)}
+          </select>
+          <p className="text-xs text-muted-foreground mt-1">
+            {selected
+              ? (details || 'No email or phone on this contact — add them on the contact record.')
+              : 'Pick the person we are in contact with.'}
+          </p>
+        </div>
       );
     }
     if (field.type === 'textarea') {
