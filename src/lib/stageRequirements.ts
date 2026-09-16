@@ -3,7 +3,7 @@ import type { DealStage } from '@/types/crm';
 export interface StageField {
   key: string;
   label: string;
-  type: 'text' | 'textarea' | 'date' | 'number' | 'select' | 'currency' | 'company';
+  type: 'text' | 'textarea' | 'date' | 'number' | 'select' | 'currency' | 'company' | 'contact';
   required?: boolean;
   placeholder?: string;
   options?: string[];
@@ -12,9 +12,11 @@ export interface StageField {
 export const STAGE_FIELDS: Record<DealStage, StageField[]> = {
   'Prospect': [
     { key: 'deal_name', label: 'Name / Description', type: 'text', required: true, placeholder: 'e.g. ACME Corp — AI training interest' },
-    { key: 'company_id', label: 'Company', type: 'company', required: false },
-    { key: 'deal_originator', label: 'Originator', type: 'select', required: false, options: ['Pippa Bradley-Dixon', 'Craig Davies', 'Adam Solomons', 'Henry Hickley'] },
-    { key: 'source', label: 'Source / Notes', type: 'textarea', required: false, placeholder: 'Where did this come from? Any context.' },
+    { key: 'company_id', label: 'Company', type: 'company', required: true },
+    { key: 'primary_contact_id', label: 'Primary Contact', type: 'contact', required: true },
+    { key: 'key_stakeholder', label: 'Key Stakeholder / Role', type: 'text', required: true, placeholder: 'Who are we speaking to and in what role?' },
+    { key: 'deal_originator', label: 'Originator', type: 'select', required: true, options: ['Pippa Bradley-Dixon', 'Craig Davies', 'Adam Solomons', 'Henry Hickley'] },
+    { key: 'source', label: 'Source / Notes', type: 'textarea', required: true, placeholder: 'Where did this come from? Any context.' },
     { key: 'lead_date', label: 'Date noted', type: 'date', required: false },
   ],
   'Lead': [
