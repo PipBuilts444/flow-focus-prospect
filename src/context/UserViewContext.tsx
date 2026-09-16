@@ -1,6 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { EMAIL_TO_OWNER } from '@/lib/userMap';
+import React, { createContext, useContext, useState } from 'react';
 
 export const OWNERS = ['Pippa Bradley-Dixon', 'Craig Davies', 'Adam Solomons', 'Henry Hickley'] as const;
 export const ORIGINATORS = ['Pippa Bradley-Dixon', 'Craig Davies', 'Adam Solomons', 'Henry Hickley'] as const;
@@ -27,16 +25,6 @@ export const UserViewProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return (localStorage.getItem('selectedView') as UserView) || 'COEX';
   });
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      const email = data.session?.user?.email;
-      const mapped = email ? EMAIL_TO_OWNER[email] : undefined;
-      if (mapped) {
-        setSelectedView(mapped as UserView);
-        localStorage.setItem('selectedView', mapped);
-      }
-    });
-  }, []);
 
   return (
     <UserViewContext.Provider value={{

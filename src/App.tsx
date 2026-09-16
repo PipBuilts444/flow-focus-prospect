@@ -20,9 +20,10 @@ import NewActivityPage from "@/pages/NewActivityPage";
 import DeletedItemsPage from "@/pages/DeletedItemsPage";
 import ImportPage from "@/pages/ImportPage";
 import ReportsPage from "@/pages/ReportsPage";
-import AuthPage from "@/pages/AuthPage";
-import ResetPasswordPage from "@/pages/ResetPasswordPage";
-import RequireAuth from "@/components/RequireAuth";
+// Auth screens kept for later use, disconnected from routing for now.
+// import AuthPage from "@/pages/AuthPage";
+// import ResetPasswordPage from "@/pages/ResetPasswordPage";
+// import RequireAuth from "@/components/RequireAuth";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -36,13 +37,10 @@ const App = () => (
         <UserViewProvider>
           <BrowserRouter>
             <Routes>
-              <Route path="/auth" element={<AuthPage />} />
-              <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route
                 path="*"
                 element={
-                  <RequireAuth>
-                    <AppLayout>
+                  <AppLayout>
                       <Routes>
                         <Route path="/" element={<DashboardPage />} />
                         <Route path="/dashboard" element={<DashboardPage />} />
@@ -61,8 +59,7 @@ const App = () => (
                         <Route path="/import" element={<ImportPage />} />
                         <Route path="*" element={<NotFound />} />
                       </Routes>
-                    </AppLayout>
-                  </RequireAuth>
+                  </AppLayout>
                 }
               />
             </Routes>

@@ -1,11 +1,8 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Kanban, List, Building2, Users, TrendingUp, ChevronLeft, ChevronRight, ChevronDown, CalendarPlus, Trash2, Upload, BarChart3, LogOut, KeyRound } from 'lucide-react';
-import ChangePasswordDialog from '@/components/ChangePasswordDialog';
+import { LayoutDashboard, Kanban, List, Building2, Users, TrendingUp, ChevronLeft, ChevronRight, ChevronDown, CalendarPlus, Trash2, Upload, BarChart3 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useUserView, OWNERS, UserView } from '@/context/UserViewContext';
-import { supabase } from '@/integrations/supabase/client';
-import { EMAIL_TO_OWNER } from '@/lib/userMap';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,27 +30,14 @@ const VIEW_OPTIONS: { value: UserView; label: string; subtitle?: string }[] = [
 
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem('sidebar-collapsed') === 'true');
-  const [userEmail, setUserEmail] = useState('');
-  const [pwOpen, setPwOpen] = useState(false);
-
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    window.location.href = '/auth';
-  };
 
   useEffect(() => {
     localStorage.setItem('sidebar-collapsed', String(collapsed));
   }, [collapsed]);
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setUserEmail(data.session?.user?.email || '');
-    });
-  }, []);
-
   const location = useLocation();
   const { selectedView, setSelectedView } = useUserView();
-  const displayName = EMAIL_TO_OWNER[userEmail] || userEmail;
+
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -96,28 +80,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             );
           })}
         </nav>
-        <div className={`${collapsed ? 'px-2' : 'px-4'} py-3 border-t border-sidebar-border space-y-2`}>
-          {!collapsed && displayName && (
-            <p className="text-xs font-semibold text-sidebar-active truncate" title={userEmail}>
-              {displayName}
-            </p>
-          )}
-          <button
-            onClick={() => setPwOpen(true)}
-            title="Change password"
-            className={`flex items-center ${collapsed ? 'justify-center' : 'gap-2'} w-full text-xs text-sidebar-foreground hover:text-sidebar-active transition-colors`}
-          >
-            <KeyRound size={14} />
-            {!collapsed && <span>Change password</span>}
-          </button>
-          <button
-            onClick={handleSignOut}
-            title="Sign out"
-            className={`flex items-center ${collapsed ? 'justify-center' : 'gap-2'} w-full text-xs text-sidebar-foreground hover:text-sidebar-active transition-colors`}
-          >
-            <LogOut size={14} />
-            {!collapsed && <span>Sign out</span>}
-          </button>
+        <div className={`${collapsed ? 'px-2' : 'px-4'} py-3 border-t border-sidebar-border`}>
           {!collapsed && <p className="text-xs text-sidebar-foreground/60">COEX Commercial Platform</p>}
         </div>
       </aside>
@@ -166,7 +129,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           {children}
         </main>
       </div>
-      <ChangePasswordDialog open={pwOpen} onOpenChange={setPwOpen} />
+      
     </div>
   );
 };
