@@ -447,7 +447,14 @@ const DashboardPage = () => {
         <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
           <TrendingUp size={14} /> Live Pipeline — Active Stages
         </h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <KpiCard
+            label="Prospects — Live"
+            value={String(liveProspects.length)}
+            icon={Users}
+            sub={`${liveProspects.length} on the radar`}
+            onClick={() => openDrillDown('Live Prospects', buildLeadsRows(liveProspects, 'lead'), 'leads')}
+          />
           <KpiCard
             label="Qualified — Live"
             value={String(liveQualified.length)}
