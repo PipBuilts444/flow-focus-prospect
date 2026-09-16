@@ -20,6 +20,9 @@ import NewActivityPage from "@/pages/NewActivityPage";
 import DeletedItemsPage from "@/pages/DeletedItemsPage";
 import ImportPage from "@/pages/ImportPage";
 import ReportsPage from "@/pages/ReportsPage";
+import AuthPage from "@/pages/AuthPage";
+import ResetPasswordPage from "@/pages/ResetPasswordPage";
+import RequireAuth from "@/components/RequireAuth";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -32,26 +35,37 @@ const App = () => (
       <CrmProvider>
         <UserViewProvider>
           <BrowserRouter>
-            <AppLayout>
-              <Routes>
-                <Route path="/" element={<DashboardPage />} />
-                <Route path="/dashboard" element={<DashboardPage />} />
-                <Route path="/pipeline" element={<PipelinePage />} />
-                <Route path="/deals" element={<DealsListPage />} />
-                <Route path="/deals/new" element={<NewDealPage />} />
-                <Route path="/deals/:id" element={<DealDetailPage />} />
-                <Route path="/companies" element={<CompaniesPage />} />
-                <Route path="/companies/:id" element={<CompanyDetailPage />} />
-                <Route path="/contacts" element={<ContactsPage />} />
-                <Route path="/contacts/:id" element={<ContactDetailPage />} />
-                <Route path="/forecast" element={<ForecastPage />} />
-                <Route path="/reports" element={<ReportsPage />} />
-                <Route path="/activities/new" element={<NewActivityPage />} />
-                <Route path="/deleted" element={<DeletedItemsPage />} />
-                <Route path="/import" element={<ImportPage />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </AppLayout>
+            <Routes>
+              <Route path="/auth" element={<AuthPage />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
+              <Route
+                path="*"
+                element={
+                  <RequireAuth>
+                    <AppLayout>
+                      <Routes>
+                        <Route path="/" element={<DashboardPage />} />
+                        <Route path="/dashboard" element={<DashboardPage />} />
+                        <Route path="/pipeline" element={<PipelinePage />} />
+                        <Route path="/deals" element={<DealsListPage />} />
+                        <Route path="/deals/new" element={<NewDealPage />} />
+                        <Route path="/deals/:id" element={<DealDetailPage />} />
+                        <Route path="/companies" element={<CompaniesPage />} />
+                        <Route path="/companies/:id" element={<CompanyDetailPage />} />
+                        <Route path="/contacts" element={<ContactsPage />} />
+                        <Route path="/contacts/:id" element={<ContactDetailPage />} />
+                        <Route path="/forecast" element={<ForecastPage />} />
+                        <Route path="/reports" element={<ReportsPage />} />
+                        <Route path="/activities/new" element={<NewActivityPage />} />
+                        <Route path="/deleted" element={<DeletedItemsPage />} />
+                        <Route path="/import" element={<ImportPage />} />
+                        <Route path="*" element={<NotFound />} />
+                      </Routes>
+                    </AppLayout>
+                  </RequireAuth>
+                }
+              />
+            </Routes>
           </BrowserRouter>
         </UserViewProvider>
       </CrmProvider>
