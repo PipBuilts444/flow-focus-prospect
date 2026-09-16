@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { Eye } from 'lucide-react';
 import { useFilteredCrm } from '@/hooks/useFilteredCrm';
 import { useCrm } from '@/context/CrmContext';
 import { DEAL_STAGES } from '@/types/crm';
@@ -18,12 +19,20 @@ const PipelinePage = () => {
   const { deals, getCompany, getDealHealth, loading } = useFilteredCrm();
   const { updateDeal } = useCrm();
   const navigate = useNavigate();
-  const openStages = DEAL_STAGES.filter(s => s !== 'Closed Won' && s !== 'Closed Lost');
-
+  const [showProspects, setShowProspects] = useState(
+    () => localStorage.getItem('pipeline-show-prospects') === 'true'
+  );
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dragOverStage, setDragOverStage] = useState<DealStage | null>(null);
   const [gate, setGate] = useState<{ deal: Deal; target: DealStage } | null>(null);
   const [gateLoading, setGateLoading] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem('pipeline-show-prospects', String(showProspects));
+  }, [showProspects]);
+
+  const openStages = DEAL_STAGES.filter(s => s !== 'Closed Won' && s !== 'Closed Lost')
+    .filter(s => s !== 'Prospect' || showProspects);
 
   const handleDrop = (stage: DealStage) => {
     setDragOverStage(null);
@@ -53,9 +62,22 @@ const PipelinePage = () => {
 
   return (
     <div className="p-6 h-full flex flex-col">
-      <div className="mb-4">
-        <h1 className="text-2xl font-bold text-foreground">Pipeline</h1>
-        <p className="text-sm text-muted-foreground">Kanban view of active deals — drag a card to change stage</p>
+      <div className="mb-4 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Pipeline</h1>
+          <p className="text-sm text-muted-foreground">Kanban view of active deals — drag a card to change stage</p>
+        </div>
+        <button
+          onClick={() => setShowProspects(!showProspects)}
+          className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md border transition-colors ${
+            showProspects
+              ? 'border-primary bg-primary/10 text-primary'
+              : 'border-border bg-card text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          <Eye size={13} />
+          {showProspects ? 'Hide prospects' : 'Show prospects'}
+        </button>
       </div>
       <div className="flex-1 overflow-x-auto">
         <div className="flex gap-3 min-w-max h-full pb-4">
